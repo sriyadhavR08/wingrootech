@@ -1,0 +1,21 @@
+# Node.js dependencies & builds
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Python & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# Uploads & Fallback DB
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/fallback_wingrootech.db
+
+# OS Files
+.DS_Store
+Thumbs.db

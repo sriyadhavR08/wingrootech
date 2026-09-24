@@ -1,0 +1,175 @@
+/* Services Section Styles */
+.services-section {
+  padding: 100px 0;
+  position: relative;
+  background: var(--bg-primary);
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-bottom: 60px;
+}
+
+.service-card {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  transition: all var(--transition-normal);
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(79, 70, 229, 0.3);
+  box-shadow: var(--shadow-xl);
+}
+
+.service-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.service-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.service-card:hover .service-icon-box {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+}
+
+.service-number {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.service-category {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.service-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+
+.service-card-desc {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  color: var(--text-body);
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.service-tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-light);
+}
+
+.service-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-body);
+  background: var(--bg-subtle);
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.tag-check {
+  color: var(--accent-emerald);
+}
+
+.service-card:hover .service-pill-tag {
+  background: #eef2ff;
+  color: var(--primary);
+}
+
+/* Services CTA Banner */
+.services-cta-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border-radius: 20px;
+  padding: 36px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: #ffffff;
+  box-shadow: var(--shadow-lg);
+}
+
+.services-cta-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.services-cta-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.services-action-btn {
+  flex-shrink: 0;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
+}
+
+.services-action-btn:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  .services-cta-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 30px 24px;
+  }
+}

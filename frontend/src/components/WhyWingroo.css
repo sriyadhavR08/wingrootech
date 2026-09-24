@@ -1,0 +1,88 @@
+/* Why Wingroo Section Styles */
+.why-wingroo-section {
+  padding: 100px 0;
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.section-subheading {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: -6px;
+  margin-bottom: 14px;
+}
+
+.why-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.why-block-card {
+  padding: 36px 30px;
+  background: #ffffff;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.why-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.why-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.why-block-card:hover .why-icon-box {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+}
+
+.why-num {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.why-block-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 10px;
+}
+
+.why-block-desc {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .why-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .why-features-grid {
+    grid-template-columns: 1fr;
+  }
+}

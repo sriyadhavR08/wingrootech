@@ -1,0 +1,31 @@
+import pymysql
+
+conn = pymysql.connect(host='localhost', port=3306, user='root', password='', database='wingrootech_db')
+cur = conn.cursor()
+
+cur.execute("""
+UPDATE projects 
+SET heading = 'Creating a Better Digital Experience.',
+    tag = 'Featured Project',
+    tags = 'Modern Interface, Practical Functionality, User Focused, Technology Driven',
+    theme_color = '#4f46e5'
+WHERE title = 'ZENTIME'
+""")
+
+cur.execute("""
+UPDATE projects 
+SET heading = 'Connecting Technology With Opportunity.',
+    tag = 'Featured Project',
+    tags = 'Digital Platform, User Experience, Modern Technology, Purpose Driven',
+    theme_color = '#0ea5e9'
+WHERE title = 'IIE PLUS'
+""")
+
+cur.execute("UPDATE events SET tagline = 'Ideas Worth Talking About.', badge = 'Interactive' WHERE title = 'Tech Talks'")
+cur.execute("UPDATE events SET tagline = 'Don''t Just Watch. Build.', badge = 'Hands-On' WHERE title = 'Technical Workshops'")
+cur.execute("UPDATE events SET tagline = 'Think Fast. Build Smart.', badge = 'Competition' WHERE title = 'Hackathons'")
+cur.execute("UPDATE events SET tagline = 'Know What Comes After College.', badge = 'Career Growth' WHERE title LIKE '%Career%'")
+
+conn.commit()
+conn.close()
+print("SCRATCH_UPDATE_COMPLETE")
