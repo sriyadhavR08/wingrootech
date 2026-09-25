@@ -11,6 +11,7 @@ from routes.projects import projects_bp
 from routes.events import events_bp
 from routes.admin import admin_bp
 from routes.upload import upload_bp
+from routes.careers import careers_bp
 
 def create_app():
     app = Flask(__name__)
@@ -29,6 +30,7 @@ def create_app():
     app.register_blueprint(events_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(upload_bp)
+    app.register_blueprint(careers_bp)
 
     @app.route('/api/health', methods=['GET'])
     def health_check():

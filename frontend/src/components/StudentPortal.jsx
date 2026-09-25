@@ -119,8 +119,14 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '' }) {
         {/* Modal Header */}
         <div className="student-portal-header">
           <div className="student-brand-title">
+            <img 
+              src="/logo.png" 
+              alt="Wingroo Technologies" 
+              className="portal-brand-logo" 
+              style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
+            />
             <div className="student-icon-badge">
-              <GraduationCap size={22} />
+              <GraduationCap size={20} />
             </div>
             <div>
               <div className="student-portal-tag">Candidate Services</div>

@@ -1301,4 +1301,248 @@
   }
 }
 
+/* ========================================================
+   COLLEGE INTERNSHIP TOP 5 FAQS
+   ======================================================== */
+
+.internship-faq-section {
+  margin: 70px 0 50px 0;
+  padding-top: 40px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.faq-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faq-card-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.faq-card-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.faq-card-item.faq-card-open {
+  border-color: #6366f1;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+}
+
+.faq-question-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.faq-q-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.faq-q-num {
+  color: #4f46e5;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.faq-chevron-icon {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.faq-card-open .faq-chevron-icon {
+  color: #4f46e5;
+}
+
+.faq-answer-pane {
+  padding: 0 22px 20px 22px;
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  border-top: 1px solid #f1f5f9;
+}
+
+.faq-answer-pane p {
+  margin: 12px 0 0 0;
+}
+
+/* ========================================================
+   CAREERS / JOIN OUR TEAM BANNER
+   ======================================================== */
+
+.careers-join-team-banner {
+  margin: 50px 0 20px 0;
+  padding: 36px 40px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31104b 100%);
+  border-radius: 20px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.careers-banner-content {
+  flex: 1;
+}
+
+.careers-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.careers-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
+
+.careers-desc {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+  margin: 0 0 18px 0;
+  line-height: 1.55;
+  max-width: 680px;
+}
+
+.active-projects-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.strip-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.strip-tag {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.careers-banner-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.careers-cta-btn {
+  padding: 14px 26px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  white-space: nowrap;
+}
+
+.careers-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+
+.careers-sub-hint {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+/* Job Technology Selector in Modal */
+.job-tech-selector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.job-tech-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.job-tech-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.job-tech-btn.selected {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: #8b5cf6;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.2);
+}
+
+@media (max-width: 900px) {
+  .careers-join-team-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 24px;
+  }
+  .careers-banner-action {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .careers-cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
 

@@ -7,91 +7,112 @@ import {
   Bot, 
   Cloud, 
   ArrowRight,
-  Check 
+  Check,
+  Cpu,
+  Sparkles,
+  Workflow,
+  Zap
 } from 'lucide-react';
 import './Services.css';
 
 const SERVICES_DATA = [
   {
     num: '01',
-    category: 'Web Development',
-    title: 'Websites That Do More Than Look Good.',
-    desc: 'Your website is often the first interaction people have with your brand. We create modern, responsive and user-friendly websites designed to communicate your brand clearly and provide a smooth experience across devices.',
+    category: 'Web Development & Vibe Coding',
+    title: 'Websites & Web Apps Built with Precision and Speed.',
+    desc: 'We combine traditional robust engineering (HTML5, CSS3, React, Node.js, Python) with modern Vibe Coding workflows using Cursor, v0, and Claude to build and deploy high-performance applications in record time (rapid prototype in hours to full production deployment in 72 hours).',
     icon: <Globe size={26} />,
     tags: [
-      'Business Websites',
-      'Corporate Websites',
-      'Web Applications',
-      'Frontend Development',
-      'Backend Development',
-      'Full-Stack Solutions'
+      'Full-Stack Architecture',
+      'Vibe Coding & Rapid Sprints',
+      '72-Hour Production Deployments',
+      'React & Next.js SPAs',
+      'RESTful & GraphQL APIs',
+      'Clean Code & Responsive UI'
     ]
   },
   {
     num: '02',
     category: 'Mobile App Development',
     title: 'Ideas Designed for the Mobile World.',
-    desc: 'Mobile has become one of the most important ways people interact with businesses and services. We create intuitive mobile experiences that focus on usability, performance and simplicity.',
+    desc: 'Mobile has become the primary medium for customer interaction. We engineer native and cross-platform mobile apps using Flutter and React Native focusing on speed, native gesture fluidity, offline-first caching, and seamless cloud sync.',
     icon: <Smartphone size={26} />,
     tags: [
       'iOS & Android Solutions',
-      'Cross-Platform Apps',
-      'High Performance',
-      'Intuitive Navigation'
+      'Cross-Platform Apps (Flutter/React Native)',
+      'Offline-First Data Caching',
+      'High Performance & Fluidity',
+      'Intuitive Navigation & UX'
     ]
   },
   {
     num: '03',
     category: 'E-Commerce Solutions',
     title: 'From Browsing to Buying.',
-    desc: 'We develop digital commerce experiences that help businesses take their products and services online with simple navigation, product discovery, customer experience, and smooth purchasing journeys.',
+    desc: 'Digital commerce experiences engineered for high conversion rates. We design storefronts with friction-free product discovery, secure checkout workflows, real-time inventory management, and multi-gateway payment integrations (Razorpay, Stripe, UPI).',
     icon: <ShoppingCart size={26} />,
     tags: [
-      'Product Discovery',
-      'Customer Experience',
-      'Secure Transactions',
-      'Smooth Checkout Flow'
+      'Product Discovery & Search',
+      'Frictionless Checkout Flow',
+      'Payment Gateway Integration',
+      'Inventory & Order Tracking',
+      'Customer Loyalty Features'
     ]
   },
   {
     num: '04',
-    category: 'Digital Marketing',
-    title: 'Grow Your Reach. Accelerate Real Results.',
-    desc: 'In today\'s digital landscape, visibility is everything. We create data-driven digital marketing campaigns, SEO strategies, and content funnels that connect your brand with the right audience and drive measurable growth.',
-    icon: <Megaphone size={26} />,
+    category: 'Agentic AI & Custom AI Agents',
+    title: 'Autonomous Systems That Think, Route, and Act.',
+    desc: 'Move beyond static bots. We design and build Agentic AI workflows and autonomous agents capable of independent reasoning, multi-step tool execution, and task automation—from autonomous Gmail client responders and CRM routing to automated system maintenance.',
+    icon: <Workflow size={26} />,
     tags: [
-      'Search Engine Optimization (SEO)',
-      'Social Media Marketing (SMM)',
-      'Targeted Ad Campaigns & PPC',
-      'Content Strategy & Branding',
-      'Conversion Rate Optimization',
-      'Performance Analytics'
+      'Autonomous AI Agent Building',
+      'Tool-Use LLM Orchestration',
+      'Gmail & CRM Auto-Responders',
+      'Multi-Agent System Architecture',
+      'Automated Task Execution',
+      'Enterprise Workflow Bots'
     ]
   },
   {
     num: '05',
-    category: 'AI Chatbots',
-    title: '24/7 Intelligent Automation & Conversational AI.',
-    desc: 'Transform customer engagement and operational efficiency with custom AI-powered chatbots. We build intelligent conversational agents capable of natural language understanding, instant query resolution, and seamless system integrations.',
-    icon: <Bot size={26} />,
+    category: 'Prompt Engineering & GenAI',
+    title: 'Harness Next-Gen Large Language Models.',
+    desc: 'Unlock the true power of ChatGPT-4o, Claude 3.5, Gemini, and Gamma. We design structured prompt chains, context-window optimizations, Retrieval-Augmented Generation (RAG) knowledge pipelines, and custom enterprise AI integrations.',
+    icon: <Cpu size={26} />,
     tags: [
-      'Custom Conversational AI',
-      '24/7 Automated Support',
-      'Natural Language Processing (NLP)',
-      'CRM & Database Integrations',
-      'Multi-Channel (Web & WhatsApp)',
-      'Smart Lead Qualification'
+      'Advanced Prompt Engineering',
+      'ChatGPT-4o & Claude Integration',
+      'RAG (Retrieval Augmented Gen)',
+      'Gamma & AI Slide/Doc Systems',
+      'Context-Aware AI Assistants',
+      'Enterprise Model Guardrails'
     ]
   },
   {
     num: '06',
+    category: 'SEO, GEO & Digital Marketing',
+    title: 'Rank on Search Engines & AI Answer Engines.',
+    desc: 'In modern discovery, visibility spans Google and generative AI engines. We execute comprehensive Search Engine Optimization (SEO) and Generative Engine Optimization (GEO/AEO) so your brand ranks top in Google, Bing, and AI summaries like ChatGPT and Perplexity.',
+    icon: <Megaphone size={26} />,
+    tags: [
+      'Technical & On-Page SEO',
+      'GEO / AEO (AI Engine Optimization)',
+      'Content Interlinking Strategy',
+      'Local Business SEO (Coimbatore)',
+      'Conversion Rate Optimization',
+      'Targeted Ad Campaigns & PPC'
+    ]
+  },
+  {
+    num: '07',
     category: 'Deployment and DevOps',
     title: 'Reliable Infrastructure. Zero Downtime Delivery.',
-    desc: 'Ship faster and scale seamlessly with automated CI/CD pipelines and robust cloud infrastructure. We manage containerization, automated deployments, cloud hosting, and continuous monitoring to guarantee peak performance and security.',
+    desc: 'Ship faster and scale seamlessly with automated CI/CD pipelines and robust cloud infrastructure. We manage containerization, automated deployments, cloud hosting (AWS, Render, Vercel), and continuous monitoring to guarantee peak performance and security.',
     icon: <Cloud size={26} />,
     tags: [
       'CI/CD Automated Pipelines',
-      'Cloud Hosting (AWS, GCP, Azure)',
+      'Cloud Hosting (AWS, Render, Vercel)',
       'Docker Containerization',
       'Infrastructure Monitoring & Uptime',
       'SSL, Security & Load Balancing',

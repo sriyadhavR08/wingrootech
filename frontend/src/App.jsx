@@ -12,6 +12,7 @@ import Contact from './components/Contact'
 import Footer from './components/Footer'
 import AdminPortal from './components/AdminPortal'
 import StudentPortal from './components/StudentPortal'
+import AIChatbot from './components/AIChatbot'
 import { ShieldCheck, GraduationCap } from 'lucide-react'
 
 export default function App() {
@@ -80,6 +81,9 @@ export default function App() {
         onOpenAdmin={() => setIsAdminOpen(true)} 
         onOpenStudentPortal={handleOpenStudent}
       />
+
+      {/* Interactive AI Chatbot Widget */}
+      <AIChatbot onOpenStudentPortal={handleOpenStudent} />
 
       {/* Floating Triggers Container */}
       <div className="portal-floating-triggers">

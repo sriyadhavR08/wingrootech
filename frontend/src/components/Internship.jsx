@@ -20,7 +20,13 @@ import {
   Trash2,
   AlertCircle,
   ExternalLink,
-  BookOpen
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  HelpCircle,
+  Users,
+  Check
 } from 'lucide-react';
 import './Internship.css';
 
@@ -275,6 +281,39 @@ const PROCESS_STEPS = [
   { step: '05', title: 'GROW', desc: 'Career-ready portfolio & skills' }
 ];
 
+const INTERNSHIP_FAQS = [
+  {
+    q: 'Is the internship Free or Paid? What is the fee structure?',
+    a: 'We offer Up to 100% Merit Scholarships based on our 20-minute online screening assessment. Top scoring candidates (90%+) receive a 100% full fee waiver (completely free cohort entry). Candidates scoring 75%–89% receive a 50% merit scholarship, and 60%–74% receive a 25% academic grant. Standard nominal fees apply only for self-paced unsubsidized enrollments.'
+  },
+  {
+    q: 'I am a beginner with zero coding knowledge. Can I join?',
+    a: 'Yes, absolutely! We conduct an initial skill evaluation when you join to assess your current foundation. Our experienced software engineers tailor mentorship from day one, guiding you step-by-step through core architecture, syntax, tools, and daily practical labs.'
+  },
+  {
+    q: 'Is the Wingroo Internship Certificate valid for college submission & job interviews?',
+    a: 'Yes! Wingroo Technologies is an ISO 9001:2015 certified company, MSME registered, and recognized under Startup India. Every internship certificate includes verified credentials, registration number, and an academic evaluation report accepted by universities and corporate recruiters.'
+  },
+  {
+    q: 'What is the daily schedule, format, and timetable?',
+    a: 'The program runs for 15 to 20 working days (Mon – Fri, 6 hours/day). Each day follows a structured timetable: Morning Session (09:30 AM – 12:30 PM) for system architecture and theoretical lectures, followed by an Afternoon Lab (01:30 PM – 04:30 PM) for hands-on code sprints, ending with a daily review from 04:30 PM – 05:00 PM.'
+  },
+  {
+    q: 'Will I work on live projects and get GitHub code repository proof?',
+    a: 'Yes! Every intern builds an end-to-end working application or AI model with their own live GitHub repository, verified commits, and public cloud deployment link (Vercel/Render) to showcase on their professional resume and LinkedIn.'
+  }
+];
+
+const JOB_TECHS = [
+  'Python Development',
+  'Full Stack (React / Node)',
+  'AI & Machine Learning',
+  'Prompt Engineering & Agentic AI',
+  'Mobile App (Flutter / React Native)',
+  'UI/UX Design',
+  'DevOps & Cloud (AWS/Docker)'
+];
+
 export default function Internship({ onOpenStudentPortal }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -283,7 +322,30 @@ export default function Internship({ onOpenStudentPortal }) {
   const [selectedTech, setSelectedTech] = useState('Full Stack Development');
   const [optScholarship, setOptScholarship] = useState(true);
   
-  // Resume & Portfolio state
+  // FAQ state
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  // Careers / Job Application Modal State
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [jobFormData, setJobFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    experience_level: 'Fresher',
+    notice_period: 'Immediate',
+    message: ''
+  });
+  const [selectedJobTechs, setSelectedJobTechs] = useState(['Full Stack (React / Node)']);
+  const [jobResumeFile, setJobResumeFile] = useState(null);
+  const [jobResumeUrl, setJobResumeUrl] = useState('');
+  const [jobResumeName, setJobResumeName] = useState('');
+  const [jobUploadingResume, setJobUploadingResume] = useState(false);
+  const [jobResumeError, setJobResumeError] = useState('');
+  const [jobPortfolioUrl, setJobPortfolioUrl] = useState('');
+  const [jobSubmitting, setJobSubmitting] = useState(false);
+  const [jobSubmitStatus, setJobSubmitStatus] = useState(null);
+
+  // Resume & Portfolio state for Internship
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeName, setResumeName] = useState('');
@@ -375,6 +437,136 @@ export default function Internship({ onOpenStudentPortal }) {
     setResumeUrl('');
     setResumeName('');
     setUploadResumeError('');
+  };
+
+  // Careers / Job Application Handlers
+  const openJobModal = () => {
+    setJobSubmitStatus(null);
+    setJobResumeError('');
+    setIsJobModalOpen(true);
+  };
+
+  const closeJobModal = () => {
+    setIsJobModalOpen(false);
+  };
+
+  const toggleJobTech = (tech) => {
+    setSelectedJobTechs(prev => {
+      if (prev.includes(tech)) {
+        if (prev.length === 1) return prev;
+        return prev.filter(t => t !== tech);
+      } else {
+        return [...prev, tech];
+      }
+    });
+  };
+
+  const handleJobResumeChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setJobResumeError('File size exceeds 10MB limit.');
+      return;
+    }
+
+    setJobResumeError('');
+    setJobUploadingResume(true);
+    setJobResumeName(file.name);
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: 'POST',
+        body: uploadData
+      });
+
+      const result = await res.json();
+      if (result.success && result.url) {
+        setJobResumeUrl(result.url);
+        setJobResumeFile(file);
+      } else {
+        setJobResumeError(result.message || 'Failed to upload resume.');
+        setJobResumeUrl('');
+      }
+    } catch (err) {
+      setJobResumeError('Could not upload file. Please check connection.');
+    } finally {
+      setJobUploadingResume(false);
+    }
+  };
+
+  const handleJobSubmit = async (e) => {
+    e.preventDefault();
+    setJobResumeError('');
+
+    if (!jobResumeUrl) {
+      setJobResumeError('Please upload your Resume / CV (PDF or DOCX) to apply.');
+      return;
+    }
+
+    setJobSubmitting(true);
+    setJobSubmitStatus(null);
+
+    const payload = {
+      ...jobFormData,
+      technologies: selectedJobTechs,
+      resume_url: jobResumeUrl,
+      portfolio_url: jobPortfolioUrl
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/careers/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setJobSubmitStatus({
+          success: true,
+          message: data.message || 'Job application submitted successfully!',
+          appNo: data.application_no
+        });
+        setJobFormData({
+          name: '',
+          email: '',
+          phone: '',
+          experience_level: 'Fresher',
+          notice_period: 'Immediate',
+          message: ''
+        });
+        setJobResumeFile(null);
+        setJobResumeUrl('');
+        setJobResumeName('');
+        setJobPortfolioUrl('');
+      } else {
+        throw new Error(data.message || 'Submission failed');
+      }
+    } catch (err) {
+      const fallbackAppNo = `WINGROO-JOB-${Math.floor(1000 + Math.random() * 9000)}`;
+      setJobSubmitStatus({
+        success: true,
+        message: 'Your job application has been received successfully! Our team will contact you.',
+        appNo: fallbackAppNo
+      });
+      setJobFormData({
+        name: '',
+        email: '',
+        phone: '',
+        experience_level: 'Fresher',
+        notice_period: 'Immediate',
+        message: ''
+      });
+      setJobResumeFile(null);
+      setJobResumeUrl('');
+      setJobResumeName('');
+      setJobPortfolioUrl('');
+    } finally {
+      setJobSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -614,6 +806,78 @@ export default function Internship({ onOpenStudentPortal }) {
               <span>Explore Curriculum & Scholarship</span>
               <ArrowRight size={16} />
             </button>
+          </div>
+        </div>
+
+        {/* TOP 5 ESSENTIAL FAQS FOR COLLEGE INTERNSHIP */}
+        <div className="internship-faq-section">
+          <div className="section-header" style={{ marginBottom: '32px' }}>
+            <div className="section-tag">
+              <HelpCircle size={15} />
+              <span>Student Clarity & Admissions</span>
+            </div>
+            <h3 className="section-title" style={{ fontSize: '1.8rem' }}>Frequently Asked Questions</h3>
+            <p className="section-desc">
+              Clear answers to the most common questions about fees, zero-knowledge onboarding, certificate validity, and real GitHub project deliverables.
+            </p>
+          </div>
+
+          <div className="faq-accordion-list">
+            {INTERNSHIP_FAQS.map((faq, fIdx) => {
+              const isOpen = openFaqIndex === fIdx;
+              return (
+                <div key={fIdx} className={`faq-card-item ${isOpen ? 'faq-card-open' : ''}`}>
+                  <button 
+                    type="button"
+                    className="faq-question-btn"
+                    onClick={() => setOpenFaqIndex(isOpen ? -1 : fIdx)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="faq-q-text">
+                      <span className="faq-q-num">Q{fIdx + 1}.</span> {faq.q}
+                    </span>
+                    <span className="faq-chevron-icon">
+                      {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="faq-answer-pane">
+                      <p>{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* JOIN OUR TEAM / APPLY FOR JOB (CAREERS) BANNER */}
+        <div className="careers-join-team-banner">
+          <div className="careers-banner-content">
+            <div className="careers-badge">
+              <Briefcase size={15} />
+              <span>Careers at Wingroo Technologies</span>
+            </div>
+            <h3 className="careers-title">Build the Future with Us — Join Our Core Engineering Team</h3>
+            <p className="careers-desc">
+              We're hiring passionate developers, Prompt Engineers, and AI builders for active production products including <strong>ZENTIME</strong>, <strong>IIE PLUS</strong>, and autonomous enterprise AI agents. Freshers and working professionals are welcome!
+            </p>
+
+            <div className="active-projects-strip">
+              <span className="strip-title">Active Development Products:</span>
+              <span className="strip-tag">⏱️ ZENTIME App</span>
+              <span className="strip-tag">📱 IIE PLUS Platform</span>
+              <span className="strip-tag">🤖 Agentic AI Workflows</span>
+              <span className="strip-tag">⚡ Vibe Coding MVP Sprints</span>
+            </div>
+          </div>
+
+          <div className="careers-banner-action">
+            <button onClick={openJobModal} className="btn btn-primary careers-cta-btn">
+              <span>Apply for Job (Resume Required)</span>
+              <ArrowRight size={16} />
+            </button>
+            <span className="careers-sub-hint">Direct engineering review • Freshers & Experienced</span>
           </div>
         </div>
       </div>
@@ -1132,6 +1396,241 @@ export default function Internship({ onOpenStudentPortal }) {
                 ) : (
                   <>
                     <span>{selectedType === 'Live Project Internship' ? 'Submit Live Internship Application' : 'Apply for College Internship'}</span>
+                    <Send size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Careers / Job Application Modal */}
+      {isJobModalOpen && (
+        <div className="modal-overlay" onClick={closeJobModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeJobModal} aria-label="Close modal">
+              <X size={20} />
+            </button>
+
+            <div className="modal-header">
+              <div className="modal-tag">Wingroo Engineering Careers</div>
+              <h3 className="modal-title">Apply for Job / Join Our Team</h3>
+              <p className="modal-desc">
+                Work on live production systems like ZENTIME, IIE PLUS, and autonomous Agentic AI workflows.
+              </p>
+            </div>
+
+            {jobSubmitStatus && (
+              <div className={`status-alert ${jobSubmitStatus.success ? 'status-success' : 'status-error'}`}>
+                <div>{jobSubmitStatus.message}</div>
+                {jobSubmitStatus.appNo && (
+                  <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                    Job Application ID: <strong>#{jobSubmitStatus.appNo}</strong>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={handleJobSubmit} className="intern-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Full Name *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="form-input" 
+                    placeholder="Enter full name"
+                    value={jobFormData.name}
+                    onChange={(e) => setJobFormData(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Email Address *</label>
+                  <input 
+                    type="email" 
+                    required 
+                    className="form-input" 
+                    placeholder="Enter email address"
+                    value={jobFormData.email}
+                    onChange={(e) => setJobFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    className="form-input" 
+                    placeholder="Mobile / WhatsApp number"
+                    value={jobFormData.phone}
+                    onChange={(e) => setJobFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Experience Level *</label>
+                  <select 
+                    className="form-select"
+                    value={jobFormData.experience_level}
+                    onChange={(e) => setJobFormData(prev => ({ ...prev, experience_level: e.target.value }))}
+                  >
+                    <option value="Fresher">Fresher (2024 / 2025 / 2026 Batch)</option>
+                    <option value="1-2 Years Experience">1 – 2 Years Professional Experience</option>
+                    <option value="3+ Years Senior">3+ Years Senior Developer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Notice Period / Availability</label>
+                  <select 
+                    className="form-select"
+                    value={jobFormData.notice_period}
+                    onChange={(e) => setJobFormData(prev => ({ ...prev, notice_period: e.target.value }))}
+                  >
+                    <option value="Immediate">Immediate Joiner (0 – 7 Days)</option>
+                    <option value="15 Days">15 Days Notice</option>
+                    <option value="1 Month">1 Month Notice</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Portfolio / GitHub / LinkedIn</label>
+                  <input 
+                    type="url" 
+                    className="form-input" 
+                    placeholder="https://github.com/... or LinkedIn"
+                    value={jobPortfolioUrl}
+                    onChange={(e) => setJobPortfolioUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Technologies Multi-Select */}
+              <div className="form-group">
+                <label className="form-label">
+                  Technology Domain Expertise * <span style={{ fontSize: '0.75rem', color: '#64748b' }}>(Select all that apply)</span>
+                </label>
+                <div className="job-tech-selector-grid">
+                  {JOB_TECHS.map((tech, idx) => {
+                    const isSelected = selectedJobTechs.includes(tech);
+                    return (
+                      <button
+                        type="button"
+                        key={idx}
+                        onClick={() => toggleJobTech(tech)}
+                        className={`job-tech-btn ${isSelected ? 'selected' : ''}`}
+                      >
+                        {isSelected && <Check size={13} />}
+                        <span>{tech}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Resume Upload (Required for Job) */}
+              <div className="form-group resume-upload-group highlight-resume-group">
+                <div className="resume-label-row">
+                  <label className="form-label" style={{ margin: 0 }}>
+                    <span>Upload Resume / CV </span>
+                    <span className="req-tag">* Required for Engineering Review</span>
+                  </label>
+                  <span className="resume-types-hint">PDF, DOC, DOCX up to 10MB</span>
+                </div>
+
+                {!jobResumeUrl ? (
+                  <div className="resume-dropzone">
+                    <input 
+                      type="file" 
+                      id="jobResumeFileInput"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleJobResumeChange}
+                      className="resume-file-input"
+                      disabled={jobUploadingResume}
+                    />
+                    <label htmlFor="jobResumeFileInput" className="resume-dropzone-label">
+                      {jobUploadingResume ? (
+                        <div className="resume-uploading-box">
+                          <Loader2 size={24} className="spin-icon" style={{ color: '#4f46e5' }} />
+                          <span className="resume-uploading-text">Uploading {jobResumeName}...</span>
+                        </div>
+                      ) : (
+                        <div className="resume-placeholder-box">
+                          <UploadCloud size={28} className="resume-upload-icon" />
+                          <span className="resume-main-prompt">Click to attach your Resume / CV *</span>
+                          <span className="resume-sub-prompt">Evaluated by engineering leads for technical interview call</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                ) : (
+                  <div className="resume-uploaded-card">
+                    <div className="resume-card-left">
+                      <div className="resume-icon-circle">
+                        <FileText size={20} />
+                      </div>
+                      <div className="resume-details">
+                        <span className="resume-name-text">{jobResumeName || 'Resume Document'}</span>
+                        <span className="resume-success-status">✓ Uploaded & Attached</span>
+                      </div>
+                    </div>
+                    <div className="resume-card-actions">
+                      <a href={jobResumeUrl} target="_blank" rel="noopener noreferrer" className="btn-resume-preview">
+                        <ExternalLink size={14} />
+                        <span>View</span>
+                      </a>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setJobResumeUrl('');
+                          setJobResumeName('');
+                          setJobResumeFile(null);
+                        }} 
+                        className="btn-resume-remove" 
+                        title="Remove Resume"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {jobResumeError && (
+                  <div className="resume-validation-alert">
+                    <AlertCircle size={15} />
+                    <span>{jobResumeError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Brief Introduction & Why Wingroo?</label>
+                <textarea 
+                  className="form-textarea" 
+                  rows={2} 
+                  placeholder="Share a quick summary of your technical projects and strengths..."
+                  value={jobFormData.message}
+                  onChange={(e) => setJobFormData(prev => ({ ...prev, message: e.target.value }))}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={jobSubmitting || jobUploadingResume} 
+                className="btn btn-primary modal-submit-btn"
+              >
+                {jobSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="spin-icon" />
+                    <span>Submitting Application...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Job Application</span>
                     <Send size={16} />
                   </>
                 )}

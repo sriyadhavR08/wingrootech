@@ -130,6 +130,25 @@ def init_mysql_tables_if_needed():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
 
+            # 6. Job Applications Table (Careers / Join Our Team)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS job_applications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                application_no VARCHAR(50) NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                phone VARCHAR(30) NOT NULL,
+                experience_level VARCHAR(50) DEFAULT 'Fresher',
+                technologies TEXT NOT NULL,
+                resume_url VARCHAR(255) DEFAULT NULL,
+                portfolio_url VARCHAR(255) DEFAULT NULL,
+                message TEXT,
+                status VARCHAR(50) DEFAULT 'Under Review',
+                notes TEXT DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            """)
+
             # Seed Projects
             cursor.execute("SELECT COUNT(*) FROM projects")
             if cursor.fetchone()[0] == 0:
@@ -225,6 +244,23 @@ def init_sqlite_tables(conn):
         college TEXT NOT NULL,
         year TEXT,
         status TEXT DEFAULT 'Confirmed',
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS job_applications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        application_no TEXT NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        experience_level TEXT DEFAULT 'Fresher',
+        technologies TEXT NOT NULL,
+        resume_url TEXT,
+        portfolio_url TEXT,
+        message TEXT,
+        status TEXT DEFAULT 'Under Review',
         notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );

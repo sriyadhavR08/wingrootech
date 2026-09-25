@@ -582,8 +582,14 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
         {/* Header */}
         <div className="admin-modal-header">
           <div className="admin-header-title-wrap">
+            <img 
+              src="/logo.png" 
+              alt="Wingroo Technologies" 
+              className="admin-brand-logo" 
+              style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
+            />
             <div className="admin-header-icon">
-              <ShieldCheck size={22} />
+              <ShieldCheck size={20} />
             </div>
             <div>
               <h3 className="admin-header-title">
