@@ -213,8 +213,8 @@ export default function Contact() {
                     <MapPin size={20} />
                   </div>
                   <div className="info-details">
-                    <span className="info-label">Location</span>
-                    <span className="info-val">Coimbatore, Tamil Nadu, India</span>
+                    <span className="info-label">Office Address</span>
+                    <span className="info-val">2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore - 641012</span>
                   </div>
                 </div>
 
@@ -224,7 +224,10 @@ export default function Contact() {
                   </div>
                   <div className="info-details">
                     <span className="info-label">Phone</span>
-                    <a href="tel:+918124779111" className="info-link">+91 81247 79111</a>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <a href="tel:+918124779111" className="info-link">+91 81247 79111</a>
+                      <a href="tel:+919626779609" className="info-link">+91 96267 79609</a>
+                    </div>
                   </div>
                 </div>
 
@@ -265,34 +268,38 @@ export default function Contact() {
                 </a>
               </div>
 
-              {/* Embedded Google Map */}
+              {/* Embedded Live Google Map for Wingroo Technologies */}
               <div className="contact-google-map-card">
                 <div className="map-card-header">
                   <div className="map-pin-pill">
                     <MapPin size={14} />
-                    <span>Wingroo Hub • Coimbatore</span>
+                    <span>Wingroo Technologies • Tatabad</span>
                   </div>
                   <a 
-                    href="https://maps.google.com/?q=Coimbatore,+Tamil+Nadu" 
+                    href="https://www.google.com/maps/search/?api=1&query=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="map-directions-link"
+                    title="Open Wingroo Technologies in Google Maps"
                   >
-                    <span>Get Directions</span>
+                    <span>Open in Maps</span>
                     <ExternalLink size={12} />
                   </a>
                 </div>
                 <div className="google-map-iframe-wrap">
                   <iframe 
-                    title="Wingroo Technologies Office Location"
-                    src="https://maps.google.com/maps?q=Coimbatore,+Tamil+Nadu,+India&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                    title="Wingroo Technologies Live Office Location"
+                    src="https://maps.google.com/maps?q=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012&t=&z=16&ie=UTF8&iwloc=B&output=embed"
                     width="100%" 
-                    height="180" 
-                    style={{ border: 0, borderRadius: '12px' }} 
+                    height="210" 
+                    style={{ border: 0, borderRadius: '12px', display: 'block' }} 
                     allowFullScreen="" 
                     loading="lazy" 
                     referrerPolicy="no-referrer-when-downgrade"
                   />
+                </div>
+                <div className="map-address-footer">
+                  <p>📍 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore - 641012</p>
                 </div>
               </div>
             </div>

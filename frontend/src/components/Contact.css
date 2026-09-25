@@ -221,6 +221,19 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.map-address-footer {
+  margin-top: 8px;
+  padding: 6px 4px 2px;
+}
+
+.map-address-footer p {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 992px) {
   .contact-grid {
