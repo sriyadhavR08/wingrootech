@@ -1,5 +1,18 @@
 import React from 'react';
-import { ArrowRight, Sparkles, Layers, Cpu, Compass, TrendingUp, CheckCircle2, Terminal } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Sparkles, 
+  Layers, 
+  Cpu, 
+  Compass, 
+  TrendingUp, 
+  CheckCircle2, 
+  Terminal,
+  Bot,
+  Zap,
+  BrainCircuit,
+  GraduationCap
+} from 'lucide-react';
 import './Hero.css';
 
 export default function Hero() {
@@ -18,48 +31,60 @@ export default function Hero() {
         <div className="hero-grid">
           {/* Hero Left Content */}
           <div className="hero-content">
+            <div className="hero-tech-badge">
+              <Zap size={14} className="badge-sparkle" />
+              <span>Next-Gen Tech Hub • Vibe Coding • Agentic AI • 72h Rapid MVPs</span>
+            </div>
 
             <h1 className="hero-headline">
-              Turning Ideas Into <span className="text-gradient">Digital Impact.</span>
+              Building the Future with <span className="text-gradient">Vibe Coding & Agentic AI.</span>
             </h1>
 
             <p className="hero-subline">
-              Technology. Creativity. Opportunity. — All under one roof.
+              Autonomous AI Agents • Prompt Engineering • 72-Hour Rapid MVPs • Practical Engineering
             </p>
 
             <p className="hero-description">
-              Wingroo Technologies is a technology-driven company focused on building meaningful 
-              digital solutions and creating opportunities for the next generation of technology professionals.
-              From websites and software solutions to intelligent applications and industry-focused projects, 
-              we combine technology, creativity and practical experience to transform ideas into solutions that make a difference.
+              Wingroo Technologies is a forward-thinking software and AI development company in Coimbatore. We pioneer 
+              <strong> Vibe Coding</strong> workflows (using Cursor, v0 & Claude 3.5), build <strong>Custom Autonomous AI Agents</strong> (Gmail auto-responders, CRM lead routing & task automation), 
+              and ship <strong>72-Hour Production-Ready MVPs</strong>. For engineering students, we conduct intensive 
+              15–20 days college internships with up to 100% scholarships, daily timetables, and verified GitHub commits.
             </p>
 
             <div className="hero-actions">
               <button 
-                onClick={() => scrollTo('#portfolio')} 
+                onClick={() => scrollTo('#services')} 
                 className="btn btn-primary hero-btn"
               >
-                <span>Explore Our Work</span>
+                <span>Explore AI & Services</span>
                 <ArrowRight size={18} />
               </button>
 
               <button 
-                onClick={() => scrollTo('#contact')} 
+                onClick={() => scrollTo('#internship')} 
                 className="btn btn-secondary hero-btn"
               >
-                <span>Start a Conversation</span>
+                <span>College Internship (100% Scholarship)</span>
                 <ArrowRight size={18} />
               </button>
             </div>
 
             <div className="hero-stats-row">
               <div className="hero-stat-pill">
-                <CheckCircle2 size={16} className="stat-pill-icon" />
-                <span>Enterprise Grade Architecture</span>
+                <Zap size={16} className="stat-pill-icon" />
+                <span>72-Hour Production MVP</span>
               </div>
               <div className="hero-stat-pill">
-                <CheckCircle2 size={16} className="stat-pill-icon" />
-                <span>Student-to-Professional Programs</span>
+                <Bot size={16} className="stat-pill-icon" />
+                <span>Autonomous Agentic AI</span>
+              </div>
+              <div className="hero-stat-pill">
+                <BrainCircuit size={16} className="stat-pill-icon" />
+                <span>Prompt Engineering (GPT-4o / Claude)</span>
+              </div>
+              <div className="hero-stat-pill">
+                <GraduationCap size={16} className="stat-pill-icon" />
+                <span>Up to 100% Merit Scholarship</span>
               </div>
             </div>
           </div>
@@ -78,117 +103,120 @@ export default function Hero() {
                     <span className="dot yellow" />
                     <span className="dot green" />
                   </div>
-                  <span className="window-title">wingroo-engine.config.ts</span>
+                  <span className="window-title">wingroo-agentic.engine.ts</span>
                 </div>
 
                 <div className="card-code-area">
                   <div className="code-line">
-                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">DigitalSolution</span>, <span className="syntax-func">Innovate</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/core'</span>;
+                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">VibeCoding</span>, <span className="syntax-func">AgenticAI</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/ai'</span>;
                   </div>
                   <div className="code-line">
-                    <span className="syntax-comment">// Transforming visionary ideas into production realities</span>
+                    <span className="syntax-comment">// Launching Autonomous Workflow Agent & 72h MVP</span>
                   </div>
                   <div className="code-line">
-                    <span className="syntax-keyword">export const</span> <span className="syntax-var">future</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">Innovate</span>(&#123;
+                    <span className="syntax-keyword">export const</span> <span className="syntax-var">agent</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">AgenticAI</span>.launch(&#123;
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">mission:</span> <span className="syntax-str">'Make meaningful impact'</span>,
+                    <span className="syntax-prop">tools:</span> [<span className="syntax-str">'Cursor'</span>, <span className="syntax-str">'v0'</span>, <span className="syntax-str">'Claude-3.5-Sonnet'</span>],
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">stack:</span> [<span className="syntax-str">'React'</span>, <span className="syntax-str">'AI & ML'</span>, <span className="syntax-str">'Cloud'</span>],
+                    <span className="syntax-prop">agents:</span> [<span className="syntax-str">'Gmail-Auto-Reply'</span>, <span className="syntax-str">'CRM-Routing'</span>],
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">status:</span> <span className="syntax-badge-inline">READY_TO_DEPLOY</span>
+                    <span className="syntax-prop">delivery:</span> <span className="syntax-str">'72_HOURS_PRODUCTION_READY'</span>,
+                  </div>
+                  <div className="code-line indent">
+                    <span className="syntax-prop">status:</span> <span className="syntax-badge-inline">DEPLOYED_LIVE</span>
                   </div>
                   <div className="code-line">&#125;);</div>
                 </div>
 
                 <div className="tech-card-footer">
                   <div className="footer-metric">
-                    <span className="metric-label">Execution Speed</span>
-                    <span className="metric-val">99.8% Uptime</span>
+                    <span className="metric-label">Rapid Delivery</span>
+                    <span className="metric-val">72h Production MVP</span>
                   </div>
                   <div className="footer-status-pill">
-                    <span className="live-status-dot" /> Live Pipeline
+                    <span className="live-status-dot" /> Autonomous Agent Active
                   </div>
                 </div>
               </div>
 
-              {/* Floating Card 1: Modern Solutions */}
+              {/* Floating Card 1: Vibe Coding */}
               <div className="floating-card float-card-1">
                 <div className="float-icon-wrap violet">
-                  <Sparkles size={20} />
+                  <Zap size={20} />
                 </div>
                 <div>
-                  <div className="float-title">Modern Solutions</div>
-                  <div className="float-subtitle">High Digital Impact</div>
+                  <div className="float-title">Vibe Coding</div>
+                  <div className="float-subtitle">Cursor & Claude 3.5</div>
                 </div>
               </div>
 
-              {/* Floating Card 2: Modern Architecture */}
+              {/* Floating Card 2: Agentic AI */}
               <div className="floating-card float-card-2">
                 <div className="float-icon-wrap indigo">
-                  <Layers size={20} />
+                  <Bot size={20} />
                 </div>
                 <div>
-                  <div className="float-title">Full-Stack & AI</div>
-                  <div className="float-subtitle">Scalable Engineering</div>
+                  <div className="float-title">Agentic AI</div>
+                  <div className="float-subtitle">Gmail & CRM Agents</div>
                 </div>
               </div>
 
-              {/* Floating Card 3: Experience Guarantee */}
+              {/* Floating Card 3: Prompt Engineering */}
               <div className="floating-card float-card-3">
                 <div className="float-icon-wrap emerald">
-                  <Cpu size={20} />
+                  <BrainCircuit size={20} />
                 </div>
                 <div>
-                  <div className="float-title">Real Projects</div>
-                  <div className="float-subtitle">Live Industry Exposure</div>
+                  <div className="float-title">Prompt Engineering</div>
+                  <div className="float-subtitle">GPT-4o & Multi-modal</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Four Highlight Items below Hero */}
+        {/* Four Modern AI Highlight Cards below Hero */}
         <div className="hero-highlights-grid">
           <div className="highlight-item">
             <div className="highlight-icon-box">
-              <Sparkles size={22} className="highlight-icon" />
+              <Zap size={22} className="highlight-icon" />
             </div>
             <div className="highlight-text">
-              <h3 className="highlight-title">Innovation</h3>
-              <p className="highlight-desc">Ideas that move forward.</p>
+              <h3 className="highlight-title">Vibe Coding & 72h MVPs</h3>
+              <p className="highlight-desc">From idea to live production within 72 hours using Cursor & Claude.</p>
             </div>
           </div>
 
           <div className="highlight-item">
             <div className="highlight-icon-box">
-              <Cpu size={22} className="highlight-icon" />
+              <Bot size={22} className="highlight-icon" />
             </div>
             <div className="highlight-text">
-              <h3 className="highlight-title">Technology</h3>
-              <p className="highlight-desc">Solutions built for the real world.</p>
+              <h3 className="highlight-title">Agentic AI & Custom Agents</h3>
+              <p className="highlight-desc">Autonomous systems handling Gmail auto-reply, CRM routing & task flows.</p>
             </div>
           </div>
 
           <div className="highlight-item">
             <div className="highlight-icon-box">
-              <Compass size={22} className="highlight-icon" />
+              <BrainCircuit size={22} className="highlight-icon" />
             </div>
             <div className="highlight-text">
-              <h3 className="highlight-title">Experience</h3>
-              <p className="highlight-desc">Learning through doing.</p>
+              <h3 className="highlight-title">Advanced Prompt Engineering</h3>
+              <p className="highlight-desc">Systematic multi-modal prompts across ChatGPT-4o, Claude & Gemini.</p>
             </div>
           </div>
 
           <div className="highlight-item">
             <div className="highlight-icon-box">
-              <TrendingUp size={22} className="highlight-icon" />
+              <GraduationCap size={22} className="highlight-icon" />
             </div>
             <div className="highlight-text">
-              <h3 className="highlight-title">Growth</h3>
-              <p className="highlight-desc">Opportunities that create careers.</p>
+              <h3 className="highlight-title">15–20d College Internships</h3>
+              <p className="highlight-desc">Up to 100% scholarships, daily timetables & live GitHub repos.</p>
             </div>
           </div>
         </div>

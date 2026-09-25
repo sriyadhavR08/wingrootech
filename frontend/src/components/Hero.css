@@ -34,6 +34,32 @@
   flex-direction: column;
 }
 
+.hero-tech-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  width: fit-content;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+  letter-spacing: 0.02em;
+}
+
+.hero-tech-badge .badge-sparkle {
+  color: #f59e0b;
+  animation: pulseSparkle 2s infinite ease-in-out;
+}
+
+@keyframes pulseSparkle {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
 
 .hero-headline {
   font-family: var(--font-heading);

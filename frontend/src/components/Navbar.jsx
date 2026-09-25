@@ -93,15 +93,17 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
             onClick={() => onOpenStudentPortal?.()}
             className="btn btn-outline nav-student-btn"
             style={{
-              padding: '8px 14px',
-              fontSize: '0.82rem',
+              padding: '8px 16px',
+              fontSize: '0.84rem',
+              fontWeight: 600,
               borderRadius: '999px',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: 'rgba(14, 165, 233, 0.1)',
-              borderColor: 'rgba(14, 165, 233, 0.3)',
-              color: '#38bdf8'
+              background: '#ffffff',
+              borderColor: '#cbd5e1',
+              color: '#0f172a',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
             }}
           >
             <GraduationCap size={15} />
@@ -155,7 +157,7 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
                 onOpenStudentPortal?.();
               }}
               className="btn btn-outline btn-block"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#ffffff', borderColor: '#cbd5e1', color: '#0f172a', fontWeight: 600 }}
             >
               <GraduationCap size={16} />
               <span>Student Portal</span>
