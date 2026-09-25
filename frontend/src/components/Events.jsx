@@ -62,7 +62,16 @@ export default function Events() {
   const [eventsList, setEventsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [regResult, setRegResult] = useState(null);
+  const [regError, setRegError] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    college: '',
+    year: ''
+  });
 
   const fetchEvents = () => {
     fetch(`${API_BASE_URL}/api/events`)
@@ -95,16 +104,49 @@ export default function Events() {
 
   const handleRegisterClick = (event) => {
     setSelectedEvent(event);
-    setRegistered(false);
+    setRegResult(null);
+    setRegError('');
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      college: '',
+      year: ''
+    });
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    setRegistered(true);
-    setTimeout(() => {
-      setSelectedEvent(null);
-      setRegistered(false);
-    }, 2200);
+    setSubmitting(true);
+    setRegError('');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/events/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          event_id: selectedEvent?.id,
+          event_title: selectedEvent?.title
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegResult(data);
+        // Save email so student portal opens right into this student's records
+        if (formData.email) {
+          sessionStorage.setItem('wingroo_student_lookup', formData.email);
+        }
+        // Dispatch live event to update Admin and Student portals everywhere
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+      } else {
+        setRegError(data.message || 'Registration failed. Please check details.');
+      }
+    } catch (err) {
+      setRegError('Unable to connect to server. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -211,27 +253,108 @@ export default function Events() {
               </div>
             )}
 
-            {registered ? (
-              <div className="status-alert status-success">
-                <CheckCircle size={18} />
-                <span>You're on the invite list! We'll notify you when dates are announced.</span>
+            {regResult ? (
+              <div className="event-reg-success-card">
+                <div className="status-alert status-success" style={{ marginBottom: '16px' }}>
+                  <CheckCircle size={20} style={{ color: '#10b981', flexShrink: 0 }} />
+                  <div>
+                    <strong>Registration Confirmed!</strong>
+                    <div>You are officially registered for {selectedEvent.title}.</div>
+                  </div>
+                </div>
+
+                <div className="reg-id-display-box" style={{ background: 'rgba(14, 165, 233, 0.1)', border: '1px solid rgba(14, 165, 233, 0.3)', borderRadius: '8px', padding: '14px', textAlign: 'center', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event Registration Ref</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#38bdf8', letterSpacing: '0.03em', marginTop: '4px' }}>
+                    {regResult.registration_no}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '20px', textAlign: 'center' }}>
+                  Your details have been updated in both the <strong>Admin Portal</strong> and <strong>Student Portal</strong>. You can search your email anytime in the Student Portal to view your official Entry Pass!
+                </div>
+
+                <button 
+                  type="button" 
+                  onClick={() => setSelectedEvent(null)} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  <span>Done / Close</span>
+                </button>
               </div>
             ) : (
               <form onSubmit={handleRegisterSubmit} className="intern-form">
+                {regError && (
+                  <div className="status-alert status-error" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '8px', marginBottom: '14px', fontSize: '0.85rem' }}>
+                    {regError}
+                  </div>
+                )}
                 <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input type="text" required className="form-input" placeholder="Enter your full name" />
+                  <label className="form-label">Full Name *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="form-input" 
+                    placeholder="Enter your full name" 
+                  />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input type="email" required className="form-input" placeholder="Enter your email address" />
+                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Email Address *</label>
+                    <input 
+                      type="email" 
+                      required 
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="form-input" 
+                      placeholder="e.g. candidate@gmail.com" 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Phone / WhatsApp *</label>
+                    <input 
+                      type="tel" 
+                      required 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="form-input" 
+                      placeholder="e.g. 9876543210" 
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">College / Organization</label>
-                  <input type="text" required className="form-input" placeholder="Enter college or organization name" />
+                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">College / Organization *</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={formData.college}
+                      onChange={(e) => setFormData({ ...formData, college: e.target.value })}
+                      className="form-input" 
+                      placeholder="College or company name" 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Year / Role</label>
+                    <input 
+                      type="text" 
+                      value={formData.year}
+                      onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                      className="form-input" 
+                      placeholder="e.g. 3rd Year / Dev" 
+                    />
+                  </div>
                 </div>
-                <button type="submit" className="btn btn-primary modal-submit-btn">
-                  <span>Confirm Registration</span>
+                <button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="btn btn-primary modal-submit-btn" 
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  <span>{submitting ? 'Registering...' : 'Confirm Registration'}</span>
                   <ArrowRight size={16} />
                 </button>
               </form>

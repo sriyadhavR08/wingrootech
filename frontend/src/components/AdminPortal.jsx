@@ -35,16 +35,18 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
   const [passcode, setPasscode] = useState('');
   const [authError, setAuthError] = useState('');
   
-  const [activeTab, setActiveTab] = useState('contacts'); // 'contacts' | 'internships' | 'projects' | 'events'
+  const [activeTab, setActiveTab] = useState('contacts'); // 'contacts' | 'internships' | 'event_registrations' | 'projects' | 'events'
   const [stats, setStats] = useState({ 
     total_contacts: 0, 
     total_internships: 0, 
     total_projects: 0, 
     total_events: 0, 
+    total_event_registrations: 0,
     total_submissions: 0 
   });
   const [contacts, setContacts] = useState([]);
   const [internships, setInternships] = useState([]);
+  const [eventRegistrations, setEventRegistrations] = useState([]);
   const [projects, setProjects] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -140,6 +142,15 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
         const internsData = await internsRes.json();
         if (internsData.success) {
           setInternships(internsData.internships || []);
+        }
+      }
+
+      // 3b. Event Registrations
+      const evRegRes = await fetch(`${API_BASE}/api/admin/event-registrations`);
+      if (evRegRes.ok) {
+        const evRegData = await evRegRes.json();
+        if (evRegData.success) {
+          setEventRegistrations(evRegData.registrations || []);
         }
       }
 
@@ -286,6 +297,51 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
       alert('Status update error: ' + err.message);
     }
   };
+
+  const handleUpdateEventRegStatus = async (id, newStatus) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/event-registrations/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEventRegistrations(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.message || 'Failed to update status');
+      }
+    } catch (err) {
+      alert('Status update error: ' + err.message);
+    }
+  };
+
+  const handleDeleteEventReg = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete event registration #${id}?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/event-registrations/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setEventRegistrations(prev => prev.filter(r => r.id !== id));
+        setStats(prev => ({
+          ...prev, 
+          total_event_registrations: Math.max(0, (prev.total_event_registrations || 1) - 1),
+          total_submissions: Math.max(0, (prev.total_submissions || 1) - 1)
+        }));
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.message || 'Failed to delete event registration.');
+      }
+    } catch (err) {
+      alert('Delete error: ' + err.message);
+    }
+  };
+
 
   const handleDeleteProject = async (id, e) => {
     e.stopPropagation();
@@ -437,6 +493,11 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
         const cleanMsg = `"${(i.message || '').replace(/"/g, '""')}"`;
         csvContent += `${i.id},"${i.name}","${i.email}","${i.phone}","${i.college}","${i.course}","${i.year}","${i.internship_type}","${i.technology}",${cleanMsg},"${i.created_at || ''}"\n`;
       });
+    } else if (activeTab === 'event_registrations') {
+      csvContent += "ID,RegNo,Event,Name,Email,Phone,College,Year,Status,Date\n";
+      eventRegistrations.forEach(r => {
+        csvContent += `${r.id},"${r.registration_no}","${r.event_title}","${r.name}","${r.email}","${r.phone}","${r.college}","${r.year || ''}","${r.status}","${r.created_at || ''}"\n`;
+      });
     } else if (activeTab === 'projects') {
       csvContent += "ID,Title,Heading,Category,Tags,Media,DemoURL\n";
       projects.forEach(p => {
@@ -480,6 +541,18 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
       (i.college && i.college.toLowerCase().includes(q)) ||
       (i.course && i.course.toLowerCase().includes(q)) ||
       (i.technology && i.technology.toLowerCase().includes(q))
+    );
+  });
+
+  const filteredEventRegs = eventRegistrations.filter(r => {
+    const q = searchQuery.toLowerCase();
+    return (
+      (r.name && r.name.toLowerCase().includes(q)) ||
+      (r.email && r.email.toLowerCase().includes(q)) ||
+      (r.phone && r.phone.toLowerCase().includes(q)) ||
+      (r.college && r.college.toLowerCase().includes(q)) ||
+      (r.event_title && r.event_title.toLowerCase().includes(q)) ||
+      (r.registration_no && r.registration_no.toLowerCase().includes(q))
     );
   });
 
@@ -622,6 +695,16 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
               </div>
 
               <div className="admin-stat-card">
+                <div className="admin-stat-icon-wrap" style={{ background: '#e0f2fe', color: '#0284c7' }}>
+                  <CalendarCheck size={24} />
+                </div>
+                <div>
+                  <div className="admin-stat-val">{eventRegistrations.length}</div>
+                  <div className="admin-stat-label">Event Registrations</div>
+                </div>
+              </div>
+
+              <div className="admin-stat-card">
                 <div className="admin-stat-icon-wrap" style={{ background: '#fffbeb', color: '#d97706' }}>
                   <CalendarCheck size={24} />
                 </div>
@@ -632,7 +715,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
               </div>
             </div>
 
-            {/* Controls Bar: 4 Tabs, Search, Export */}
+            {/* Controls Bar: 5 Tabs, Search, Export */}
             <div className="admin-controls-bar">
               <div className="admin-tabs-list">
                 <button 
@@ -650,6 +733,14 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                   <GraduationCap size={16} />
                   <span>Internships</span>
                   <span className="admin-tab-count">{internships.length}</span>
+                </button>
+                <button 
+                  className={`admin-tab-btn ${activeTab === 'event_registrations' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('event_registrations')}
+                >
+                  <CalendarCheck size={16} />
+                  <span>Event Registrations</span>
+                  <span className="admin-tab-count">{eventRegistrations.length}</span>
                 </button>
                 <button 
                   className={`admin-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
@@ -901,6 +992,118 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                 </div>
               </div>
             )}
+
+            {/* TAB: EVENT REGISTRATIONS */}
+            {activeTab === 'event_registrations' && (
+              <div className="admin-table-card">
+                <div className="admin-table-responsive">
+                  <table className="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Registration Ref</th>
+                        <th>Attendee Name & Contact</th>
+                        <th>College / Organization</th>
+                        <th>Registered Event</th>
+                        <th>Status</th>
+                        <th>Registered On</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredEventRegs.length > 0 ? (
+                        filteredEventRegs.map((reg) => (
+                          <tr key={reg.id}>
+                            <td>
+                              <strong style={{ color: '#0284c7', fontSize: '0.82rem' }}>
+                                {reg.registration_no}
+                              </strong>
+                            </td>
+                            <td>
+                              <div className="candidate-name-cell">{reg.name}</div>
+                              <div className="candidate-contact-sub">
+                                {reg.email} • {reg.phone}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>{reg.college}</div>
+                              {reg.year && <div className="candidate-contact-sub">{reg.year}</div>}
+                            </td>
+                            <td>
+                              <span className="admin-badge badge-tech" style={{ background: '#e0f2fe', color: '#0369a1' }}>
+                                {reg.event_title}
+                              </span>
+                            </td>
+                            <td>
+                              <select 
+                                value={reg.status || 'Confirmed'}
+                                onChange={(e) => handleUpdateEventRegStatus(reg.id, e.target.value)}
+                                style={{
+                                  padding: '5px 10px',
+                                  borderRadius: '8px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  border: '1px solid rgba(0,0,0,0.1)',
+                                  background: (reg.status === 'Confirmed' || reg.status === 'Attended') ? '#dcfce7' : (reg.status === 'Waitlist') ? '#fef9c3' : '#fee2e2',
+                                  color: (reg.status === 'Confirmed' || reg.status === 'Attended') ? '#15803d' : (reg.status === 'Waitlist') ? '#a16207' : '#b91c1c',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <option value="Confirmed">✅ Confirmed</option>
+                                <option value="Waitlist">⏳ Waitlist</option>
+                                <option value="Attended">🎓 Attended</option>
+                                <option value="Cancelled">❌ Cancelled</option>
+                              </select>
+                            </td>
+                            <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                              {reg.created_at || 'Recently'}
+                            </td>
+                            <td>
+                              <div className="table-actions-cell">
+                                {reg.phone && (
+                                  <a 
+                                    href={`https://wa.me/91${reg.phone.replace(/[^0-9]/g, '')}?text=Hi ${encodeURIComponent(reg.name)}, regarding your registration for ${encodeURIComponent(reg.event_title)} at Wingroo Technologies:`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="action-pill-btn action-whatsapp"
+                                    title="WhatsApp Attendee"
+                                  >
+                                    <span>WhatsApp</span>
+                                  </a>
+                                )}
+                                <a 
+                                  href={`mailto:${reg.email}?subject=Wingroo Technologies - Registration for ${encodeURIComponent(reg.event_title)}`}
+                                  className="action-pill-btn action-email"
+                                  title="Send Email"
+                                >
+                                  <Mail size={13} />
+                                </a>
+                                <button 
+                                  onClick={(e) => handleDeleteEventReg(reg.id, e)}
+                                  className="action-pill-btn action-delete"
+                                  title="Delete Registration"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7">
+                            <div className="admin-empty-state">
+                              <CalendarCheck className="admin-empty-icon" />
+                              <p>No event registrations found.</p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
 
             {/* TAB 3: MANAGE PORTFOLIO (POST & MANAGE) */}
             {activeTab === 'projects' && (

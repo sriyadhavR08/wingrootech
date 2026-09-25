@@ -57,6 +57,15 @@ def get_admin_overview():
         cursor.execute("SELECT COUNT(*) AS total FROM events")
         ev_res = cursor.fetchone()
         total_events = ev_res['total'] if isinstance(ev_res, dict) else ev_res[0]
+
+        # Event Registrations count
+        total_event_regs = 0
+        try:
+            cursor.execute("SELECT COUNT(*) AS total FROM event_registrations")
+            ev_reg_res = cursor.fetchone()
+            total_event_regs = ev_reg_res['total'] if isinstance(ev_reg_res, dict) else ev_reg_res[0]
+        except Exception:
+            total_event_regs = 0
         
         # Recent contacts (latest 5)
         cursor.execute("SELECT * FROM contacts ORDER BY id DESC LIMIT 5")
@@ -67,6 +76,15 @@ def get_admin_overview():
         cursor.execute("SELECT * FROM internship_applications ORDER BY id DESC LIMIT 5")
         recent_interns_raw = cursor.fetchall()
         recent_internships = [format_row(r) for r in recent_interns_raw]
+
+        # Recent event registrations (latest 5)
+        recent_event_regs = []
+        try:
+            cursor.execute("SELECT * FROM event_registrations ORDER BY id DESC LIMIT 5")
+            recent_regs_raw = cursor.fetchall()
+            recent_event_regs = [format_row(r) for r in recent_regs_raw]
+        except Exception:
+            recent_event_regs = []
         
         return jsonify({
             'success': True,
@@ -75,10 +93,12 @@ def get_admin_overview():
                 'total_internships': total_internships,
                 'total_projects': total_projects,
                 'total_events': total_events,
-                'total_submissions': total_contacts + total_internships
+                'total_event_registrations': total_event_regs,
+                'total_submissions': total_contacts + total_internships + total_event_regs
             },
             'recent_contacts': recent_contacts,
-            'recent_internships': recent_internships
+            'recent_internships': recent_internships,
+            'recent_event_registrations': recent_event_regs
         })
     except Exception as e:
         print(f"[Admin Overview Error] {e}")
@@ -157,3 +177,69 @@ def delete_internship(intern_id):
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         conn.close()
+
+# --- EVENT REGISTRATIONS MANAGEMENT ---
+@admin_bp.route('/api/admin/event-registrations', methods=['GET'])
+def get_all_event_registrations():
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM event_registrations ORDER BY id DESC")
+        rows = cursor.fetchall()
+        registrations = [format_row(r) for r in rows]
+        return jsonify({
+            'success': True,
+            'registrations': registrations,
+            'count': len(registrations)
+        })
+    except Exception as e:
+        print(f"[Admin Get Event Registrations Error] {e}")
+        return jsonify({'success': False, 'message': str(e), 'registrations': []}), 500
+    finally:
+        conn.close()
+
+@admin_bp.route('/api/admin/event-registrations/<int:reg_id>/status', methods=['PUT', 'OPTIONS'])
+def update_event_registration_status(reg_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json() or {}
+    new_status = data.get('status', 'Confirmed').strip()
+    notes = data.get('notes', '').strip()
+
+    valid_statuses = ['Confirmed', 'Waitlist', 'Attended', 'Cancelled']
+    if new_status not in valid_statuses:
+        new_status = 'Confirmed'
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            cursor.execute("UPDATE event_registrations SET status = %s, notes = %s WHERE id = %s", (new_status, notes, reg_id))
+        else:
+            cursor.execute("UPDATE event_registrations SET status = ?, notes = ? WHERE id = ?", (new_status, notes, reg_id))
+        conn.commit()
+        return jsonify({'success': True, 'message': f'Registration #{reg_id} status updated to {new_status}.', 'status': new_status})
+    except Exception as e:
+        print(f"[Admin Update Event Reg Status Error] {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+
+@admin_bp.route('/api/admin/event-registrations/<int:reg_id>', methods=['DELETE'])
+def delete_event_registration(reg_id):
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            cursor.execute("DELETE FROM event_registrations WHERE id = %s", (reg_id,))
+        else:
+            cursor.execute("DELETE FROM event_registrations WHERE id = ?", (reg_id,))
+        conn.commit()
+        return jsonify({'success': True, 'message': f'Event registration #{reg_id} deleted successfully.'})
+    except Exception as e:
+        print(f"[Admin Delete Event Reg Error] {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+

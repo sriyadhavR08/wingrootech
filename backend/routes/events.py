@@ -83,6 +83,80 @@ def add_event():
     finally:
         conn.close()
 
+@events_bp.route('/api/events/register', methods=['POST', 'OPTIONS'])
+def register_event():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    phone = data.get('phone', '').strip()
+    college = data.get('college', '').strip()
+    year = data.get('year', '').strip()
+    event_id = data.get('event_id')
+    event_title = data.get('event_title', 'Tech Talks').strip()
+    notes = data.get('notes', '').strip()
+
+    if not name or not email or not phone or not college:
+        return jsonify({
+            'success': False,
+            'message': 'Please provide your Full Name, Email, Phone, and College / Organization.'
+        }), 400
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        # Generate clean Registration No: WINGROO-EVT-XXXX
+        import random
+        from datetime import datetime
+        rand_code = random.randint(1000, 9999)
+        month_str = datetime.now().strftime('%m%y')
+        reg_no = f"WINGROO-EVT-{month_str}-{rand_code}"
+
+        if db_type == "mysql":
+            sql = """
+            INSERT INTO event_registrations 
+            (registration_no, event_id, event_title, name, email, phone, college, year, status, notes)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (reg_no, event_id, event_title, name, email, phone, college, year, 'Confirmed', notes))
+            new_id = cursor.lastrowid
+        else:
+            sql = """
+            INSERT INTO event_registrations 
+            (registration_no, event_id, event_title, name, email, phone, college, year, status, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            cursor.execute(sql, (reg_no, event_id, event_title, name, email, phone, college, year, 'Confirmed', notes))
+            new_id = cursor.lastrowid
+
+        conn.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Registration confirmed for {event_title}!',
+            'registration_no': reg_no,
+            'registration_id': new_id,
+            'event_title': event_title,
+            'status': 'Confirmed',
+            'details': {
+                'id': new_id,
+                'registration_no': reg_no,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'college': college,
+                'year': year,
+                'event_title': event_title,
+                'status': 'Confirmed'
+            }
+        }), 201
+    except Exception as e:
+        print(f"[Error saving event registration] {e}")
+        return jsonify({'success': False, 'message': f'Failed to register: {str(e)}'}), 500
+    finally:
+        conn.close()
+
 @events_bp.route('/api/events/<int:event_id>', methods=['DELETE', 'OPTIONS'])
 def delete_event(event_id):
     if request.method == 'OPTIONS':
@@ -102,3 +176,5 @@ def delete_event(event_id):
         return jsonify({'success': False, 'message': f'Failed to delete event: {str(e)}'}), 500
     finally:
         conn.close()
+
+

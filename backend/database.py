@@ -101,6 +101,25 @@ def init_mysql_tables_if_needed():
                 event_date VARCHAR(100) NOT NULL,
                 location VARCHAR(150) NOT NULL,
                 image VARCHAR(255),
+                poster_url VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            """)
+
+            # 5. Event Registrations Table
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS event_registrations (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                registration_no VARCHAR(50) NOT NULL,
+                event_id INT DEFAULT NULL,
+                event_title VARCHAR(150) NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                phone VARCHAR(30) NOT NULL,
+                college VARCHAR(150) NOT NULL,
+                year VARCHAR(50) DEFAULT NULL,
+                status VARCHAR(50) DEFAULT 'Confirmed',
+                notes TEXT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
@@ -179,6 +198,23 @@ def init_sqlite_tables(conn):
         event_date TEXT NOT NULL,
         location TEXT NOT NULL,
         image TEXT,
+        poster_url TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS event_registrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        registration_no TEXT NOT NULL,
+        event_id INTEGER,
+        event_title TEXT NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        college TEXT NOT NULL,
+        year TEXT,
+        status TEXT DEFAULT 'Confirmed',
+        notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)

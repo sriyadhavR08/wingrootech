@@ -132,12 +132,63 @@ def student_lookup():
                     'notes': item.get('notes') or '',
                     'created_at': str(item.get('created_at', ''))
                 })
-        return jsonify({'success': True, 'applications': applications, 'count': len(applications)})
+
+        # Also lookup event registrations matching query
+        event_registrations = []
+        try:
+            if db_type == "mysql":
+                ev_sql = """
+                SELECT id, registration_no, event_id, event_title, name, email, phone, 
+                       college, year, status, notes, created_at
+                FROM event_registrations
+                WHERE email = %s OR phone = %s OR registration_no = %s OR registration_no LIKE %s OR name LIKE %s
+                ORDER BY id DESC
+                """
+                cursor.execute(ev_sql, (query, query, query, search_pattern, search_pattern))
+            else:
+                ev_sql = """
+                SELECT id, registration_no, event_id, event_title, name, email, phone, 
+                       college, year, status, notes, created_at
+                FROM event_registrations
+                WHERE email = ? OR phone = ? OR registration_no = ? OR registration_no LIKE ? OR name LIKE ?
+                ORDER BY id DESC
+                """
+                cursor.execute(ev_sql, (query, query, query, search_pattern, search_pattern))
+
+            ev_rows = cursor.fetchall()
+            if ev_rows:
+                for er in ev_rows:
+                    item = dict(er)
+                    event_registrations.append({
+                        'id': item['id'],
+                        'registration_no': item.get('registration_no'),
+                        'event_id': item.get('event_id'),
+                        'event_title': item.get('event_title'),
+                        'name': item.get('name'),
+                        'email': item.get('email'),
+                        'phone': item.get('phone'),
+                        'college': item.get('college'),
+                        'year': item.get('year'),
+                        'status': item.get('status') or 'Confirmed',
+                        'notes': item.get('notes') or '',
+                        'created_at': str(item.get('created_at', ''))
+                    })
+        except Exception as ev_err:
+            print(f"[Error querying event registrations in student lookup] {ev_err}")
+
+        total_records = len(applications) + len(event_registrations)
+        return jsonify({
+            'success': True,
+            'applications': applications,
+            'event_registrations': event_registrations,
+            'count': total_records
+        })
     except Exception as e:
         print(f"[Error in student_lookup] {e}")
-        return jsonify({'success': False, 'message': str(e), 'applications': []}), 500
+        return jsonify({'success': False, 'message': str(e), 'applications': [], 'event_registrations': []}), 500
     finally:
         conn.close()
+
 
 @internship_bp.route('/api/admin/internships/<int:app_id>/status', methods=['PUT', 'OPTIONS'])
 def update_internship_status(app_id):
