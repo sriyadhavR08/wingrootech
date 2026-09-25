@@ -7,6 +7,7 @@ cur.execute("""
 UPDATE projects 
 SET heading = 'Creating a Better Digital Experience.',
     tag = 'Featured Project',
+    category = 'Mobile App',
     tags = 'Modern Interface, Practical Functionality, User Focused, Technology Driven',
     theme_color = '#4f46e5'
 WHERE title = 'ZENTIME'
@@ -16,6 +17,7 @@ cur.execute("""
 UPDATE projects 
 SET heading = 'Connecting Technology With Opportunity.',
     tag = 'Featured Project',
+    category = 'Mobile App',
     tags = 'Digital Platform, User Experience, Modern Technology, Purpose Driven',
     theme_color = '#0ea5e9'
 WHERE title = 'IIE PLUS'

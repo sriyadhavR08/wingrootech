@@ -144,13 +144,13 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
               <li>
                 <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }} className="featured-link">
                   <span>Zentime</span>
-                  <span className="footer-chip">Web App</span>
+                  <span className="footer-chip">Mobile App</span>
                 </a>
               </li>
               <li>
                 <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }} className="featured-link">
                   <span>IIE Plus</span>
-                  <span className="footer-chip">Platform</span>
+                  <span className="footer-chip">Mobile App</span>
                 </a>
               </li>
               <li>
