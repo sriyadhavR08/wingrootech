@@ -53,18 +53,18 @@ export default function Hero() {
 
             <div className="hero-actions">
               <button 
-                onClick={() => scrollTo('#services')} 
+                onClick={() => scrollTo('#portfolio')} 
                 className="btn btn-primary hero-btn"
               >
-                <span>Explore AI & Services</span>
+                <span>Explore Our Work</span>
                 <ArrowRight size={18} />
               </button>
 
               <button 
-                onClick={() => scrollTo('#internship')} 
+                onClick={() => scrollTo('#contact')} 
                 className="btn btn-secondary hero-btn"
               >
-                <span>College Internship (100% Scholarship)</span>
+                <span>Start a Conversation</span>
                 <ArrowRight size={18} />
               </button>
             </div>
