@@ -1,0 +1,237 @@
+/* ========================================================
+   Floating Vertical Social Side Dock
+======================================================== */
+
+.social-side-dock {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 995;
+  pointer-events: auto;
+  user-select: none;
+  animation: dockFadeSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dockFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-30px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+.social-dock-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 999px;
+  box-shadow: 
+    0 12px 32px -4px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.social-dock-pill:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 18px 40px -4px rgba(15, 23, 42, 0.16),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Vertical Micro Label */
+.social-dock-tag {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #94a3b8;
+  padding: 4px 0 2px;
+}
+
+.social-dock-divider {
+  width: 14px;
+  height: 1.5px;
+  background: rgba(203, 213, 225, 0.7);
+  border-radius: 2px;
+}
+
+/* Item Wrapper */
+.social-dock-item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Social Buttons */
+.social-dock-link {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  position: relative;
+}
+
+.social-dock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.social-dock-link:hover {
+  transform: scale(1.15) translateX(2px);
+}
+
+.social-dock-link:hover .social-dock-icon {
+  transform: scale(1.08);
+}
+
+/* Individual Brand Glows */
+.social-linkedin:hover {
+  background: #0077b5;
+  color: #ffffff;
+  border-color: #0077b5;
+  box-shadow: 0 6px 20px rgba(0, 119, 181, 0.42);
+}
+
+.social-instagram:hover {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 20px rgba(225, 48, 108, 0.42);
+}
+
+.social-whatsapp:hover {
+  background: #25d366;
+  color: #ffffff;
+  border-color: #25d366;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.42);
+}
+
+.social-facebook:hover {
+  background: #1877f2;
+  color: #ffffff;
+  border-color: #1877f2;
+  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.42);
+}
+
+/* Tooltip / Flyout Badge */
+.social-dock-tooltip {
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  display: flex;
+  align-items: center;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #0f172a;
+  border-radius: 1px;
+}
+
+.social-dock-tooltip.tooltip-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Brand specific tooltip accent on hover */
+.social-dock-item-wrapper:hover .social-linkedin + .social-dock-tooltip {
+  background: #0077b5;
+}
+.social-dock-item-wrapper:hover .social-linkedin + .social-dock-tooltip .tooltip-arrow {
+  background: #0077b5;
+}
+
+.social-dock-item-wrapper:hover .social-instagram + .social-dock-tooltip {
+  background: #c13584;
+}
+.social-dock-item-wrapper:hover .social-instagram + .social-dock-tooltip .tooltip-arrow {
+  background: #c13584;
+}
+
+.social-dock-item-wrapper:hover .social-whatsapp + .social-dock-tooltip {
+  background: #128c7e;
+}
+.social-dock-item-wrapper:hover .social-whatsapp + .social-dock-tooltip .tooltip-arrow {
+  background: #128c7e;
+}
+
+.social-dock-item-wrapper:hover .social-facebook + .social-dock-tooltip {
+  background: #1877f2;
+}
+.social-dock-item-wrapper:hover .social-facebook + .social-dock-tooltip .tooltip-arrow {
+  background: #1877f2;
+}
+
+/* ========================================================
+   Responsive Styling
+======================================================== */
+
+@media (max-width: 840px) {
+  .social-side-dock {
+    left: 8px;
+  }
+
+  .social-dock-pill {
+    padding: 8px 5px;
+    gap: 8px;
+  }
+
+  .social-dock-link {
+    width: 34px;
+    height: 34px;
+  }
+
+  .social-dock-link svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .social-dock-tag,
+  .social-dock-divider {
+    display: none;
+  }
+
+  .social-dock-tooltip {
+    display: none; /* Avoid screen overflow on small touch devices */
+  }
+}

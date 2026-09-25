@@ -12,42 +12,6 @@ const NAV_LINKS = [
   { label: 'Contact', href: '#contact' }
 ];
 
-// Social SVG Icons
-const LinkedinNavIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect x="2" y="9" width="4" height="12" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
-
-const InstagramNavIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-  </svg>
-);
-
-const FacebookNavIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-  </svg>
-);
-
-const WhatsappNavIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
-
-const SOCIAL_LINKS = [
-  { name: 'LinkedIn', icon: LinkedinNavIcon, href: 'https://www.linkedin.com/in/wingroo-technologies?utm_source=share_via&utm_content=profile&utm_medium=member_android', cls: 'social-nav-li' },
-  { name: 'Instagram', icon: InstagramNavIcon, href: 'https://www.instagram.com/wingrootechnologies?stkn=MW5kY3ZwMGcweTlxNA==', cls: 'social-nav-ig' },
-  { name: 'WhatsApp', icon: WhatsappNavIcon, href: 'https://wa.me/919626779609', cls: 'social-nav-wa' },
-  { name: 'Facebook', icon: FacebookNavIcon, href: 'https://www.facebook.com/profile.php?id=100064696851817', cls: 'social-nav-fb' }
-];
-
 export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -124,26 +88,6 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
 
         {/* Action Buttons */}
         <div className="navbar-actions">
-          {/* Animated Social Icon Strip */}
-          <div className="navbar-social-strip">
-            {SOCIAL_LINKS.map(s => {
-              const IconComp = s.icon;
-              return (
-                <a
-                  key={s.name}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`nav-social-btn ${s.cls}`}
-                  aria-label={s.name}
-                  title={s.name}
-                >
-                  <IconComp />
-                </a>
-              );
-            })}
-          </div>
-
           <button
             type="button"
             onClick={() => onOpenStudentPortal?.()}
@@ -224,26 +168,6 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
               <span>Let's Talk</span>
               <ArrowRight size={16} />
             </a>
-
-            {/* Mobile Social Strip */}
-            <div className="mobile-nav-socials">
-              {SOCIAL_LINKS.map(s => {
-                const IconComp = s.icon;
-                return (
-                  <a
-                    key={s.name}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`nav-social-btn ${s.cls}`}
-                    aria-label={s.name}
-                    title={s.name}
-                  >
-                    <IconComp />
-                  </a>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>

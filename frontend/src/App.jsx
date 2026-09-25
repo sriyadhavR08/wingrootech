@@ -13,6 +13,7 @@ import Footer from './components/Footer'
 import AdminPortal from './components/AdminPortal'
 import StudentPortal from './components/StudentPortal'
 import AIChatbot from './components/AIChatbot'
+import SocialSidebar from './components/SocialSidebar'
 import { ShieldCheck, GraduationCap } from 'lucide-react'
 
 export default function App() {
@@ -84,6 +85,9 @@ export default function App() {
 
       {/* Interactive AI Chatbot Widget */}
       <AIChatbot onOpenStudentPortal={handleOpenStudent} />
+
+      {/* Floating Social Media Side Dock */}
+      <SocialSidebar />
 
       {/* Floating Triggers Container */}
       <div className="portal-floating-triggers">
