@@ -12,7 +12,15 @@ import {
   Sparkles,
   X,
   Send,
-  Loader2
+  Loader2,
+  Clock,
+  Calendar,
+  FileText,
+  UploadCloud,
+  Trash2,
+  AlertCircle,
+  ExternalLink,
+  BookOpen
 } from 'lucide-react';
 import './Internship.css';
 
@@ -274,6 +282,15 @@ export default function Internship({ onOpenStudentPortal }) {
   const [selectedType, setSelectedType] = useState('College Internship');
   const [selectedTech, setSelectedTech] = useState('Full Stack Development');
   const [optScholarship, setOptScholarship] = useState(true);
+  
+  // Resume & Portfolio state
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeName, setResumeName] = useState('');
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [uploadResumeError, setUploadResumeError] = useState('');
+  const [portfolioUrl, setPortfolioUrl] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -289,13 +306,14 @@ export default function Internship({ onOpenStudentPortal }) {
   const openModal = (type = 'College Internship', tech = 'Full Stack Development', withScholarship = true) => {
     setSelectedType(type);
     if (tech) setSelectedTech(tech);
-    setOptScholarship(withScholarship);
+    setOptScholarship(type === 'College Internship' ? withScholarship : false);
     setSubmitStatus(null);
+    setUploadResumeError('');
     setIsModalOpen(true);
   };
 
   const openScheduleModal = (type = 'College Internship', tech = 'Full Stack Development') => {
-    setSelectedType(type);
+    setSelectedType('College Internship');
     if (tech) setActiveScheduleDomain(tech);
     setIsScheduleOpen(true);
   };
@@ -313,20 +331,83 @@ export default function Internship({ onOpenStudentPortal }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Handle Resume File Upload
+  const handleResumeChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadResumeError('File size exceeds 10MB limit. Please upload a smaller file.');
+      return;
+    }
+
+    setUploadResumeError('');
+    setUploadingResume(true);
+    setResumeName(file.name);
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: 'POST',
+        body: uploadData
+      });
+
+      const result = await res.json();
+      if (result.success && result.url) {
+        setResumeUrl(result.url);
+        setResumeFile(file);
+      } else {
+        setUploadResumeError(result.message || 'Failed to upload resume. Please try again.');
+        setResumeUrl('');
+      }
+    } catch (err) {
+      console.error('Error uploading resume:', err);
+      setUploadResumeError('Could not upload file. Please check your network or try again.');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setResumeUrl('');
+    setResumeName('');
+    setUploadResumeError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setUploadResumeError('');
+
+    // If Live Project Internship, resume is strictly required
+    if (selectedType === 'Live Project Internship' && !resumeUrl) {
+      setUploadResumeError('Please upload your Resume / CV (PDF, DOC, or DOCX) to apply for Live Project Internship.');
+      return;
+    }
+
     setSubmitting(true);
     setSubmitStatus(null);
 
-    const fullMessage = optScholarship 
-      ? `[🎓 MERIT SCHOLARSHIP APPLICANT: Candidate requested 20-min Screening Assessment for Up to 100% Fee Waiver]\n${formData.message || ''}`.trim()
-      : (formData.message || '');
+    let fullMessage = formData.message || '';
+    if (optScholarship && selectedType === 'College Internship') {
+      fullMessage = `[🎓 MERIT SCHOLARSHIP APPLICANT: Candidate requested 20-min Screening Assessment for Up to 100% Fee Waiver]\n${fullMessage}`.trim();
+    }
+    if (resumeUrl) {
+      fullMessage = `${fullMessage}\n[📄 RESUME ATTACHED: ${resumeUrl}]`;
+    }
+    if (portfolioUrl) {
+      fullMessage = `${fullMessage}\n[🔗 PORTFOLIO / GITHUB: ${portfolioUrl}]`;
+    }
 
     const payload = {
       ...formData,
       message: fullMessage,
       internship_type: selectedType,
-      technology: selectedTech
+      technology: selectedTech,
+      resume_url: resumeUrl,
+      portfolio_url: portfolioUrl
     };
 
     try {
@@ -356,6 +437,10 @@ export default function Internship({ onOpenStudentPortal }) {
           year: '3rd Year',
           message: ''
         });
+        setResumeFile(null);
+        setResumeUrl('');
+        setResumeName('');
+        setPortfolioUrl('');
       } else {
         throw new Error(data.message || 'Submission failed');
       }
@@ -379,6 +464,10 @@ export default function Internship({ onOpenStudentPortal }) {
         year: '3rd Year',
         message: ''
       });
+      setResumeFile(null);
+      setResumeUrl('');
+      setResumeName('');
+      setPortfolioUrl('');
     } finally {
       setSubmitting(false);
     }
@@ -430,7 +519,7 @@ export default function Internship({ onOpenStudentPortal }) {
               onClick={() => openScheduleModal('College Internship', 'Full Stack Development')} 
               className="btn btn-secondary intern-cta-btn"
             >
-              <span>Explore 15-20 Days Schedule & Scholarship</span>
+              <span>Explore 15-20 Days Timetable & Scholarship</span>
               <ArrowRight size={16} />
             </button>
           </div>
@@ -459,10 +548,10 @@ export default function Internship({ onOpenStudentPortal }) {
               </li>
             </ul>
             <button 
-              onClick={() => openScheduleModal('Live Project Internship', 'Full Stack Development')} 
+              onClick={() => openModal('Live Project Internship', 'Full Stack Development', false)} 
               className="btn btn-primary intern-cta-btn"
             >
-              <span>Explore Live Project Schedule</span>
+              <span>Apply for Live Internship (Resume Required)</span>
               <ArrowRight size={16} />
             </button>
           </div>
@@ -471,8 +560,8 @@ export default function Internship({ onOpenStudentPortal }) {
         {/* Technology Domains */}
         <div className="tech-domains-wrapper">
           <div className="domains-header">
-            <h3 className="domains-title">Technology Domains & 15-20 Day Roadmaps</h3>
-            <p className="domains-desc">Click any track below to inspect the day-by-day curriculum and scholarship assessment guidelines</p>
+            <h3 className="domains-title">College Internship — 15 to 20 Days Domain Timetables</h3>
+            <p className="domains-desc">Click any track below to inspect its structured day-by-day academic timetable & scholarship evaluation criteria</p>
           </div>
 
           <div className="domains-grid">
@@ -539,11 +628,43 @@ export default function Internship({ onOpenStudentPortal }) {
 
             {/* Modal Header */}
             <div className="modal-header schedule-modal-header">
-              <div className="modal-tag">Wingroo Academic Immersion</div>
-              <h3 className="modal-title">15 – 20 Days Intensive Internship Schedule</h3>
+              <div className="modal-tag">College Internship • Academic Timetable</div>
+              <h3 className="modal-title">15 – 20 Days Curriculum Timetable & Scholarship Matrix</h3>
               <p className="modal-desc">
-                Structured hands-on curriculum, daily production milestones, and merit-based scholarship assessment program.
+                Day-by-day industrial timetable schedule: Morning architectural concepts, afternoon hands-on coding labs, and daily evaluation sign-offs.
               </p>
+            </div>
+
+            {/* Timetable Schedule Meta Bar */}
+            <div className="timetable-meta-bar">
+              <div className="meta-bar-item">
+                <Clock size={16} className="meta-bar-icon" />
+                <div>
+                  <span className="meta-bar-label">Timetable Hours</span>
+                  <strong className="meta-bar-val">09:30 AM – 04:30 PM</strong>
+                </div>
+              </div>
+              <div className="meta-bar-item">
+                <Calendar size={16} className="meta-bar-icon" />
+                <div>
+                  <span className="meta-bar-label">Program Duration</span>
+                  <strong className="meta-bar-val">15 – 20 Working Days</strong>
+                </div>
+              </div>
+              <div className="meta-bar-item">
+                <BookOpen size={16} className="meta-bar-icon" />
+                <div>
+                  <span className="meta-bar-label">Daily Structure</span>
+                  <strong className="meta-bar-val">Morning Lecture + Afternoon Lab</strong>
+                </div>
+              </div>
+              <div className="meta-bar-item">
+                <Sparkles size={16} className="meta-bar-icon highlight" />
+                <div>
+                  <span className="meta-bar-label">Scholarship Grant</span>
+                  <strong className="meta-bar-val">Up to 100% Fee Waiver</strong>
+                </div>
+              </div>
             </div>
 
             {/* Scholarship Assessment Callout Banner */}
@@ -556,7 +677,7 @@ export default function Internship({ onOpenStudentPortal }) {
                 <div className="scholarship-info-text">
                   <h4>Attend Online Assessment & Win Up to 100% Scholarship! 🎓</h4>
                   <p>
-                    We believe financial constraints should never stop passionate learners. Attend our <strong>20-minute online screening assessment</strong> covering core aptitude and programming fundamentals. Top scoring candidates qualify for merit scholarships:
+                    Passionate learners shouldn't face financial barriers. Attend our <strong>20-minute online screening assessment</strong> covering logic, programming basics, and aptitude. Top scorers qualify for merit scholarships:
                   </p>
                 </div>
                 <button 
@@ -576,7 +697,7 @@ export default function Internship({ onOpenStudentPortal }) {
                 <div className="slab-card slab-gold">
                   <div className="slab-percent">100% Waiver</div>
                   <div className="slab-criteria">Score 90% & Above</div>
-                  <div className="slab-desc">Full 100% Scholarship + Direct Fast-Track Cohort Selection</div>
+                  <div className="slab-desc">Full 100% Scholarship + Fast-Track Cohort Selection</div>
                 </div>
                 <div className="slab-card slab-silver">
                   <div className="slab-percent">50% Scholarship</div>
@@ -605,49 +726,97 @@ export default function Internship({ onOpenStudentPortal }) {
               ))}
             </div>
 
-            {/* Schedule Body */}
+            {/* Timetable Table Body */}
             {DOMAIN_SCHEDULES[activeScheduleDomain] && (
               <div className="schedule-details-wrap">
                 <div className="domain-curriculum-header">
                   <div>
-                    <h4 className="curriculum-domain-title">{activeScheduleDomain} Curriculum</h4>
+                    <h4 className="curriculum-domain-title">{activeScheduleDomain} Timetable</h4>
                     <p className="curriculum-domain-desc">{DOMAIN_SCHEDULES[activeScheduleDomain].overview}</p>
                   </div>
                   <div className="curriculum-duration-chip">
+                    <Calendar size={14} style={{ marginRight: '6px' }} />
                     {DOMAIN_SCHEDULES[activeScheduleDomain].duration}
                   </div>
                 </div>
 
-                {/* 4 Phases List */}
-                <div className="schedule-phases-list">
-                  {DOMAIN_SCHEDULES[activeScheduleDomain].phases.map((phaseItem, pIdx) => (
-                    <div key={pIdx} className="phase-card">
-                      <div className="phase-header-badge">
-                        <span>{phaseItem.phase}</span>
-                      </div>
-                      <div className="days-grid-list">
-                        {phaseItem.days.map((dayItem, dIdx) => (
-                          <div key={dIdx} className="day-schedule-item">
-                            <div className="day-number-pill">{dayItem.day}</div>
-                            <div className="day-content-info">
-                              <div className="day-topic-name">{dayItem.topic}</div>
-                              <div className="day-task-desc">
-                                <strong>Hands-on Task:</strong> {dayItem.task}
-                              </div>
-                            </div>
+                {/* Academic Timetable Table */}
+                <div className="timetable-table-container">
+                  <table className="academic-timetable-table">
+                    <thead>
+                      <tr>
+                        <th className="tt-col-day">Day</th>
+                        <th className="tt-col-morning">
+                          <div className="tt-th-header-line">
+                            <Clock size={13} />
+                            <span>Morning Session (09:30 AM – 12:30 PM)</span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                          <span className="tt-th-sub">Theory, Design & Concepts</span>
+                        </th>
+                        <th className="tt-col-lab">
+                          <div className="tt-th-header-line">
+                            <Code2 size={13} />
+                            <span>Afternoon Lab (01:30 PM – 04:30 PM)</span>
+                          </div>
+                          <span className="tt-th-sub">Hands-on Code & Practical Implementation</span>
+                        </th>
+                        <th className="tt-col-eval">
+                          <div className="tt-th-header-line">
+                            <CheckCircle2 size={13} />
+                            <span>Deliverable & Review</span>
+                          </div>
+                          <span className="tt-th-sub">04:30 PM – 05:00 PM</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {DOMAIN_SCHEDULES[activeScheduleDomain].phases.map((phaseItem, pIdx) => (
+                        <React.Fragment key={pIdx}>
+                          <tr className="tt-phase-header-row">
+                            <td colSpan={4}>
+                              <div className="tt-phase-badge-line">
+                                <span className="tt-phase-badge">Phase {pIdx + 1}</span>
+                                <span className="tt-phase-title-text">{phaseItem.phase}</span>
+                              </div>
+                            </td>
+                          </tr>
+                          {phaseItem.days.map((dayItem, dIdx) => (
+                            <tr key={dIdx} className="tt-day-row">
+                              <td className="tt-day-cell">
+                                <div className="tt-day-badge">{dayItem.day}</div>
+                                <div className="tt-day-hrs-tag">6 Hrs/Day</div>
+                              </td>
+                              <td className="tt-morning-cell">
+                                <div className="tt-topic-heading">{dayItem.topic}</div>
+                                <div className="tt-topic-details">
+                                  Architectural walkthrough, design patterns & live concept breakdown
+                                </div>
+                              </td>
+                              <td className="tt-lab-cell">
+                                <div className="tt-lab-task-desc">
+                                  <strong>Lab Task:</strong> {dayItem.task}
+                                </div>
+                              </td>
+                              <td className="tt-eval-cell">
+                                <div className="tt-eval-pill">
+                                  <CheckCircle2 size={13} className="tt-eval-icon" />
+                                  <span>Git Commit & Viva Sign-off</span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
                 {/* Bottom Schedule Action Row */}
                 <div className="schedule-modal-footer">
                   <div className="footer-left-info">
-                    <span>Selected Domain: <strong>{activeScheduleDomain}</strong></span>
+                    <span>Selected Track: <strong>College Internship ({activeScheduleDomain})</strong></span>
                     <span className="info-dot">•</span>
-                    <span>Includes Certificate & Project Repo</span>
+                    <span>Includes Verified Certificate & GitHub Portfolio</span>
                   </div>
                   <div className="footer-action-buttons">
                     <button 
@@ -657,7 +826,7 @@ export default function Internship({ onOpenStudentPortal }) {
                       }}
                       className="btn btn-primary"
                     >
-                      <span>Apply for {activeScheduleDomain}</span>
+                      <span>Apply for {activeScheduleDomain} with Scholarship</span>
                       <ArrowRight size={15} />
                     </button>
                     <button onClick={closeScheduleModal} className="btn btn-secondary">
@@ -837,26 +1006,122 @@ export default function Internship({ onOpenStudentPortal }) {
                 />
               </div>
 
-              {/* Scholarship Opt-in Toggle */}
-              <div className="scholarship-form-checkbox-row">
-                <input 
-                  type="checkbox" 
-                  id="optScholarshipInput"
-                  checked={optScholarship}
-                  onChange={(e) => setOptScholarship(e.target.checked)}
-                  className="scholarship-checkbox"
-                />
-                <label htmlFor="optScholarshipInput" className="scholarship-label">
-                  <span className="scholarship-highlight-title">🎓 Apply for Merit Scholarship Assessment</span>
-                  <span className="scholarship-highlight-sub">
-                    I want to attend the 20-minute online screening assessment to qualify for up to 100% scholarship fee waiver based on test score.
-                  </span>
-                </label>
+              {/* Resume Upload Component */}
+              <div className={`form-group resume-upload-group ${selectedType === 'Live Project Internship' ? 'highlight-resume-group' : ''}`}>
+                <div className="resume-label-row">
+                  <label className="form-label" style={{ margin: 0 }}>
+                    <span>Upload Resume / CV </span>
+                    {selectedType === 'Live Project Internship' ? (
+                      <span className="req-tag">* Required for Live Project</span>
+                    ) : (
+                      <span className="opt-tag">(Optional)</span>
+                    )}
+                  </label>
+                  <span className="resume-types-hint">PDF, DOC, DOCX up to 10MB</span>
+                </div>
+
+                {!resumeUrl ? (
+                  <div className="resume-dropzone">
+                    <input 
+                      type="file" 
+                      id="resumeFileInput"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleResumeChange}
+                      className="resume-file-input"
+                      disabled={uploadingResume}
+                    />
+                    <label htmlFor="resumeFileInput" className="resume-dropzone-label">
+                      {uploadingResume ? (
+                        <div className="resume-uploading-box">
+                          <Loader2 size={24} className="spin-icon" style={{ color: '#4f46e5' }} />
+                          <span className="resume-uploading-text">Uploading {resumeName}...</span>
+                        </div>
+                      ) : (
+                        <div className="resume-placeholder-box">
+                          <UploadCloud size={28} className="resume-upload-icon" />
+                          <span className="resume-main-prompt">
+                            {selectedType === 'Live Project Internship' 
+                              ? 'Click or browse to attach your Resume / CV *' 
+                              : 'Attach your Resume / CV (Optional)'}
+                          </span>
+                          <span className="resume-sub-prompt">Evaluated by our engineering leads for project placement</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                ) : (
+                  <div className="resume-uploaded-card">
+                    <div className="resume-card-left">
+                      <div className="resume-icon-circle">
+                        <FileText size={20} />
+                      </div>
+                      <div className="resume-details">
+                        <span className="resume-name-text">{resumeName || 'Resume Document'}</span>
+                        <span className="resume-success-status">✓ Uploaded & Attached to Application</span>
+                      </div>
+                    </div>
+                    <div className="resume-card-actions">
+                      <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="btn-resume-preview" title="Preview Resume">
+                        <ExternalLink size={14} />
+                        <span>View</span>
+                      </a>
+                      <button type="button" onClick={handleRemoveResume} className="btn-resume-remove" title="Remove Resume">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {uploadResumeError && (
+                  <div className="resume-validation-alert">
+                    <AlertCircle size={15} />
+                    <span>{uploadResumeError}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Portfolio / GitHub Link */}
+              <div className="form-group">
+                <label className="form-label">Portfolio / GitHub / LinkedIn Profile <span className="opt-tag">(Optional)</span></label>
+                <input 
+                  type="url" 
+                  name="portfolioUrl"
+                  className="form-input" 
+                  placeholder="https://github.com/your-username or LinkedIn link"
+                  value={portfolioUrl}
+                  onChange={(e) => setPortfolioUrl(e.target.value)}
+                />
+              </div>
+
+              {/* Track Specific Options */}
+              {selectedType === 'College Internship' ? (
+                <div className="scholarship-form-checkbox-row">
+                  <input 
+                    type="checkbox" 
+                    id="optScholarshipInput"
+                    checked={optScholarship}
+                    onChange={(e) => setOptScholarship(e.target.checked)}
+                    className="scholarship-checkbox"
+                  />
+                  <label htmlFor="optScholarshipInput" className="scholarship-label">
+                    <span className="scholarship-highlight-title">🎓 Apply for Merit Scholarship Assessment</span>
+                    <span className="scholarship-highlight-sub">
+                      Attend our 20-minute online screening assessment to qualify for up to 100% scholarship fee waiver based on test score.
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="live-project-info-notice">
+                  <Rocket size={18} className="live-notice-icon" />
+                  <div>
+                    <strong>Live Project Direct Review:</strong> Your attached resume will be reviewed by Wingroo project managers for team allocation, sprint onboarding, and merit project stipend.
+                  </div>
+                </div>
+              )}
 
               <button 
                 type="submit" 
-                disabled={submitting} 
+                disabled={submitting || uploadingResume} 
                 className="btn btn-primary modal-submit-btn"
               >
                 {submitting ? (
@@ -866,7 +1131,7 @@ export default function Internship({ onOpenStudentPortal }) {
                   </>
                 ) : (
                   <>
-                    <span>Apply Now</span>
+                    <span>{selectedType === 'Live Project Internship' ? 'Submit Live Internship Application' : 'Apply for College Internship'}</span>
                     <Send size={16} />
                   </>
                 )}

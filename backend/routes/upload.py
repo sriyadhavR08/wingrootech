@@ -10,7 +10,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'}
 VIDEO_EXTENSIONS = {'mp4', 'webm', 'mov', 'mkv', 'avi'}
-ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS.union(VIDEO_EXTENSIONS)
+DOCUMENT_EXTENSIONS = {'pdf', 'doc', 'docx'}
+ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS.union(VIDEO_EXTENSIONS).union(DOCUMENT_EXTENSIONS)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,7 +33,13 @@ def upload_file():
         file_path = os.path.join(UPLOAD_FOLDER, unique_name)
         file.save(file_path)
 
-        media_type = 'video' if extension in VIDEO_EXTENSIONS else 'image'
+        if extension in DOCUMENT_EXTENSIONS:
+            media_type = 'document'
+        elif extension in VIDEO_EXTENSIONS:
+            media_type = 'video'
+        else:
+            media_type = 'image'
+
         # Serve via host url or relative path
         host_url = request.host_url.rstrip('/')
         file_url = f"{host_url}/uploads/{unique_name}"
@@ -41,6 +48,7 @@ def upload_file():
             'success': True,
             'url': file_url,
             'filename': unique_name,
+            'original_name': original_name,
             'media_type': media_type,
             'message': f'{media_type.capitalize()} uploaded successfully!'
         }), 201

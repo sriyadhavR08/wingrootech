@@ -334,14 +334,29 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '' }) {
                               <div className="program-title">{app.technology} Track</div>
                               <div className="program-type">{app.internship_type}</div>
                             </div>
-                            <button 
-                              onClick={() => setActiveSlip(app)} 
-                              className="btn-print-slip"
-                              title="View Official Admission / Application Slip"
-                            >
-                              <Printer size={14} />
-                              <span>View Admission Slip</span>
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              {app.resume_url && (
+                                <a 
+                                  href={app.resume_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="btn-print-slip"
+                                  style={{ background: '#f8fafc', color: '#4f46e5', borderColor: '#c7d2fe' }}
+                                  title="View Attached Resume / CV"
+                                >
+                                  <FileText size={14} />
+                                  <span>Resume</span>
+                                </a>
+                              )}
+                              <button 
+                                onClick={() => setActiveSlip(app)} 
+                                className="btn-print-slip"
+                                title="View Official Admission / Application Slip"
+                              >
+                                <Printer size={14} />
+                                <span>View Admission Slip</span>
+                              </button>
+                            </div>
                           </div>
 
                           {/* 4-Stage Progress Stepper */}

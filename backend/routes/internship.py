@@ -16,6 +16,8 @@ def submit_internship():
     internship_type = data.get('internship_type', 'College Internship').strip()
     technology = data.get('technology', 'Full Stack Development').strip()
     message = data.get('message', '').strip()
+    resume_url = data.get('resume_url', '').strip()
+    portfolio_url = data.get('portfolio_url', '').strip()
 
     if not name or not email or not phone or not college:
         return jsonify({
@@ -23,26 +25,48 @@ def submit_internship():
             'message': 'Please provide Name, Email, Phone, and College name.'
         }), 400
 
+    full_message = message
+    if resume_url:
+        full_message = f"{full_message}\n\n[📄 RESUME ATTACHED: {resume_url}]"
+    if portfolio_url:
+        full_message = f"{full_message}\n[🔗 PORTFOLIO / GITHUB: {portfolio_url}]"
+
     conn, db_type = get_db_connection()
     try:
         cursor = conn.cursor()
         if db_type == "mysql":
-            sql = """
-            INSERT INTO internship_applications 
-            (name, email, phone, college, course, year, internship_type, technology, message, status) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, message, 'Under Review'))
+            try:
+                sql = """
+                INSERT INTO internship_applications 
+                (name, email, phone, college, course, year, internship_type, technology, message, resume_url, status) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, full_message, resume_url, 'Under Review'))
+            except Exception:
+                sql = """
+                INSERT INTO internship_applications 
+                (name, email, phone, college, course, year, internship_type, technology, message, status) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, full_message, 'Under Review'))
             new_id = cursor.lastrowid
             app_no = f"WINGROO-INT-{new_id:04d}"
             cursor.execute("UPDATE internship_applications SET application_no = %s WHERE id = %s", (app_no, new_id))
         else:
-            sql = """
-            INSERT INTO internship_applications 
-            (name, email, phone, college, course, year, internship_type, technology, message, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
-            cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, message, 'Under Review'))
+            try:
+                sql = """
+                INSERT INTO internship_applications 
+                (name, email, phone, college, course, year, internship_type, technology, message, resume_url, status) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, full_message, resume_url, 'Under Review'))
+            except Exception:
+                sql = """
+                INSERT INTO internship_applications 
+                (name, email, phone, college, course, year, internship_type, technology, message, status) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                cursor.execute(sql, (name, email, phone, college, course, year, internship_type, technology, full_message, 'Under Review'))
             new_id = cursor.lastrowid
             app_no = f"WINGROO-INT-{new_id:04d}"
             cursor.execute("UPDATE internship_applications SET application_no = ? WHERE id = ?", (app_no, new_id))
@@ -65,6 +89,7 @@ def submit_internship():
                 'year': year,
                 'internship_type': internship_type,
                 'technology': technology,
+                'resume_url': resume_url,
                 'status': 'Under Review'
             }
         }), 201
@@ -92,18 +117,14 @@ def student_lookup():
         search_pattern = f"%{query}%"
         if db_type == "mysql":
             sql = """
-            SELECT id, application_no, name, email, phone, college, course, year, 
-                   internship_type, technology, message, status, notes, created_at
-            FROM internship_applications
+            SELECT * FROM internship_applications
             WHERE email = %s OR phone = %s OR application_no = %s OR application_no LIKE %s OR name LIKE %s
             ORDER BY id DESC
             """
             cursor.execute(sql, (query, query, query, search_pattern, search_pattern))
         else:
             sql = """
-            SELECT id, application_no, name, email, phone, college, course, year, 
-                   internship_type, technology, message, status, notes, created_at
-            FROM internship_applications
+            SELECT * FROM internship_applications
             WHERE email = ? OR phone = ? OR application_no = ? OR application_no LIKE ? OR name LIKE ?
             ORDER BY id DESC
             """
@@ -119,15 +140,16 @@ def student_lookup():
                 applications.append({
                     'id': item['id'],
                     'application_no': app_no,
-                    'name': item['name'],
-                    'email': item['email'],
-                    'phone': item['phone'],
-                    'college': item['college'],
-                    'course': item['course'],
-                    'year': item['year'],
-                    'internship_type': item['internship_type'],
-                    'technology': item['technology'],
+                    'name': item.get('name'),
+                    'email': item.get('email'),
+                    'phone': item.get('phone'),
+                    'college': item.get('college'),
+                    'course': item.get('course'),
+                    'year': item.get('year'),
+                    'internship_type': item.get('internship_type'),
+                    'technology': item.get('technology'),
                     'message': item.get('message') or '',
+                    'resume_url': item.get('resume_url'),
                     'status': status,
                     'notes': item.get('notes') or '',
                     'created_at': str(item.get('created_at', ''))

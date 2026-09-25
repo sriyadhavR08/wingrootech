@@ -67,12 +67,18 @@ def init_mysql_tables_if_needed():
                 internship_type VARCHAR(100) NOT NULL,
                 technology VARCHAR(100) NOT NULL,
                 message TEXT,
+                resume_url VARCHAR(255) DEFAULT NULL,
                 status VARCHAR(50) DEFAULT 'Under Review',
                 application_no VARCHAR(50) DEFAULT NULL,
                 notes TEXT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
+            try:
+                cursor.execute("ALTER TABLE internship_applications ADD COLUMN resume_url VARCHAR(255) DEFAULT NULL")
+            except Exception:
+                pass
+            
             
             # 3. Projects Table
             cursor.execute("""
@@ -176,9 +182,14 @@ def init_sqlite_tables(conn):
         internship_type TEXT NOT NULL,
         technology TEXT NOT NULL,
         message TEXT,
+        resume_url TEXT DEFAULT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    try:
+        cursor.execute("ALTER TABLE internship_applications ADD COLUMN resume_url TEXT DEFAULT NULL")
+    except Exception:
+        pass
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
