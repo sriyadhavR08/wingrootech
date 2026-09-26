@@ -266,42 +266,42 @@ export default function Contact() {
                   <span>Chat on WhatsApp (+91 81247 79111)</span>
                 </a>
               </div>
-
-              {/* Embedded Live Google Map for Wingroo Technologies */}
-              <div className="contact-google-map-card">
-                <div className="map-card-header">
-                  <div className="map-pin-pill">
-                    <MapPin size={14} />
-                    <span>Wingroo Technologies • Tatabad</span>
-                  </div>
-                  <a 
-                    href="https://www.google.com/maps/search/?api=1&query=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="map-directions-link"
-                    title="Open Wingroo Technologies in Google Maps"
-                  >
-                    <span>Open in Maps</span>
-                    <ExternalLink size={12} />
-                  </a>
-                </div>
-                <div className="google-map-iframe-wrap">
-                  <iframe 
-                    title="Wingroo Technologies Live Office Location"
-                    src="https://maps.google.com/maps?q=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012&t=&z=16&ie=UTF8&iwloc=B&output=embed"
-                    width="100%" 
-                    height="210" 
-                    style={{ border: 0, borderRadius: '12px', display: 'block' }} 
-                    allowFullScreen="" 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-                <div className="map-address-footer">
-                  <p>📍 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore - 641012</p>
-                </div>
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Live Interactive Location Map (Full Width across bottom - Balances Form & Info) */}
+        <div className="contact-map-full-card modern-card">
+          <div className="map-card-header">
+            <div className="map-pin-pill">
+              <MapPin size={16} />
+              <span>Wingroo Technologies Live Office Location • Tatabad, Coimbatore</span>
+            </div>
+            <a 
+              href="https://www.google.com/maps/search/?api=1&query=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="map-directions-link"
+              title="Open Wingroo Technologies in Google Maps"
+            >
+              <span>Open in Google Maps</span>
+              <ExternalLink size={13} />
+            </a>
+          </div>
+          <div className="google-map-iframe-wrap">
+            <iframe 
+              title="Wingroo Technologies Live Office Location"
+              src="https://maps.google.com/maps?q=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012&t=&z=16&ie=UTF8&iwloc=B&output=embed"
+              width="100%" 
+              height="260" 
+              style={{ border: 0, borderRadius: '12px', display: 'block' }} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <div className="map-address-footer">
+            <p>📍 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore - 641012</p>
           </div>
         </div>
       </div>
