@@ -5,8 +5,7 @@ import {
   Star, 
   ChevronLeft, 
   ChevronRight, 
-  CheckCircle2, 
-  GraduationCap 
+  CheckCircle2 
 } from 'lucide-react';
 import './Reviews.css';
 
@@ -15,7 +14,6 @@ const STUDENT_REVIEWS = [
     id: 1,
     name: 'Dhivya Dharshini',
     role: 'Full Stack Development Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'DD',
     avatarGradient: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
     review: 'What I liked most about my internship was the way the concepts were explained before we started working on the project. It made the learning process much easier for me, especially when I was working with technologies I had not used before.'
@@ -24,7 +22,6 @@ const STUDENT_REVIEWS = [
     id: 2,
     name: 'Gowtham',
     role: 'Software Development Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'G',
     avatarGradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
     review: 'The best part of my internship was getting hands-on experience with GitHub and the development workflow. I learned how developers manage code, make changes, work with repositories, and build a project step by step.'
@@ -33,7 +30,6 @@ const STUDENT_REVIEWS = [
     id: 3,
     name: 'Abinaya',
     role: 'Web Development Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'A',
     avatarGradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
     review: 'I really enjoyed the project-based learning at Wingroo Technologies. Instead of only learning theory, I got the opportunity to actually build features and solve problems. That experience gave me much more confidence in my technical skills.'
@@ -42,7 +38,6 @@ const STUDENT_REVIEWS = [
     id: 4,
     name: 'Jamuna',
     role: 'Full Stack Engineering Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'J',
     avatarGradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
     review: 'My internship helped me understand what a real working environment feels like. From discussing requirements to completing tasks and presenting the work, I got exposure to different stages of a project. It was a useful experience for my career.'
@@ -51,7 +46,6 @@ const STUDENT_REVIEWS = [
     id: 5,
     name: 'Preetha',
     role: 'AI & Machine Learning Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'P',
     avatarGradient: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
     review: 'One of the things I found valuable was learning about new technologies and AI-based development. I got to explore concepts like AI tools and prompt engineering, which made the internship more interesting and helped me understand how technology is evolving.'
@@ -60,71 +54,58 @@ const STUDENT_REVIEWS = [
     id: 6,
     name: 'Mithun',
     role: 'Software Engineering Intern',
-    cohort: 'Wingroo Tech Cohort',
     initials: 'M',
     avatarGradient: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
     review: 'The internship gave me a chance to improve not only my coding skills but also my problem-solving approach. Whenever I faced an issue, I had to understand the problem, try different solutions, and then improve the implementation. That was one of my biggest takeaways.'
   }
 ];
 
+// Duplicate list so all 6 reviews can be centered in 3-card or 2-card desktop layouts
+const DISPLAY_REVIEWS = [...STUDENT_REVIEWS, ...STUDENT_REVIEWS];
+
 export default function Reviews() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(3);
-  const [isPaused, setIsPaused] = useState(false);
-
+  const trackRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Responsive visible cards count
+  // Auto-slide every 2 seconds (2000ms) as requested
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 720) {
-        setVisibleCount(1);
-      } else if (window.innerWidth < 1080) {
-        setVisibleCount(2);
-      } else {
-        setVisibleCount(3);
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % STUDENT_REVIEWS.length);
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Update track transform whenever currentIndex changes or window resizes
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!trackRef.current) return;
+      const cards = trackRef.current.children;
+      if (cards && cards[currentIndex]) {
+        const offset = cards[currentIndex].offsetLeft;
+        trackRef.current.style.transform = `translateX(-${offset}px)`;
       }
     };
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const maxIndex = Math.max(0, STUDENT_REVIEWS.length - visibleCount);
-
-  // Auto-slide effect (4-second interval)
-  useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [isPaused, maxIndex]);
-
-  // Clamp index on resize
-  useEffect(() => {
-    if (currentIndex > maxIndex) {
-      setCurrentIndex(maxIndex);
-    }
-  }, [maxIndex, currentIndex]);
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [currentIndex]);
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev + 1) % STUDENT_REVIEWS.length);
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+    setCurrentIndex((prev) => (prev <= 0 ? STUDENT_REVIEWS.length - 1 : prev - 1));
   };
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
     touchStartX.current = e.targetTouches[0].clientX;
     touchEndX.current = e.targetTouches[0].clientX;
-    setIsPaused(true);
   };
 
   const handleTouchMove = (e) => {
@@ -133,12 +114,11 @@ export default function Reviews() {
 
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
-    if (diff > 50) {
+    if (diff > 45) {
       handleNext();
-    } else if (diff < -50) {
+    } else if (diff < -45) {
       handlePrev();
     }
-    setIsPaused(false);
   };
 
   return (
@@ -161,22 +141,17 @@ export default function Reviews() {
         {/* Carousel Container */}
         <div 
           className="reviews-carousel-wrapper"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div className="reviews-slider-viewport">
             <div 
+              ref={trackRef}
               className="reviews-slider-track"
-              style={{
-                '--current-index': currentIndex,
-                '--visible-count': visibleCount
-              }}
             >
-              {STUDENT_REVIEWS.map((review) => (
-                <div key={review.id} className="review-card">
+              {DISPLAY_REVIEWS.map((review, idx) => (
+                <div key={`${review.id}-${idx}`} className="review-card">
                   {/* Top card bar with stars and quote icon */}
                   <div className="review-card-top">
                     <div className="review-stars-row" aria-label="5 out of 5 stars">
@@ -230,7 +205,7 @@ export default function Reviews() {
               type="button"
               onClick={handlePrev}
               className="review-arrow-btn"
-              aria-label="Previous reviews"
+              aria-label="Previous review"
               title="Previous"
             >
               <ChevronLeft size={20} />
@@ -238,7 +213,7 @@ export default function Reviews() {
 
             {/* Pagination Dots */}
             <div className="review-dots-container">
-              {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+              {STUDENT_REVIEWS.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -253,7 +228,7 @@ export default function Reviews() {
               type="button"
               onClick={handleNext}
               className="review-arrow-btn"
-              aria-label="Next reviews"
+              aria-label="Next review"
               title="Next"
             >
               <ChevronRight size={20} />
@@ -263,7 +238,7 @@ export default function Reviews() {
           {/* Auto-Slide Indicator Hint */}
           <div className="reviews-auto-hint">
             <span className="hint-pulse" />
-            <span>Auto-sliding • Hover or tap to pause</span>
+            <span>Auto-sliding every 2 seconds</span>
           </div>
         </div>
       </div>
