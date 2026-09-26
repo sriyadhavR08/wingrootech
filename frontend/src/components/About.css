@@ -1,6 +1,5 @@
-/* About Section Styles */
 .about-section {
-  padding: 50px 0;
+  padding: 28px 0;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);

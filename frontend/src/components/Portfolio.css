@@ -1,6 +1,6 @@
 /* Portfolio Section Styles */
 .portfolio-section {
-  padding: 50px 0;
+  padding: 28px 0;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
@@ -10,8 +10,8 @@
 .portfolio-showcase-list {
   display: flex;
   flex-direction: column;
-  gap: 50px;
-  margin-bottom: 40px;
+  gap: 32px;
+  margin-bottom: 24px;
 }
 
 .featured-project-card {
@@ -558,7 +558,7 @@
   background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 20px;
-  padding: 40px 48px;
+  padding: 26px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -100,15 +100,15 @@ button, input, textarea, select {
 .section-header {
   text-align: center;
   max-width: 760px;
-  margin: 0 auto 38px auto;
+  margin: 0 auto 26px auto;
 }
 
 .section-tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
-  font-size: 0.82rem;
+  padding: 5px 13px;
+  font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@ button, input, textarea, select {
   background: var(--primary-light);
   border: 1px solid rgba(79, 70, 229, 0.2);
   border-radius: 9999px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .section-tag .dot {
@@ -139,7 +139,7 @@ button, input, textarea, select {
   line-height: 1.2;
   color: var(--text-heading);
   letter-spacing: -0.02em;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .section-desc {
