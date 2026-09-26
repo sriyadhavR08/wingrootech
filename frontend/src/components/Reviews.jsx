@@ -13,7 +13,6 @@ const STUDENT_REVIEWS = [
   {
     id: 1,
     name: 'Dhivya Dharshini',
-    role: 'Full Stack Development Intern',
     initials: 'DD',
     avatarGradient: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
     review: 'What I liked most about my internship was the way the concepts were explained before we started working on the project. It made the learning process much easier for me, especially when I was working with technologies I had not used before.'
@@ -21,7 +20,6 @@ const STUDENT_REVIEWS = [
   {
     id: 2,
     name: 'Gowtham',
-    role: 'Software Development Intern',
     initials: 'G',
     avatarGradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
     review: 'The best part of my internship was getting hands-on experience with GitHub and the development workflow. I learned how developers manage code, make changes, work with repositories, and build a project step by step.'
@@ -29,7 +27,6 @@ const STUDENT_REVIEWS = [
   {
     id: 3,
     name: 'Abinaya',
-    role: 'Web Development Intern',
     initials: 'A',
     avatarGradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
     review: 'I really enjoyed the project-based learning at Wingroo Technologies. Instead of only learning theory, I got the opportunity to actually build features and solve problems. That experience gave me much more confidence in my technical skills.'
@@ -37,7 +34,6 @@ const STUDENT_REVIEWS = [
   {
     id: 4,
     name: 'Jamuna',
-    role: 'Full Stack Engineering Intern',
     initials: 'J',
     avatarGradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
     review: 'My internship helped me understand what a real working environment feels like. From discussing requirements to completing tasks and presenting the work, I got exposure to different stages of a project. It was a useful experience for my career.'
@@ -45,7 +41,6 @@ const STUDENT_REVIEWS = [
   {
     id: 5,
     name: 'Preetha',
-    role: 'AI & Machine Learning Intern',
     initials: 'P',
     avatarGradient: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
     review: 'One of the things I found valuable was learning about new technologies and AI-based development. I got to explore concepts like AI tools and prompt engineering, which made the internship more interesting and helped me understand how technology is evolving.'
@@ -53,7 +48,6 @@ const STUDENT_REVIEWS = [
   {
     id: 6,
     name: 'Mithun',
-    role: 'Software Engineering Intern',
     initials: 'M',
     avatarGradient: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
     review: 'The internship gave me a chance to improve not only my coding skills but also my problem-solving approach. Whenever I faced an issue, I had to understand the problem, try different solutions, and then improve the implementation. That was one of my biggest takeaways.'
@@ -69,20 +63,23 @@ const DISPLAY_REVIEWS = [
 export default function Reviews() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enableTransition, setEnableTransition] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
   const trackRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Auto-slide loop every 2.2 seconds
+  // Auto-slide loop every 2.2 seconds (pauses when mouse/arrow is held on review or arrows)
   useEffect(() => {
+    if (isPaused) return;
+
     const timer = setInterval(() => {
       setEnableTransition(true);
       setCurrentIndex((prev) => prev + 1);
     }, 2200);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   // Update track position with smooth translation or silent reset
   useEffect(() => {
@@ -144,6 +141,7 @@ export default function Reviews() {
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e) => {
+    setIsPaused(true);
     touchStartX.current = e.targetTouches[0].clientX;
     touchEndX.current = e.targetTouches[0].clientX;
   };
@@ -159,6 +157,7 @@ export default function Reviews() {
     } else if (diff < -45) {
       handlePrev();
     }
+    setIsPaused(false);
   };
 
   const activeDotIndex = currentIndex % STUDENT_REVIEWS.length;
@@ -183,6 +182,8 @@ export default function Reviews() {
         {/* Carousel Container */}
         <div 
           className="reviews-carousel-wrapper"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -194,7 +195,12 @@ export default function Reviews() {
               onTransitionEnd={handleTransitionEnd}
             >
               {DISPLAY_REVIEWS.map((review, idx) => (
-                <div key={`${review.id}-${idx}`} className="review-card">
+                <div 
+                  key={`${review.id}-${idx}`} 
+                  className="review-card"
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
+                >
                   {/* Top card bar with stars and quote icon */}
                   <div className="review-card-top">
                     <div className="review-stars-row" aria-label="5 out of 5 stars">
@@ -218,7 +224,7 @@ export default function Reviews() {
                     “{review.review}”
                   </p>
 
-                  {/* Reviewer Profile */}
+                  {/* Reviewer Profile - Name Only */}
                   <div className="review-author-row">
                     <div 
                       className="review-avatar" 
@@ -234,7 +240,6 @@ export default function Reviews() {
                           <span>Verified</span>
                         </span>
                       </div>
-                      <p className="review-author-role">{review.role}</p>
                     </div>
                   </div>
                 </div>
@@ -247,6 +252,10 @@ export default function Reviews() {
             <button
               type="button"
               onClick={handlePrev}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onMouseDown={() => setIsPaused(true)}
+              onMouseUp={() => setIsPaused(false)}
               className="review-arrow-btn"
               aria-label="Previous review"
               title="Previous"
@@ -261,6 +270,8 @@ export default function Reviews() {
                   key={idx}
                   type="button"
                   onClick={() => handleDotClick(idx)}
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
                   className={`review-dot ${activeDotIndex === idx ? 'review-dot-active' : ''}`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -270,6 +281,10 @@ export default function Reviews() {
             <button
               type="button"
               onClick={handleNext}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onMouseDown={() => setIsPaused(true)}
+              onMouseUp={() => setIsPaused(false)}
               className="review-arrow-btn"
               aria-label="Next review"
               title="Next"
