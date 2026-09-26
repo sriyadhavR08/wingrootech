@@ -11,6 +11,14 @@
   pointer-events: auto;
   user-select: none;
   animation: dockFadeSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+}
+
+.social-side-dock.social-side-dock-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translate(-40px, -50%) !important;
 }
 
 @keyframes dockFadeSlideIn {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './SocialSidebar.css';
 
 // Crisp SVG Icons
@@ -67,9 +67,37 @@ const SIDEBAR_LINKS = [
 
 export default function SocialSidebar() {
   const [hoveredId, setHoveredId] = useState(null);
+  const [isNearFooter, setIsNearFooter] = useState(false);
+
+  useEffect(() => {
+    const handleCheckFooter = () => {
+      const footer = document.querySelector('footer') || document.querySelector('.site-footer');
+      if (!footer) return;
+
+      const rect = footer.getBoundingClientRect();
+      // If footer top is approaching or within the viewport
+      if (rect.top <= window.innerHeight - 40) {
+        setIsNearFooter(true);
+      } else {
+        setIsNearFooter(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleCheckFooter, { passive: true });
+    window.addEventListener('resize', handleCheckFooter, { passive: true });
+    handleCheckFooter();
+
+    return () => {
+      window.removeEventListener('scroll', handleCheckFooter);
+      window.removeEventListener('resize', handleCheckFooter);
+    };
+  }, []);
 
   return (
-    <aside className="social-side-dock" aria-label="Social Media Quick Links">
+    <aside 
+      className={`social-side-dock ${isNearFooter ? 'social-side-dock-hidden' : ''}`} 
+      aria-label="Social Media Quick Links"
+    >
       <div className="social-dock-pill">
         <span className="social-dock-tag">CONNECT</span>
         <div className="social-dock-divider" />
