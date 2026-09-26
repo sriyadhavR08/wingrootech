@@ -30,23 +30,36 @@ export default function Portfolio() {
             setProjectsList([]);
             return;
           }
-          const enriched = data.projects.map((p, idx) => ({
-            ...p,
-            stats: p.stats || (p.title.toUpperCase() === 'ZENTIME' ? [
-              { label: 'Attendance Accuracy', value: '100% Real-Time' },
-              { label: 'Leave & Swap Approval', value: '< 2 Mins' },
-              { label: 'Employee Adoption', value: '99.4%' }
-            ] : p.title.toUpperCase().includes('IIE') ? [
-              { label: 'Active Mobile Learners', value: '12,500+' },
-              { label: 'Courses & Video Vlogs', value: '150+ Modules' },
-              { label: 'Live News Broadcasts', value: 'Real-Time' }
-            ] : [
-              { label: 'Performance Reliability', value: '99.9%' },
-              { label: 'Satisfaction Score', value: '4.9/5' },
-              { label: 'Architecture', value: 'Enterprise Grade' }
-            ]),
-            themeColor: p.themeColor || (idx % 2 === 0 ? '#4f46e5' : '#0ea5e9')
-          }));
+          const enriched = data.projects.map((p, idx) => {
+            const isZ = (p.title || '').toUpperCase().includes('ZENTIME');
+            const isI = (p.title || '').toUpperCase().includes('IIE');
+            const title = isI ? 'IIE PULSE' : p.title;
+            const demoUrl = isZ 
+              ? 'https://zentime.co.in/#dashboard' 
+              : isI 
+                ? 'https://iiepulse.indrainstitute.com/' 
+                : (p.demoUrl || p.project_url || 'https://wingrootechnologies.com/');
+
+            return {
+              ...p,
+              title,
+              demoUrl,
+              stats: p.stats || (isZ ? [
+                { label: 'Attendance Accuracy', value: '100% Real-Time' },
+                { label: 'Leave & Swap Approval', value: '< 2 Mins' },
+                { label: 'Employee Adoption', value: '99.4%' }
+              ] : isI ? [
+                { label: 'Active Mobile Learners', value: '12,500+' },
+                { label: 'Courses & Video Vlogs', value: '150+ Modules' },
+                { label: 'Live News Broadcasts', value: 'Real-Time' }
+              ] : [
+                { label: 'Performance Reliability', value: '99.9%' },
+                { label: 'Satisfaction Score', value: '4.9/5' },
+                { label: 'Architecture', value: 'Enterprise Grade' }
+              ]),
+              themeColor: p.themeColor || (idx % 2 === 0 ? '#4f46e5' : '#0ea5e9')
+            };
+          });
           setProjectsList(enriched);
         } else {
           setProjectsList([]);
@@ -125,22 +138,25 @@ export default function Portfolio() {
                     </div>
 
                     <div className="project-btn-row">
-                      <button 
-                        onClick={() => handleOpenModal(project)} 
+                      <a 
+                        href={project.demoUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="btn btn-primary project-cta"
+                        title={`View ${project.title} live platform`}
                       >
                         <span>View {project.title}</span>
-                        <ArrowRight size={16} />
-                      </button>
-                      <a 
-                        href={project.demoUrl || '#contact'} 
-                        target={project.demoUrl ? '_blank' : '_self'}
-                        rel="noopener noreferrer"
-                        className="btn btn-secondary project-cta"
-                      >
-                        <span>Explore Platform</span>
-                        <ExternalLink size={14} />
+                        <ExternalLink size={16} />
                       </a>
+                      <button 
+                        type="button"
+                        onClick={() => handleOpenModal(project)} 
+                        className="btn btn-secondary project-cta"
+                        title="View details and architecture"
+                      >
+                        <span>Project Overview</span>
+                        <ArrowRight size={14} />
+                      </button>
                     </div>
                   </div>
 
@@ -188,7 +204,16 @@ export default function Portfolio() {
                       <div className="project-mockup-frame frame-zentime mobile-mockup-frame">
                         <div className="mockup-header-bar mobile-statusbar">
                           <span className="mobile-clock">09:41 AM</span>
-                          <span className="mockup-title-text">ZENTIME Mobile App</span>
+                          <a 
+                            href={project.demoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="mockup-title-text"
+                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                            title="Open https://zentime.co.in/#dashboard"
+                          >
+                            zentime.co.in/#dashboard ↗
+                          </a>
                           <span className="mobile-battery-badge">100% 🔋</span>
                         </div>
                         <div className="mockup-screen-content mobile-screen-layout">
@@ -256,7 +281,16 @@ export default function Portfolio() {
                       <div className="project-mockup-frame frame-iie mobile-mockup-frame">
                         <div className="mockup-header-bar mobile-statusbar">
                           <span className="mobile-clock">10:15 AM</span>
-                          <span className="mockup-title-text">IIE PLUS Mobile App</span>
+                          <a 
+                            href={project.demoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="mockup-title-text"
+                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                            title="Open https://iiepulse.indrainstitute.com/"
+                          >
+                            iiepulse.indrainstitute.com ↗
+                          </a>
                           <span className="mobile-battery-badge" style={{ color: '#38bdf8' }}>100% ⚡</span>
                         </div>
 
@@ -267,7 +301,7 @@ export default function Portfolio() {
                               <Globe size={18} />
                             </div>
                             <div className="iie-header-text">
-                              <div className="iie-app-name">IIE PLUS Community</div>
+                              <div className="iie-app-name">IIE PULSE Community</div>
                               <div className="iie-app-tag">Campus News, Courses & Vlogs</div>
                             </div>
                             <span className="iie-live-pill">🔴 LIVE FEED</span>

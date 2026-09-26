@@ -144,15 +144,15 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
             <h4 className="footer-col-title">Featured Projects</h4>
             <ul className="footer-links-list">
               <li>
-                <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }} className="featured-link">
-                  <span>Zentime</span>
-                  <span className="footer-chip">Mobile App</span>
+                <a href="https://zentime.co.in/#dashboard" target="_blank" rel="noopener noreferrer" className="featured-link" title="Open Zentime Dashboard">
+                  <span>Zentime ↗</span>
+                  <span className="footer-chip">Live App</span>
                 </a>
               </li>
               <li>
-                <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }} className="featured-link">
-                  <span>IIE Plus</span>
-                  <span className="footer-chip">Mobile App</span>
+                <a href="https://iiepulse.indrainstitute.com/" target="_blank" rel="noopener noreferrer" className="featured-link" title="Open IIE Pulse Platform">
+                  <span>IIE Pulse ↗</span>
+                  <span className="footer-chip">Live App</span>
                 </a>
               </li>
               <li>
