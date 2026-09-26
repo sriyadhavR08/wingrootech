@@ -4,6 +4,7 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Services from './components/Services'
 import Internship from './components/Internship'
+import Careers from './components/Careers'
 import Events from './components/Events'
 import Portfolio from './components/Portfolio'
 import WhyWingroo from './components/WhyWingroo'
@@ -72,6 +73,7 @@ export default function App() {
         <About />
         <Services />
         <Internship onOpenStudentPortal={handleOpenStudent} />
+        <Careers />
         <Events key={`events-${dataVersion}`} />
         <Portfolio key={`portfolio-${dataVersion}`} />
         <WhyWingroo />
