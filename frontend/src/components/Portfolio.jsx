@@ -49,6 +49,10 @@ export default function Portfolio() {
                 ? (p.image || '/iiepulse-preview.png') 
                 : p.image;
 
+            const isTG = (p.title || '').toUpperCase().includes('TOURIST');
+            const isBot = (p.title || '').toUpperCase().includes('BOT');
+            const isVH = (p.title || '').toUpperCase().includes('VIRTUE');
+
             return {
               ...p,
               title,
@@ -65,6 +69,18 @@ export default function Portfolio() {
                 { label: 'Web & Mobile Access', value: '100% Cloud' },
                 { label: 'Active Students & Staff', value: '12,500+' },
                 { label: 'System Reliability', value: '99.9% Uptime' }
+              ] : isTG ? [
+                { label: 'Safety Coverage', value: 'Global GPS' },
+                { label: 'Emergency Response', value: '< 30 Secs' },
+                { label: 'Tourist Satisfaction', value: '4.9/5' }
+              ] : isBot ? [
+                { label: 'Response Accuracy', value: '99.2%' },
+                { label: 'Inquiry Automation', value: '85% First-Contact' },
+                { label: 'Uptime & Scalability', value: '24/7/365' }
+              ] : isVH ? [
+                { label: 'Time-to-Hire Reduced', value: '60%' },
+                { label: 'AI Match Accuracy', value: '96.8%' },
+                { label: 'Screened Candidates', value: '50,000+' }
               ] : [
                 { label: 'Performance Reliability', value: '99.9%' },
                 { label: 'Satisfaction Score', value: '4.9/5' },
@@ -229,7 +245,7 @@ export default function Portfolio() {
                           <img 
                             src={project.image || (isZentime ? '/zentime-preview.png' : '')} 
                             alt={project.title} 
-                            className="project-media-img" 
+                            className={`project-media-img ${isZentime ? 'img-contain' : ''}`} 
                           />
                         </a>
                       </div>
