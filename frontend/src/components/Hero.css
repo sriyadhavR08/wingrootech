@@ -22,10 +22,10 @@
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: 1fr 1.05fr;
   align-items: center;
-  gap: 50px;
-  margin-bottom: 70px;
+  gap: 40px;
+  margin-bottom: 60px;
 }
 
 /* Hero Content */
@@ -134,15 +134,15 @@
 .tech-stage {
   position: relative;
   width: 100%;
-  max-width: 530px;
-  padding: 30px 15px 40px 15px;
+  max-width: 580px;
+  padding: 20px 10px 35px 10px;
 }
 
 .stage-backlight {
   position: absolute;
-  inset: 15%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(6, 182, 212, 0.1) 60%, transparent 80%);
-  filter: blur(40px);
+  inset: 10%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, rgba(6, 182, 212, 0.12) 60%, transparent 80%);
+  filter: blur(45px);
   z-index: 0;
 }
 
@@ -151,9 +151,11 @@
   position: relative;
   z-index: 1;
   background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  box-shadow: 
+    0 25px 50px -12px rgba(15, 23, 42, 0.45),
+    0 0 35px -8px rgba(99, 102, 241, 0.25);
   overflow: hidden;
   color: #e2e8f0;
 }
@@ -162,19 +164,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 18px;
+  padding: 14px 20px;
   background: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .window-dots {
   display: flex;
-  gap: 6px;
+  gap: 7px;
 }
 
 .window-dots .dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
 }
 
@@ -184,16 +186,16 @@
 
 .window-title {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: #94a3b8;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .card-code-area {
-  padding: 20px 22px;
+  padding: 24px 26px;
   font-family: var(--font-mono);
-  font-size: 0.84rem;
-  line-height: 1.8;
+  font-size: 0.88rem;
+  line-height: 1.86;
   color: #cbd5e1;
 }
 
@@ -203,6 +205,10 @@
 
 .code-line.indent {
   padding-left: 20px;
+}
+
+.code-line.indent-2 {
+  padding-left: 38px;
 }
 
 .syntax-keyword { color: #818cf8; font-weight: 600; }
@@ -222,13 +228,21 @@
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+.syntax-badge-inline.pulse-live {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
 .tech-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 22px;
+  padding: 14px 24px;
   background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .footer-metric {
@@ -244,7 +258,7 @@
 }
 
 .metric-val {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #34d399;
 }
@@ -252,45 +266,47 @@
 .footer-status-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
+  gap: 7px;
+  font-size: 0.78rem;
   color: #94a3b8;
+  font-weight: 500;
 }
 
 .live-status-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #22c55e;
-  box-shadow: 0 0 8px #22c55e;
+  box-shadow: 0 0 10px #22c55e;
 }
 
 /* Floating Badges */
 .floating-card {
   position: absolute;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 18px;
+  padding: 11px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06);
   transition: transform 0.3s ease;
   animation: floatSubtle 4s ease-in-out infinite alternate;
 }
 
 .float-card-1 {
-  top: 10px;
-  right: -15px;
+  top: 5px;
+  right: -20px;
   animation-delay: 0s;
 }
 
 .float-card-2 {
-  bottom: 0px;
-  left: -20px;
+  bottom: 5px;
+  left: -25px;
   animation-delay: 1.5s;
 }
 
@@ -306,9 +322,9 @@
 }
 
 .float-icon-wrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;

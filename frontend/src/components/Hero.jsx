@@ -108,33 +108,50 @@ export default function Hero() {
 
                 <div className="card-code-area">
                   <div className="code-line">
-                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">VibeCoding</span>, <span className="syntax-func">AgenticAI</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/ai'</span>;
+                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">VibeCoding</span>, <span className="syntax-func">AgenticAI</span>, <span className="syntax-func">WorkflowEngine</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/core'</span>;
                   </div>
                   <div className="code-line">
-                    <span className="syntax-comment">// Launching Autonomous Workflow Agent & 72h MVP</span>
+                    <span className="syntax-comment">// Autonomous Agent Pipeline & 72-Hour Rapid MVP Engine</span>
                   </div>
                   <div className="code-line">
-                    <span className="syntax-keyword">export const</span> <span className="syntax-var">agent</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">AgenticAI</span>.launch(&#123;
+                    <span className="syntax-keyword">export const</span> <span className="syntax-var">wingrooAgent</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">AgenticAI</span>.initialize(&#123;
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">tools:</span> [<span className="syntax-str">'Cursor'</span>, <span className="syntax-str">'v0'</span>, <span className="syntax-str">'Claude-3.5-Sonnet'</span>],
+                    <span className="syntax-prop">ideWorkflow:</span> [<span className="syntax-str">'Cursor'</span>, <span className="syntax-str">'v0.dev'</span>, <span className="syntax-str">'Claude-3.5-Sonnet'</span>],
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">agents:</span> [<span className="syntax-str">'Gmail-Auto-Reply'</span>, <span className="syntax-str">'CRM-Routing'</span>],
+                    <span className="syntax-prop">autonomousAgents:</span> &#123;
+                  </div>
+                  <div className="code-line indent-2">
+                    <span className="syntax-prop">gmailAutoResponder:</span> <span className="syntax-badge-inline">AUTO_REPLY_ACTIVE</span>,
+                  </div>
+                  <div className="code-line indent-2">
+                    <span className="syntax-prop">crmLeadRouting:</span> <span className="syntax-badge-inline">DISPATCH_ONLINE</span>,
+                  </div>
+                  <div className="code-line indent-2">
+                    <span className="syntax-prop">taskAutomation:</span> <span className="syntax-badge-inline">MULTI_STEP_SYNC</span>
+                  </div>
+                  <div className="code-line indent">&#125;,</div>
+                  <div className="code-line indent">
+                    <span className="syntax-prop">deploymentTarget:</span> <span className="syntax-str">'72_HOURS_PRODUCTION_READY'</span>,
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">delivery:</span> <span className="syntax-str">'72_HOURS_PRODUCTION_READY'</span>,
+                    <span className="syntax-prop">uptime:</span> <span className="syntax-str">'99.98% REALTIME'</span>,
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">status:</span> <span className="syntax-badge-inline">DEPLOYED_LIVE</span>
+                    <span className="syntax-prop">state:</span> <span className="syntax-badge-inline pulse-live">LIVE_PRODUCTION</span>
                   </div>
                   <div className="code-line">&#125;);</div>
                 </div>
 
                 <div className="tech-card-footer">
                   <div className="footer-metric">
-                    <span className="metric-label">Rapid Delivery</span>
-                    <span className="metric-val">72h Production MVP</span>
+                    <span className="metric-label">Execution Speed</span>
+                    <span className="metric-val">72h Rapid MVP</span>
+                  </div>
+                  <div className="footer-metric">
+                    <span className="metric-label">Core Pipeline</span>
+                    <span className="metric-val" style={{ color: '#818cf8' }}>Cursor & Claude 3.5</span>
                   </div>
                   <div className="footer-status-pill">
                     <span className="live-status-dot" /> Autonomous Agent Active
@@ -145,7 +162,7 @@ export default function Hero() {
               {/* Floating Card 1: Vibe Coding */}
               <div className="floating-card float-card-1">
                 <div className="float-icon-wrap violet">
-                  <Zap size={20} />
+                  <Zap size={22} />
                 </div>
                 <div>
                   <div className="float-title">Vibe Coding</div>
@@ -156,7 +173,7 @@ export default function Hero() {
               {/* Floating Card 2: Agentic AI */}
               <div className="floating-card float-card-2">
                 <div className="float-icon-wrap indigo">
-                  <Bot size={20} />
+                  <Bot size={22} />
                 </div>
                 <div>
                   <div className="float-title">Agentic AI</div>
@@ -167,7 +184,7 @@ export default function Hero() {
               {/* Floating Card 3: Prompt Engineering */}
               <div className="floating-card float-card-3">
                 <div className="float-icon-wrap emerald">
-                  <BrainCircuit size={20} />
+                  <BrainCircuit size={22} />
                 </div>
                 <div>
                   <div className="float-title">Prompt Engineering</div>
