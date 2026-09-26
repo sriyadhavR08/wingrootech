@@ -40,10 +40,15 @@ export default function Portfolio() {
                 ? 'https://iiepulse.indrainstitute.com/' 
                 : (p.demoUrl || p.project_url || 'https://wingrootechnologies.com/');
 
+            const image = isI 
+              ? (p.image || '/iiepulse-preview.png') 
+              : p.image;
+
             return {
               ...p,
               title,
               demoUrl,
+              image,
               stats: p.stats || (isZ ? [
                 { label: 'Attendance Accuracy', value: '100% Real-Time' },
                 { label: 'Leave & Swap Approval', value: '< 2 Mins' },
@@ -190,15 +195,31 @@ export default function Portfolio() {
                             <span className="dot-yellow" />
                             <span className="dot-green" />
                           </div>
-                          <span className="mockup-title-text">{project.title.toLowerCase().replace(/\s+/g, '')}.wingrootechnologies.com</span>
+                          <a 
+                            href={project.demoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mockup-title-text"
+                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                            title={`Open ${project.demoUrl}`}
+                          >
+                            {isIIE ? 'iiepulse.indrainstitute.com ↗' : `${project.title.toLowerCase().replace(/\s+/g, '')}.wingrootechnologies.com ↗`}
+                          </a>
                         </div>
-                        <div className="project-media-container">
+                        <a 
+                          href={project.demoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="project-media-container"
+                          title={`Click to open ${project.title} live platform`}
+                          style={{ display: 'block', cursor: 'pointer' }}
+                        >
                           <img 
                             src={project.image} 
                             alt={project.title} 
                             className="project-media-img" 
                           />
-                        </div>
+                        </a>
                       </div>
                     ) : isZentime ? (
                       <div className="project-mockup-frame frame-zentime mobile-mockup-frame">
