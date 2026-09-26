@@ -43,9 +43,11 @@ export default function Portfolio() {
                 ? 'https://iiepulse.indrainstitute.com/' 
                 : (p.demoUrl || p.project_url || 'https://wingrootechnologies.com/');
 
-            const image = isI 
-              ? (p.image || '/iiepulse-preview.png') 
-              : p.image;
+            const image = isZ
+              ? (p.image || '/zentime-preview.png')
+              : isI 
+                ? (p.image || '/iiepulse-preview.png') 
+                : p.image;
 
             return {
               ...p,
@@ -193,6 +195,37 @@ export default function Portfolio() {
                           />
                         </div>
                       </div>
+                    ) : isZentime ? (
+                      <div className="project-mockup-frame frame-zentime mobile-mockup-frame">
+                        <div className="mockup-header-bar mobile-statusbar">
+                          <span className="mobile-clock">15:28</span>
+                          <a 
+                            href={project.demoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="mockup-title-text"
+                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                            title="Open https://zentime.co.in/#dashboard"
+                          >
+                            zentime.co.in/#dashboard ↗
+                          </a>
+                          <span className="mobile-battery-badge">100% 🔋</span>
+                        </div>
+                        <a 
+                          href={project.demoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="mobile-screen-image-wrap"
+                          title="Open Zentime Dashboard"
+                          style={{ display: 'block', cursor: 'pointer' }}
+                        >
+                          <img 
+                            src={project.image || '/zentime-preview.png'} 
+                            alt="ZENTIME Mobile App Attendance Screen" 
+                            className="mobile-mockup-img" 
+                          />
+                        </a>
+                      </div>
                     ) : project.image ? (
                       <div className="project-mockup-frame" style={{ borderColor: project.themeColor }}>
                         <div className="mockup-header-bar">
@@ -226,83 +259,6 @@ export default function Portfolio() {
                             className="project-media-img" 
                           />
                         </a>
-                      </div>
-                    ) : isZentime ? (
-                      <div className="project-mockup-frame frame-zentime mobile-mockup-frame">
-                        <div className="mockup-header-bar mobile-statusbar">
-                          <span className="mobile-clock">09:41 AM</span>
-                          <a 
-                            href={project.demoUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="mockup-title-text"
-                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
-                            title="Open https://zentime.co.in/#dashboard"
-                          >
-                            zentime.co.in/#dashboard ↗
-                          </a>
-                          <span className="mobile-battery-badge">100% 🔋</span>
-                        </div>
-                        <div className="mockup-screen-content mobile-screen-layout">
-                          <div className="zentime-employee-header">
-                            <div className="ui-avatar employee-avatar">
-                              <span>AR</span>
-                            </div>
-                            <div className="employee-info">
-                              <div className="employee-name">Alex Rivera</div>
-                              <div className="employee-role">Full-Stack Engineer • Tech Dept</div>
-                            </div>
-                            <span className="shift-badge-active">Active Shift</span>
-                          </div>
-
-                          {/* Attendance Punch Card */}
-                          <div className="zentime-punch-card">
-                            <div className="punch-status-wrap">
-                              <div className="punch-indicator-pulse" />
-                              <div>
-                                <div className="punch-label">Today's Attendance (Punch-In)</div>
-                                <div className="punch-time-val">09:12 AM Recorded • On Time</div>
-                              </div>
-                            </div>
-                            <span className="punch-status-pill">Punched In</span>
-                          </div>
-
-                          {/* Mobile Quick Action Tiles */}
-                          <div className="zentime-quick-actions-grid">
-                            <div className="zentime-action-tile">
-                              <span className="action-tile-icon">📊</span>
-                              <span className="action-tile-name">Attendance Report</span>
-                              <span className="action-tile-sub">98.5% Present</span>
-                            </div>
-                            <div className="zentime-action-tile">
-                              <span className="action-tile-icon">🏖️</span>
-                              <span className="action-tile-name">Apply Leave</span>
-                              <span className="action-tile-sub">Casual & Sick</span>
-                            </div>
-                            <div className="zentime-action-tile">
-                              <span className="action-tile-icon">⏱️</span>
-                              <span className="action-tile-name">Permission Apply</span>
-                              <span className="action-tile-sub">Short Pass</span>
-                            </div>
-                            <div className="zentime-action-tile">
-                              <span className="action-tile-icon">🔄</span>
-                              <span className="action-tile-name">Week-off Swap</span>
-                              <span className="action-tile-sub">Shift Exchange</span>
-                            </div>
-                          </div>
-
-                          {/* Support Request In-App Desk */}
-                          <div className="zentime-support-tile">
-                            <div className="support-tile-left">
-                              <span className="support-icon">🎧</span>
-                              <div>
-                                <div className="support-title">HR & IT Support Request</div>
-                                <div className="support-sub">Raise tickets for shifts, payroll, or queries</div>
-                              </div>
-                            </div>
-                            <span className="support-chip">24/7 Desk</span>
-                          </div>
-                        </div>
                       </div>
                     ) : isIIE ? (
                       <div className="project-mockup-frame frame-iie mobile-mockup-frame">
