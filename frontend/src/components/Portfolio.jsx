@@ -195,38 +195,7 @@ export default function Portfolio() {
                           />
                         </div>
                       </div>
-                    ) : isZentime ? (
-                      <div className="project-mockup-frame frame-zentime mobile-mockup-frame">
-                        <div className="mockup-header-bar mobile-statusbar">
-                          <span className="mobile-clock">15:28</span>
-                          <a 
-                            href={project.demoUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="mockup-title-text"
-                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
-                            title="Open https://zentime.co.in/#dashboard"
-                          >
-                            zentime.co.in/#dashboard ↗
-                          </a>
-                          <span className="mobile-battery-badge">100% 🔋</span>
-                        </div>
-                        <a 
-                          href={project.demoUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="mobile-screen-image-wrap"
-                          title="Open Zentime Dashboard"
-                          style={{ display: 'block', cursor: 'pointer' }}
-                        >
-                          <img 
-                            src={project.image || '/zentime-preview.png'} 
-                            alt="ZENTIME Mobile App Attendance Screen" 
-                            className="mobile-mockup-img" 
-                          />
-                        </a>
-                      </div>
-                    ) : project.image ? (
+                    ) : (project.image || isZentime) ? (
                       <div className="project-mockup-frame" style={{ borderColor: project.themeColor }}>
                         <div className="mockup-header-bar">
                           <div className="mockup-dots">
@@ -242,7 +211,11 @@ export default function Portfolio() {
                             style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
                             title={`Open ${project.demoUrl}`}
                           >
-                            {isIIE ? 'iiepulse.indrainstitute.com ↗' : `${project.title.toLowerCase().replace(/\s+/g, '')}.wingrootechnologies.com ↗`}
+                            {isZentime 
+                              ? 'zentime.co.in/#dashboard ↗' 
+                              : isIIE 
+                                ? 'iiepulse.indrainstitute.com ↗' 
+                                : `${project.title.toLowerCase().replace(/\s+/g, '')}.wingrootechnologies.com ↗`}
                           </a>
                         </div>
                         <a 
@@ -254,7 +227,7 @@ export default function Portfolio() {
                           style={{ display: 'block', cursor: 'pointer' }}
                         >
                           <img 
-                            src={project.image} 
+                            src={project.image || (isZentime ? '/zentime-preview.png' : '')} 
                             alt={project.title} 
                             className="project-media-img" 
                           />
