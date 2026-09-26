@@ -211,28 +211,25 @@
 }
 
 .mobile-mockup-frame {
-  max-width: 420px;
+  max-width: 380px;
   margin: 0 auto;
-  border-radius: 26px !important;
+  border-radius: 28px !important;
   border: 2px solid rgba(99, 102, 241, 0.35) !important;
   box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .mobile-screen-image-wrap {
   width: 100%;
-  max-height: 520px;
   overflow: hidden;
   background: #230b42;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  display: block;
 }
 
 .mobile-mockup-img {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: top center;
   transition: transform var(--transition-normal);
 }
