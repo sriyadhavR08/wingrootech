@@ -1,6 +1,6 @@
 /* Internship Section Styles */
 .internship-section {
-  padding: 100px 0;
+  padding: 50px 0;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
@@ -11,7 +11,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 32px;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .intern-feature-card {
@@ -1306,8 +1306,8 @@
    ======================================================== */
 
 .internship-faq-section {
-  margin: 70px 0 50px 0;
-  padding-top: 40px;
+  margin: 45px 0 35px 0;
+  padding-top: 35px;
   border-top: 1px solid #e2e8f0;
 }
 

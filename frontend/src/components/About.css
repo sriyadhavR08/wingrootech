@@ -1,6 +1,6 @@
 /* About Section Styles */
 .about-section {
-  padding: 100px 0;
+  padding: 50px 0;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
@@ -12,7 +12,7 @@
   grid-template-columns: 1.15fr 0.85fr;
   gap: 50px;
   align-items: center;
-  margin-bottom: 70px;
+  margin-bottom: 45px;
 }
 
 /* Narrative Column */

@@ -3,7 +3,7 @@
 ======================================================== */
 
 .careers-section {
-  padding: 90px 0;
+  padding: 50px 0;
   background: #ffffff;
   position: relative;
   overflow: hidden;
@@ -14,7 +14,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 22px;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .career-perk-card {
@@ -73,7 +73,7 @@
   border-radius: 20px;
   padding: 36px 40px;
   color: #ffffff;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
   position: relative;
   overflow: hidden;

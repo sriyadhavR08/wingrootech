@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Globe, 
   Smartphone, 
@@ -11,7 +11,9 @@ import {
   Cpu,
   Sparkles,
   Workflow,
-  Zap
+  Zap,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import './Services.css';
 
@@ -127,6 +129,53 @@ export default function Services() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // User-Controlled Services Slider State (No Auto-Slide)
+  const servicesSliderRef = useRef(null);
+  const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+
+  const checkServicesScroll = () => {
+    const el = servicesSliderRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 10);
+    setCanScrollNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+
+    const firstCard = el.querySelector('.service-slide-item');
+    if (firstCard) {
+      const cardWidth = firstCard.offsetWidth + 24;
+      const index = Math.round(el.scrollLeft / cardWidth);
+      setActiveServiceIndex(Math.min(Math.max(index, 0), SERVICES_DATA.length - 1));
+    }
+  };
+
+  useEffect(() => {
+    checkServicesScroll();
+    window.addEventListener('resize', checkServicesScroll);
+    return () => window.removeEventListener('resize', checkServicesScroll);
+  }, []);
+
+  const scrollServices = (direction) => {
+    const el = servicesSliderRef.current;
+    if (!el) return;
+    const firstCard = el.querySelector('.service-slide-item');
+    const scrollAmount = firstCard ? (firstCard.offsetWidth + 24) : 380;
+    el.scrollBy({
+      left: direction === 'next' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const scrollToServiceIndex = (index) => {
+    const el = servicesSliderRef.current;
+    if (!el) return;
+    const cards = el.querySelectorAll('.service-slide-item');
+    if (cards[index]) {
+      cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      setActiveServiceIndex(index);
+    }
+  };
+
   return (
     <section id="services" className="services-section">
       <div className="container">
@@ -145,31 +194,84 @@ export default function Services() {
           </p>
         </div>
 
-        {/* 6 Modern Service Cards */}
-        <div className="services-grid">
-          {SERVICES_DATA.map((srv) => (
-            <div key={srv.num} className="service-card modern-card">
-              <div className="service-top">
-                <div className="service-icon-box">
-                  {srv.icon}
+        {/* User-Controlled Services Slider (No Auto-Slide) */}
+        <div className="services-slider-wrapper">
+          <div className="services-slider-container">
+            <button 
+              type="button"
+              className="services-slider-arrow services-slider-prev"
+              onClick={() => scrollServices('prev')}
+              disabled={!canScrollPrev}
+              aria-label="Previous service"
+              title="Previous service"
+            >
+              <ChevronLeft size={22} />
+            </button>
+
+            <div 
+              className="services-slider-track" 
+              ref={servicesSliderRef}
+              onScroll={checkServicesScroll}
+            >
+              {SERVICES_DATA.map((srv) => (
+                <div key={srv.num} className="service-slide-item">
+                  <div className="service-card modern-card">
+                    <div className="service-top">
+                      <div className="service-icon-box">
+                        {srv.icon}
+                      </div>
+                      <div className="service-number">Service {srv.num}</div>
+                    </div>
+
+                    <div className="service-category">{srv.category}</div>
+                    <h3 className="service-card-title">{srv.title}</h3>
+                    <p className="service-card-desc">{srv.desc}</p>
+
+                    <div className="service-tags-wrapper">
+                      {srv.tags.map((tag, i) => (
+                        <span key={i} className="service-pill-tag">
+                          <Check size={12} className="tag-check" />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className="service-number">Service {srv.num}</div>
-              </div>
-
-              <div className="service-category">{srv.category}</div>
-              <h3 className="service-card-title">{srv.title}</h3>
-              <p className="service-card-desc">{srv.desc}</p>
-
-              <div className="service-tags-wrapper">
-                {srv.tags.map((tag, i) => (
-                  <span key={i} className="service-pill-tag">
-                    <Check size={12} className="tag-check" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              ))}
             </div>
-          ))}
+
+            <button 
+              type="button"
+              className="services-slider-arrow services-slider-next"
+              onClick={() => scrollServices('next')}
+              disabled={!canScrollNext}
+              aria-label="Next service"
+              title="Next service"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+
+          {/* Slider Navigation Controls (Dots + Hint + Counter) */}
+          <div className="services-slider-controls">
+            <div className="services-slider-dots">
+              {SERVICES_DATA.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`services-dot ${activeServiceIndex === idx ? 'active' : ''}`}
+                  onClick={() => scrollToServiceIndex(idx)}
+                  aria-label={`Go to service ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="slider-hint-text">
+              <span>← Drag or click arrows to explore services →</span>
+            </div>
+            <div className="services-slider-counter">
+              <span>{activeServiceIndex + 1}</span> / <span>{SERVICES_DATA.length}</span>
+            </div>
+          </div>
         </div>
 
         {/* CTA Banner */}

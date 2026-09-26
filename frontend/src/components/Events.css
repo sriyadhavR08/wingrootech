@@ -1,6 +1,6 @@
 /* Events Section Styles */
 .events-section {
-  padding: 100px 0;
+  padding: 50px 0;
   background: var(--bg-primary);
   position: relative;
 }
@@ -8,7 +8,7 @@
 /* User-Controlled Events Slider Styles */
 .events-slider-wrapper {
   position: relative;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .events-slider-container {
