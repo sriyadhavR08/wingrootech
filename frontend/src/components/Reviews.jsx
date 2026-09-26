@@ -60,31 +60,40 @@ const STUDENT_REVIEWS = [
   }
 ];
 
-// Duplicate list so all 6 reviews can be centered in 3-card or 2-card desktop layouts
-const DISPLAY_REVIEWS = [...STUDENT_REVIEWS, ...STUDENT_REVIEWS];
+// Append first 3 items at the end so it loops infinitely and seamlessly
+const DISPLAY_REVIEWS = [
+  ...STUDENT_REVIEWS,
+  ...STUDENT_REVIEWS.slice(0, 3)
+];
 
 export default function Reviews() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [enableTransition, setEnableTransition] = useState(true);
+
   const trackRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Auto-slide every 2 seconds (2000ms) as requested
+  // Auto-slide loop every 2.2 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % STUDENT_REVIEWS.length);
-    }, 2000);
+      setEnableTransition(true);
+      setCurrentIndex((prev) => prev + 1);
+    }, 2200);
 
     return () => clearInterval(timer);
   }, []);
 
-  // Update track transform whenever currentIndex changes or window resizes
+  // Update track position with smooth translation or silent reset
   useEffect(() => {
     const updatePosition = () => {
       if (!trackRef.current) return;
       const cards = trackRef.current.children;
       if (cards && cards[currentIndex]) {
         const offset = cards[currentIndex].offsetLeft;
+        trackRef.current.style.transition = enableTransition 
+          ? 'transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)' 
+          : 'none';
         trackRef.current.style.transform = `translateX(-${offset}px)`;
       }
     };
@@ -92,14 +101,45 @@ export default function Reviews() {
     updatePosition();
     window.addEventListener('resize', updatePosition);
     return () => window.removeEventListener('resize', updatePosition);
-  }, [currentIndex]);
+  }, [currentIndex, enableTransition]);
+
+  // Seamless infinite loop handler
+  const handleTransitionEnd = () => {
+    if (currentIndex >= STUDENT_REVIEWS.length) {
+      setEnableTransition(false);
+      setCurrentIndex(0);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setEnableTransition(true);
+        });
+      });
+    }
+  };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % STUDENT_REVIEWS.length);
+    setEnableTransition(true);
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? STUDENT_REVIEWS.length - 1 : prev - 1));
+    setEnableTransition(true);
+    if (currentIndex <= 0) {
+      setEnableTransition(false);
+      setCurrentIndex(STUDENT_REVIEWS.length);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setEnableTransition(true);
+          setCurrentIndex(STUDENT_REVIEWS.length - 1);
+        });
+      });
+    } else {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleDotClick = (idx) => {
+    setEnableTransition(true);
+    setCurrentIndex(idx);
   };
 
   // Touch handlers for mobile swipe
@@ -120,6 +160,8 @@ export default function Reviews() {
       handlePrev();
     }
   };
+
+  const activeDotIndex = currentIndex % STUDENT_REVIEWS.length;
 
   return (
     <section id="reviews" className="reviews-section">
@@ -149,6 +191,7 @@ export default function Reviews() {
             <div 
               ref={trackRef}
               className="reviews-slider-track"
+              onTransitionEnd={handleTransitionEnd}
             >
               {DISPLAY_REVIEWS.map((review, idx) => (
                 <div key={`${review.id}-${idx}`} className="review-card">
@@ -217,8 +260,8 @@ export default function Reviews() {
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`review-dot ${currentIndex === idx ? 'review-dot-active' : ''}`}
+                  onClick={() => handleDotClick(idx)}
+                  className={`review-dot ${activeDotIndex === idx ? 'review-dot-active' : ''}`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
@@ -233,12 +276,6 @@ export default function Reviews() {
             >
               <ChevronRight size={20} />
             </button>
-          </div>
-
-          {/* Auto-Slide Indicator Hint */}
-          <div className="reviews-auto-hint">
-            <span className="hint-pulse" />
-            <span>Auto-sliding every 2 seconds</span>
           </div>
         </div>
       </div>
