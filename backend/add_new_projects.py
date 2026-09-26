@@ -34,12 +34,12 @@ new_projects = [
     {
         'title': 'TOURISTS GUARD',
         'heading': 'Intelligent Tourist Safety & Travel Assistance Platform.',
-        'tag': 'Safety & Travel Platform',
+        'tag': "Our Candidates' Work",
         'tags': 'Real-time GPS SOS, Safety Heatmaps, Multi-lingual Guide, Verified Hotspots, Cloud Alerts',
         'description': 'Tourists Guard is a smart travel security and assistance platform developed by Wingroo Technologies. It provides real-time emergency alerts, geofenced tourist zone guidance, verified local services, multi-lingual SOS assistance, and live safety monitoring to ensure secure travel experiences worldwide.',
         'category': 'Web & Mobile App',
         'theme_color': '#f59e0b',
-        'project_url': '#contact',
+        'project_url': '',
         'image': '/tourists-guard-preview.jpg',
         'video_url': '',
         'media_type': 'image'
@@ -47,12 +47,12 @@ new_projects = [
     {
         'title': 'SMART AI BOT',
         'heading': 'Next-Gen Conversational AI & Automated Enterprise Assistant.',
-        'tag': 'AI & Automation Platform',
+        'tag': "Our Candidates' Work",
         'tags': 'Conversational AI, Natural Language Processing, 24/7 Automation, Multi-Channel, Workflow Integration',
         'description': 'Smart AI Bot is an intelligent conversational agent engineered by Wingroo Technologies. Built with advanced NLP and real-time knowledge retrieval, it automates multi-channel customer inquiries, streamlines internal enterprise workflows, and delivers personalized, context-aware user interactions 24/7.',
         'category': 'AI Platform',
         'theme_color': '#8b5cf6',
-        'project_url': '#contact',
+        'project_url': '',
         'image': '/smart-ai-bot-preview.jpg',
         'video_url': '',
         'media_type': 'image'
@@ -60,12 +60,12 @@ new_projects = [
     {
         'title': 'VIRTUEHIRE',
         'heading': 'AI-Powered Talent Acquisition & Recruitment Pipeline.',
-        'tag': 'Talent & HR Tech',
+        'tag': "Our Candidates' Work",
         'tags': 'AI Candidate Screening, Resume Parsing, Automated Interviews, Talent Analytics, HR Pipeline',
         'description': 'VirtueHire is an intelligent hiring and talent assessment platform developed by Wingroo Technologies. It transforms the recruitment lifecycle with AI-driven resume parsing, automated candidate screening, interactive interview scheduling, and skill-matching analytics to help organizations hire top talent efficiently.',
         'category': 'HR Tech / SaaS',
         'theme_color': '#10b981',
-        'project_url': '#contact',
+        'project_url': '',
         'image': '/virtuehire-preview.jpg',
         'video_url': '',
         'media_type': 'image'

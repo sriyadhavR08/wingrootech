@@ -35,7 +35,6 @@ export default function Portfolio() {
             const isI = (p.title || '').toUpperCase().includes('IIE');
             const title = isI ? 'IIE PULSE' : p.title;
             const category = isI ? 'Web & Mobile App' : (p.category || 'Digital Platform');
-            const tag = isI ? 'Web & Mobile Platform' : (p.tag || 'Featured Project');
             const heading = isI ? 'All-In-One Academic & Student Management Platform.' : (p.heading || p.title);
             const demoUrl = isZ 
               ? 'https://zentime.co.in/#dashboard' 
@@ -52,12 +51,20 @@ export default function Portfolio() {
             const isTG = (p.title || '').toUpperCase().includes('TOURIST');
             const isBot = (p.title || '').toUpperCase().includes('BOT');
             const isVH = (p.title || '').toUpperCase().includes('VIRTUE');
+            const isCandidateWork = isTG || isBot || isVH || (p.tag || '').toLowerCase().includes('candidate');
+
+            const tag = isCandidateWork 
+              ? "Our Candidates' Work" 
+              : isI 
+                ? 'Web & Mobile Platform' 
+                : (p.tag || 'Featured Project');
 
             return {
               ...p,
               title,
               category,
               tag,
+              isCandidateWork,
               heading,
               demoUrl,
               image,
@@ -135,8 +142,11 @@ export default function Portfolio() {
           <div className="portfolio-showcase-list">
           {projectsList.map((project, index) => {
             const isReverse = index % 2 === 1;
-            const isZentime = project.title.toUpperCase() === 'ZENTIME';
-            const isIIE = project.title.toUpperCase().includes('IIE');
+            const isZentime = (project.title || '').toUpperCase().includes('ZENTIME');
+            const isIIE = (project.title || '').toUpperCase().includes('IIE');
+            const isCandidateWork = project.isCandidateWork || 
+              ['TOURIST', 'BOT', 'VIRTUE'].some(k => (project.title || '').toUpperCase().includes(k)) ||
+              (project.tag || '').toLowerCase().includes('candidate');
 
             return (
               <div 
@@ -146,9 +156,9 @@ export default function Portfolio() {
                 <div className="project-grid">
                   {/* Left Info Column */}
                   <div className="project-info-col">
-                    <div className={`project-tag-pill ${isReverse ? 'cyan-pill' : ''}`}>
+                    <div className={`project-tag-pill ${isReverse ? 'cyan-pill' : ''} ${isCandidateWork ? 'candidate-pill' : ''}`}>
                       <Sparkles size={14} />
-                      <span>{project.tag || 'Project'}</span>
+                      <span>{isCandidateWork ? "Our Candidates' Work" : (project.tag || 'Project')}</span>
                     </div>
 
                     <h3 className={`project-brand-name ${isReverse ? 'cyan-text' : ''}`}>
@@ -167,20 +177,22 @@ export default function Portfolio() {
                     </div>
 
                     <div className="project-btn-row">
-                      <a 
-                        href={project.demoUrl} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-primary project-cta"
-                        title={`View ${project.title} live platform`}
-                      >
-                        <span>View {project.title}</span>
-                        <ExternalLink size={16} />
-                      </a>
+                      {!isCandidateWork && (
+                        <a 
+                          href={project.demoUrl} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-primary project-cta"
+                          title={`View ${project.title} live platform`}
+                        >
+                          <span>View {project.title}</span>
+                          <ExternalLink size={16} />
+                        </a>
+                      )}
                       <button 
                         type="button"
                         onClick={() => handleOpenModal(project)} 
-                        className="btn btn-secondary project-cta"
+                        className={`btn ${isCandidateWork ? 'btn-primary' : 'btn-secondary'} project-cta`}
                         title="View details and architecture"
                       >
                         <span>Project Overview</span>
@@ -219,35 +231,63 @@ export default function Portfolio() {
                             <span className="dot-yellow" />
                             <span className="dot-green" />
                           </div>
-                          <a 
-                            href={project.demoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mockup-title-text"
-                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
-                            title={`Open ${project.demoUrl}`}
-                          >
-                            {isZentime 
-                              ? 'zentime.co.in/#dashboard ↗' 
-                              : isIIE 
-                                ? 'iiepulse.indrainstitute.com ↗' 
-                                : `${project.title.toLowerCase().replace(/\s+/g, '')}.wingrootechnologies.com ↗`}
-                          </a>
+                          {isZentime ? (
+                            <a 
+                              href={project.demoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mockup-title-text"
+                              style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                              title={`Open ${project.demoUrl}`}
+                            >
+                              zentime.co.in/#dashboard ↗
+                            </a>
+                          ) : isIIE ? (
+                            <a 
+                              href={project.demoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mockup-title-text"
+                              style={{ textDecoration: 'none', color: 'inherit', fontWeight: 600 }}
+                              title={`Open ${project.demoUrl}`}
+                            >
+                              iiepulse.indrainstitute.com ↗
+                            </a>
+                          ) : (
+                            <span className="mockup-title-text" style={{ color: '#94a3b8', fontWeight: 600 }}>
+                              {project.title.toLowerCase().replace(/\s+/g, '')}.internal (Our Candidates' Work)
+                            </span>
+                          )}
                         </div>
-                        <a 
-                          href={project.demoUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="project-media-container"
-                          title={`Click to open ${project.title} live platform`}
-                          style={{ display: 'block', cursor: 'pointer' }}
-                        >
-                          <img 
-                            src={project.image || (isZentime ? '/zentime-preview.png' : '')} 
-                            alt={project.title} 
-                            className={`project-media-img ${isZentime ? 'img-contain' : ''}`} 
-                          />
-                        </a>
+                        {isCandidateWork ? (
+                          <div 
+                            onClick={() => handleOpenModal(project)} 
+                            className="project-media-container"
+                            title={`Click to view ${project.title} overview`}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <img 
+                              src={project.image} 
+                              alt={project.title} 
+                              className="project-media-img" 
+                            />
+                          </div>
+                        ) : (
+                          <a 
+                            href={project.demoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="project-media-container"
+                            title={`Click to open ${project.title} live platform`}
+                            style={{ display: 'block', cursor: 'pointer' }}
+                          >
+                            <img 
+                              src={project.image || (isZentime ? '/zentime-preview.png' : '')} 
+                              alt={project.title} 
+                              className={`project-media-img ${isZentime ? 'img-contain' : ''}`} 
+                            />
+                          </a>
+                        )}
                       </div>
                     ) : isIIE ? (
                       <div className="project-mockup-frame frame-iie mobile-mockup-frame">
@@ -443,15 +483,17 @@ export default function Portfolio() {
             </div>
 
             <div className="modal-footer">
-              <a 
-                href={activeProjectModal.demoUrl || '#contact'} 
-                target={activeProjectModal.demoUrl ? '_blank' : '_self'}
-                rel="noopener noreferrer"
-                className="btn btn-primary"
-              >
-                <span>Visit Live Platform</span>
-                <ExternalLink size={16} />
-              </a>
+              {!activeProjectModal.isCandidateWork && activeProjectModal.demoUrl && activeProjectModal.demoUrl !== '#contact' && (
+                <a 
+                  href={activeProjectModal.demoUrl} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  <span>Visit Live Platform</span>
+                  <ExternalLink size={16} />
+                </a>
+              )}
               <button onClick={handleCloseModal} className="btn btn-secondary">
                 <span>Close</span>
               </button>
