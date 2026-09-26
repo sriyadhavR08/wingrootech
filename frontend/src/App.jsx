@@ -8,6 +8,7 @@ import Careers from './components/Careers'
 import Events from './components/Events'
 import Portfolio from './components/Portfolio'
 import WhyWingroo from './components/WhyWingroo'
+import Reviews from './components/Reviews'
 import CTA from './components/CTA'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
@@ -77,6 +78,7 @@ export default function App() {
         <Events key={`events-${dataVersion}`} />
         <Portfolio key={`portfolio-${dataVersion}`} />
         <WhyWingroo />
+        <Reviews />
         <CTA />
         <Contact />
       </main>
