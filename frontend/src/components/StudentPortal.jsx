@@ -429,7 +429,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '' }) {
                               Need priority assistance or schedule change?
                             </div>
                             <a 
-                              href={`https://wa.me/919626779609?text=Hi%20Wingroo%20Technologies,%20I%20am%20${encodeURIComponent(app.name)}%20inquiring%20about%20my%20Internship%20Application%20${encodeURIComponent(app.application_no)}`} 
+                              href={`https://wa.me/918124779111?text=Hi%20Wingroo%20Technologies,%20I%20am%20${encodeURIComponent(app.name)}%20inquiring%20about%20my%20Internship%20Application%20${encodeURIComponent(app.application_no)}`} 
                               target="_blank" 
                               rel="noopener noreferrer" 
                               className="btn-whatsapp-query"

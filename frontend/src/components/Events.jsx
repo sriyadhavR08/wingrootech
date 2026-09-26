@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Mic2, 
   TerminalSquare, 
@@ -9,7 +9,9 @@ import {
   ArrowRight, 
   Sparkles,
   CheckCircle,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import './Events.css';
 
@@ -72,6 +74,47 @@ export default function Events() {
     college: '',
     year: ''
   });
+
+  // User-Controlled Slider State (No Auto-Slide)
+  const eventsSliderRef = useRef(null);
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+
+  const checkEventsScroll = () => {
+    const el = eventsSliderRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 10);
+    setCanScrollNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+
+    const firstCard = el.querySelector('.event-slide-item');
+    if (firstCard) {
+      const cardWidth = firstCard.offsetWidth + 24;
+      const index = Math.round(el.scrollLeft / cardWidth);
+      setActiveEventIndex(Math.min(Math.max(index, 0), eventsList.length - 1));
+    }
+  };
+
+  const scrollEvents = (direction) => {
+    const el = eventsSliderRef.current;
+    if (!el) return;
+    const firstCard = el.querySelector('.event-slide-item');
+    const scrollAmount = firstCard ? (firstCard.offsetWidth + 24) : 340;
+    el.scrollBy({
+      left: direction === 'next' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const scrollToEventIndex = (index) => {
+    const el = eventsSliderRef.current;
+    if (!el) return;
+    const cards = el.querySelectorAll('.event-slide-item');
+    if (cards[index]) {
+      cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      setActiveEventIndex(index);
+    }
+  };
 
   const fetchEvents = () => {
     fetch(`${API_BASE_URL}/api/events`)
@@ -166,51 +209,104 @@ export default function Events() {
           </p>
         </div>
 
-        {/* Event Cards */}
+        {/* User-Controlled Events Slider (No Auto-Slide) */}
         {eventsList.length > 0 ? (
-          <div className="events-grid">
-            {eventsList.map((ev, idx) => (
-              <div key={ev.id || idx} className="event-card modern-card">
-                {/* Event Poster Image if available */}
-                {ev.poster_url && (
-                  <div className="event-poster-container">
-                    <img src={ev.poster_url} alt={ev.title} className="event-poster-img" />
+          <div className="events-slider-wrapper">
+            <div className="events-slider-container">
+              <button 
+                type="button"
+                className="events-slider-arrow events-slider-prev"
+                onClick={() => scrollEvents('prev')}
+                disabled={!canScrollPrev}
+                aria-label="Previous event"
+                title="Previous event"
+              >
+                <ChevronLeft size={22} />
+              </button>
+
+              <div 
+                className="events-slider-track" 
+                ref={eventsSliderRef}
+                onScroll={checkEventsScroll}
+              >
+                {eventsList.map((ev, idx) => (
+                  <div key={ev.id || idx} className="event-slide-item">
+                    <div className="event-card modern-card">
+                      {/* Event Poster Image if available */}
+                      {ev.poster_url && (
+                        <div className="event-poster-container">
+                          <img src={ev.poster_url} alt={ev.title} className="event-poster-img" />
+                        </div>
+                      )}
+
+                      <div className="event-card-top">
+                        <div className="event-icon-box">
+                          {ev.icon || <Sparkles size={24} />}
+                        </div>
+                        <span className="event-badge">{ev.badge || 'Featured Event'}</span>
+                      </div>
+
+                      <div className="event-card-body">
+                        <h3 className="event-title">{ev.title}</h3>
+                        <div className="event-tagline">{ev.tagline}</div>
+                        <p className="event-desc">{ev.description}</p>
+                      </div>
+
+                      <div className="event-card-meta">
+                        <div className="meta-item">
+                          <Calendar size={15} className="meta-icon" />
+                          <span>{ev.event_date}</span>
+                        </div>
+                        <div className="meta-item">
+                          <MapPin size={15} className="meta-icon" />
+                          <span>{ev.location}</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => handleRegisterClick(ev)} 
+                        className="btn btn-outline event-action-btn"
+                      >
+                        <span>Register Interest</span>
+                        <ArrowRight size={15} />
+                      </button>
+                    </div>
                   </div>
-                )}
-
-              <div className="event-card-top">
-                <div className="event-icon-box">
-                  {ev.icon || <Sparkles size={24} />}
-                </div>
-                <span className="event-badge">{ev.badge || 'Featured Event'}</span>
-              </div>
-
-              <div className="event-card-body">
-                <h3 className="event-title">{ev.title}</h3>
-                <div className="event-tagline">{ev.tagline}</div>
-                <p className="event-desc">{ev.description}</p>
-              </div>
-
-              <div className="event-card-meta">
-                <div className="meta-item">
-                  <Calendar size={15} className="meta-icon" />
-                  <span>{ev.event_date}</span>
-                </div>
-                <div className="meta-item">
-                  <MapPin size={15} className="meta-icon" />
-                  <span>{ev.location}</span>
-                </div>
+                ))}
               </div>
 
               <button 
-                onClick={() => handleRegisterClick(ev)} 
-                className="btn btn-outline event-action-btn"
+                type="button"
+                className="events-slider-arrow events-slider-next"
+                onClick={() => scrollEvents('next')}
+                disabled={!canScrollNext}
+                aria-label="Next event"
+                title="Next event"
               >
-                <span>Register Interest</span>
-                <ArrowRight size={15} />
+                <ChevronRight size={22} />
               </button>
             </div>
-          ))}
+
+            {/* Slider Navigation Controls (Dots + Hint + Counter) */}
+            <div className="events-slider-controls">
+              <div className="events-slider-dots">
+                {eventsList.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`events-dot ${activeEventIndex === idx ? 'active' : ''}`}
+                    onClick={() => scrollToEventIndex(idx)}
+                    aria-label={`Go to event ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              <div className="slider-hint-text">
+                <span>← Drag or click arrows to explore events →</span>
+              </div>
+              <div className="events-slider-counter">
+                <span>{activeEventIndex + 1}</span> / <span>{eventsList.length}</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="events-empty-state modern-card" style={{ textAlign: 'center', padding: '50px 20px', margin: '20px 0', border: '1px dashed rgba(255,255,255,0.12)' }}>

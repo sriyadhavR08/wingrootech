@@ -106,7 +106,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
                 <FacebookIcon />
               </a>
               <a 
-                href="https://wa.me/919626779609" 
+                href="https://wa.me/918124779111" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="social-btn" 

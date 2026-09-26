@@ -51,7 +51,7 @@ const SIDEBAR_LINKS = [
     id: 'whatsapp',
     name: 'WhatsApp',
     label: 'Chat on WhatsApp',
-    href: 'https://wa.me/919626779609',
+    href: 'https://wa.me/918124779111',
     icon: WhatsappIcon,
     color: '#25d366'
   },

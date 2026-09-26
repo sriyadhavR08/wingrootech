@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Briefcase, 
   MapPin, 
@@ -13,6 +13,7 @@ import {
   Check, 
   FileText, 
   X, 
+  ChevronLeft,
   ChevronRight, 
   Rocket, 
   ShieldCheck,
@@ -113,6 +114,53 @@ export default function Careers() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null); // { success: bool, message: str, appNo: str }
+
+  // User-Controlled Slider State (No Auto-Slide)
+  const rolesSliderRef = useRef(null);
+  const [activeRoleIndex, setActiveRoleIndex] = useState(0);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+
+  const checkRolesScroll = () => {
+    const el = rolesSliderRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 10);
+    setCanScrollNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+
+    const firstCard = el.querySelector('.role-slide-item');
+    if (firstCard) {
+      const cardWidth = firstCard.offsetWidth + 24;
+      const index = Math.round(el.scrollLeft / cardWidth);
+      setActiveRoleIndex(Math.min(Math.max(index, 0), OPEN_ROLES.length - 1));
+    }
+  };
+
+  useEffect(() => {
+    checkRolesScroll();
+    window.addEventListener('resize', checkRolesScroll);
+    return () => window.removeEventListener('resize', checkRolesScroll);
+  }, []);
+
+  const scrollRoles = (direction) => {
+    const el = rolesSliderRef.current;
+    if (!el) return;
+    const firstCard = el.querySelector('.role-slide-item');
+    const scrollAmount = firstCard ? (firstCard.offsetWidth + 24) : 380;
+    el.scrollBy({
+      left: direction === 'next' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const scrollToRoleIndex = (index) => {
+    const el = rolesSliderRef.current;
+    if (!el) return;
+    const cards = el.querySelectorAll('.role-slide-item');
+    if (cards[index]) {
+      cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      setActiveRoleIndex(index);
+    }
+  };
 
   const handleOpenApply = (role = null) => {
     setSelectedRole(role);
@@ -303,50 +351,104 @@ export default function Careers() {
           </button>
         </div>
 
-        <div className="roles-grid">
-          {OPEN_ROLES.map((role) => (
-            <div key={role.id} className="role-card">
-              <div className="role-card-top">
-                <div className="role-dept-tag">{role.department}</div>
-                <div className="role-highlight-pill">{role.highlight}</div>
-              </div>
+        {/* User-Controlled Roles Slider (No Auto-Slide) */}
+        <div className="roles-slider-wrapper">
+          <div className="roles-slider-container">
+            <button 
+              type="button"
+              className="roles-slider-arrow roles-slider-prev"
+              onClick={() => scrollRoles('prev')}
+              disabled={!canScrollPrev}
+              aria-label="Previous job position"
+              title="Previous position"
+            >
+              <ChevronLeft size={22} />
+            </button>
 
-              <h4 className="role-title">{role.title}</h4>
-              <p className="role-desc">{role.description}</p>
+            <div 
+              className="roles-slider-track" 
+              ref={rolesSliderRef}
+              onScroll={checkRolesScroll}
+            >
+              {OPEN_ROLES.map((role) => (
+                <div key={role.id} className="role-slide-item">
+                  <div className="role-card">
+                    <div className="role-card-top">
+                      <div className="role-dept-tag">{role.department}</div>
+                      <div className="role-highlight-pill">{role.highlight}</div>
+                    </div>
 
-              <div className="role-meta-list">
-                <div className="role-meta-item">
-                  <MapPin size={15} />
-                  <span>{role.location}</span>
+                    <h4 className="role-title">{role.title}</h4>
+                    <p className="role-desc">{role.description}</p>
+
+                    <div className="role-meta-list">
+                      <div className="role-meta-item">
+                        <MapPin size={15} />
+                        <span>{role.location}</span>
+                      </div>
+                      <div className="role-meta-item">
+                        <Clock size={15} />
+                        <span>{role.type}</span>
+                      </div>
+                      <div className="role-meta-item">
+                        <Briefcase size={15} />
+                        <span>{role.experience}</span>
+                      </div>
+                    </div>
+
+                    <div className="role-skills-wrap">
+                      {role.skills.map((skill, sIdx) => (
+                        <span key={sIdx} className="role-skill-pill">{skill}</span>
+                      ))}
+                    </div>
+
+                    <div className="role-footer">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenApply(role)}
+                        className="btn btn-primary role-apply-btn"
+                      >
+                        <span>Apply For This Role</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="role-meta-item">
-                  <Clock size={15} />
-                  <span>{role.type}</span>
-                </div>
-                <div className="role-meta-item">
-                  <Briefcase size={15} />
-                  <span>{role.experience}</span>
-                </div>
-              </div>
-
-              <div className="role-skills-wrap">
-                {role.skills.map((skill, sIdx) => (
-                  <span key={sIdx} className="role-skill-pill">{skill}</span>
-                ))}
-              </div>
-
-              <div className="role-footer">
-                <button
-                  type="button"
-                  onClick={() => handleOpenApply(role)}
-                  className="btn btn-primary role-apply-btn"
-                >
-                  <span>Apply For This Role</span>
-                  <ArrowRight size={16} />
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
+
+            <button 
+              type="button"
+              className="roles-slider-arrow roles-slider-next"
+              onClick={() => scrollRoles('next')}
+              disabled={!canScrollNext}
+              aria-label="Next job position"
+              title="Next position"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+
+          {/* Interactive Navigation Dots & Counter */}
+          <div className="roles-slider-controls">
+            <div className="roles-slider-dots">
+              {OPEN_ROLES.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`roles-dot ${activeRoleIndex === idx ? 'active' : ''}`}
+                  onClick={() => scrollToRoleIndex(idx)}
+                  aria-label={`Go to position ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="slider-hint-text">
+              <span>← Drag or click arrows to view more roles →</span>
+            </div>
+            <div className="roles-slider-counter">
+              <span>{activeRoleIndex + 1}</span> / <span>{OPEN_ROLES.length}</span>
+            </div>
+          </div>
         </div>
       </div>
 

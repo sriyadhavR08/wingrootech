@@ -56,7 +56,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: 'Hello! 👋 Welcome to Wingroo Technologies. I am your AI assistant. How can I help you today with our Internships, Software Services, or Engineering Roles?',
+      text: "Hello! 👋 I'm **Wingy**, your Wingroo AI Assistant. How can I help you today with our Internships, Software Services, or Engineering Roles?",
       time: 'Just now'
     }
   ]);
@@ -147,7 +147,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
       ...prev,
       {
         sender: 'bot',
-        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! Our academic and technical leads will reach out to you on **${leadContact.phone}** shortly. You can also message us directly on WhatsApp at +91 96267 79609.`,
+        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! Our academic and technical leads will reach out to you on **${leadContact.phone}** shortly. You can also message us directly on WhatsApp at +91 81247 79111.`,
         time: 'Just now'
       }
     ]);
@@ -160,7 +160,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
         <button 
           onClick={() => setIsOpen(true)} 
           className="ai-chat-launcher-btn"
-          aria-label="Open Wingroo AI Assistant"
+          aria-label="Open Wingy - Wingroo AI Assistant"
         >
           <div className="launcher-pulse-ring" />
           <div className="launcher-icon-wrap">
@@ -168,7 +168,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
           </div>
           <div className="launcher-tooltip">
             <span className="tooltip-dot" />
-            <span>Chat with Wingroo AI</span>
+            <span>Chat with Wingy</span>
           </div>
         </button>
       )}
@@ -184,7 +184,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
                 <span className="status-dot-online" />
               </div>
               <div>
-                <h4 className="bot-name">Wingroo AI Assistant</h4>
+                <h4 className="bot-name">Wingy <span style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 500 }}>(Wingroo AI)</span></h4>
                 <span className="bot-status-text">Online • Instant Answers</span>
               </div>
             </div>

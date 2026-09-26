@@ -226,7 +226,6 @@ export default function Contact() {
                     <span className="info-label">Phone</span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <a href="tel:+918124779111" className="info-link">+91 81247 79111</a>
-                      <a href="tel:+919626779609" className="info-link">+91 96267 79609</a>
                     </div>
                   </div>
                 </div>
@@ -258,13 +257,13 @@ export default function Contact() {
                   <p>Connect with our technical lead via WhatsApp or direct call.</p>
                 </div>
                 <a 
-                  href="https://wa.me/919626779609?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20inquire%20about%20your%20services/internship." 
+                  href="https://wa.me/918124779111?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20inquire%20about%20your%20services/internship." 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="btn btn-outline whatsapp-btn"
                 >
                   <MessageSquare size={16} />
-                  <span>Chat on WhatsApp (+91 96267 79609)</span>
+                  <span>Chat on WhatsApp (+91 81247 79111)</span>
                 </a>
               </div>
 
