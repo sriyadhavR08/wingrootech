@@ -860,13 +860,13 @@ export default function Internship({ onOpenStudentPortal }) {
             </div>
             <h3 className="careers-title">Build the Future with Us — Join Our Core Engineering Team</h3>
             <p className="careers-desc">
-              We're hiring passionate developers, Prompt Engineers, and AI builders for active production products including <strong>ZENTIME</strong>, <strong>IIE PLUS</strong>, and autonomous enterprise AI agents. Freshers and working professionals are welcome!
+              We're hiring passionate developers, Prompt Engineers, and AI builders for active production products including <strong>ZENTIME</strong>, <strong>IIE PULSE (Web & Mobile Platform)</strong>, and autonomous enterprise AI agents. Freshers and working professionals are welcome!
             </p>
 
             <div className="active-projects-strip">
               <span className="strip-title">Active Development Products:</span>
               <span className="strip-tag">⏱️ ZENTIME App</span>
-              <span className="strip-tag">📱 IIE PLUS Platform</span>
+              <span className="strip-tag">🌐📱 IIE PULSE (Web & Mobile)</span>
               <span className="strip-tag">🤖 Agentic AI Workflows</span>
               <span className="strip-tag">⚡ Vibe Coding MVP Sprints</span>
             </div>
@@ -1417,7 +1417,7 @@ export default function Internship({ onOpenStudentPortal }) {
               <div className="modal-tag">Wingroo Engineering Careers</div>
               <h3 className="modal-title">Apply for Job / Join Our Team</h3>
               <p className="modal-desc">
-                Work on live production systems like ZENTIME, IIE PLUS, and autonomous Agentic AI workflows.
+                Work on live production systems like ZENTIME, IIE PULSE (Web & Mobile App), and autonomous Agentic AI workflows.
               </p>
             </div>
 

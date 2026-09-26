@@ -55,9 +55,9 @@ const OPEN_ROLES = [
     location: 'Coimbatore',
     type: 'Full-Time',
     experience: '1 – 3 Years',
-    description: 'Lead mobile app development for flagship products including ZENTIME and IIE PLUS with offline sync and clean state management.',
-    skills: ['Flutter', 'Dart', 'React Native', 'REST APIs', 'Firebase', 'State Management'],
-    highlight: 'Build ZENTIME & IIE PLUS mobile apps'
+    description: 'Lead web and mobile app development for flagship products including ZENTIME and IIE PULSE (Web & Mobile Platform) with offline sync and clean state management.',
+    skills: ['Flutter', 'Dart', 'React Native', 'React.js', 'REST APIs', 'Firebase', 'State Management'],
+    highlight: 'Build ZENTIME & IIE PULSE web & mobile apps'
   },
   {
     id: 'frontend-uiux',
@@ -324,12 +324,12 @@ export default function Careers() {
           <p className="banner-desc">
             Our teams are actively architecting and scaling production software including 
             <strong> ZENTIME</strong> (Next-gen Productivity & Time Management Mobile App), 
-            <strong> IIE PLUS</strong> (Industrial & Educational Enterprise Ecosystem), and 
+            <strong> IIE PULSE</strong> (Comprehensive Web & Mobile Educational Platform), and 
             <strong> Autonomous Agentic Workflows</strong> (Gmail auto-responders & CRM routing).
           </p>
           <div className="banner-tags">
             <span className="b-tag">📱 ZENTIME Mobile App</span>
-            <span className="b-tag">⚡ IIE PLUS Ecosystem</span>
+            <span className="b-tag">🌐📱 IIE PULSE (Web & Mobile)</span>
             <span className="b-tag">🤖 Custom Autonomous AI</span>
             <span className="b-tag">🚀 72h Rapid MVP Engine</span>
           </div>

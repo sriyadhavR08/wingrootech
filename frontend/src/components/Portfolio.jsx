@@ -34,6 +34,9 @@ export default function Portfolio() {
             const isZ = (p.title || '').toUpperCase().includes('ZENTIME');
             const isI = (p.title || '').toUpperCase().includes('IIE');
             const title = isI ? 'IIE PULSE' : p.title;
+            const category = isI ? 'Web & Mobile App' : (p.category || 'Digital Platform');
+            const tag = isI ? 'Web & Mobile Platform' : (p.tag || 'Featured Project');
+            const heading = isI ? 'All-In-One Academic & Student Management Platform.' : (p.heading || p.title);
             const demoUrl = isZ 
               ? 'https://zentime.co.in/#dashboard' 
               : isI 
@@ -47,6 +50,9 @@ export default function Portfolio() {
             return {
               ...p,
               title,
+              category,
+              tag,
+              heading,
               demoUrl,
               image,
               stats: p.stats || (isZ ? [
@@ -54,9 +60,9 @@ export default function Portfolio() {
                 { label: 'Leave & Swap Approval', value: '< 2 Mins' },
                 { label: 'Employee Adoption', value: '99.4%' }
               ] : isI ? [
-                { label: 'Active Mobile Learners', value: '12,500+' },
-                { label: 'Courses & Video Vlogs', value: '150+ Modules' },
-                { label: 'Live News Broadcasts', value: 'Real-Time' }
+                { label: 'Web & Mobile Access', value: '100% Cloud' },
+                { label: 'Active Students & Staff', value: '12,500+' },
+                { label: 'System Reliability', value: '99.9% Uptime' }
               ] : [
                 { label: 'Performance Reliability', value: '99.9%' },
                 { label: 'Satisfaction Score', value: '4.9/5' },

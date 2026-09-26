@@ -152,7 +152,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
               <li>
                 <a href="https://iiepulse.indrainstitute.com/" target="_blank" rel="noopener noreferrer" className="featured-link" title="Open IIE Pulse Platform">
                   <span>IIE Pulse ↗</span>
-                  <span className="footer-chip">Live App</span>
+                  <span className="footer-chip">Web & Mobile</span>
                 </a>
               </li>
               <li>
