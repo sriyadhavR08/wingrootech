@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, Sparkles, GraduationCap } from 'lucide-react';
+import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -89,28 +89,6 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
 
         {/* Action Buttons */}
         <div className="navbar-actions">
-          <button
-            type="button"
-            onClick={() => onOpenStudentPortal?.()}
-            className="btn btn-outline nav-student-btn"
-            style={{
-              padding: '8px 16px',
-              fontSize: '0.84rem',
-              fontWeight: 600,
-              borderRadius: '999px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#ffffff',
-              borderColor: '#cbd5e1',
-              color: '#0f172a',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-            }}
-          >
-            <GraduationCap size={15} />
-            <span>Student Portal</span>
-          </button>
-
           <a
             href="#contact"
             onClick={(e) => handleLinkClick(e, '#contact')}
@@ -150,19 +128,7 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
               </a>
             );
           })}
-          <div className="mobile-cta-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenStudentPortal?.();
-              }}
-              className="btn btn-outline btn-block"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#ffffff', borderColor: '#cbd5e1', color: '#0f172a', fontWeight: 600 }}
-            >
-              <GraduationCap size={16} />
-              <span>Student Portal</span>
-            </button>
+          <div className="mobile-cta-wrapper">
             <a
               href="#contact"
               onClick={(e) => handleLinkClick(e, '#contact')}
