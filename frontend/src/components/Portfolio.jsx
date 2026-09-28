@@ -36,22 +36,24 @@ export default function Portfolio() {
             const title = isI ? 'IIE PULSE' : p.title;
             const category = isI ? 'Web & Mobile App' : (p.category || 'Digital Platform');
             const heading = isI ? 'All-In-One Academic & Student Management Platform.' : (p.heading || p.title);
+            const isTG = (p.title || '').toUpperCase().includes('TOURIST');
+            const isBot = (p.title || '').toUpperCase().includes('BOT');
+            const isVH = (p.title || '').toUpperCase().includes('VIRTUE');
+            const isCandidateWork = isTG || isBot || isVH || (p.tag || '').toLowerCase().includes('candidate');
+
             const demoUrl = isZ 
               ? 'https://zentime.co.in/#dashboard' 
               : isI 
                 ? 'https://iiepulse.indrainstitute.com/' 
-                : (p.demoUrl || p.project_url || 'https://wingrootechnologies.com/');
+                : isCandidateWork
+                  ? ''
+                  : (p.demoUrl || p.project_url || '');
 
             const image = isZ
               ? (p.image || '/zentime-preview.png')
               : isI 
                 ? (p.image || '/iiepulse-preview.png') 
                 : p.image;
-
-            const isTG = (p.title || '').toUpperCase().includes('TOURIST');
-            const isBot = (p.title || '').toUpperCase().includes('BOT');
-            const isVH = (p.title || '').toUpperCase().includes('VIRTUE');
-            const isCandidateWork = isTG || isBot || isVH || (p.tag || '').toLowerCase().includes('candidate');
 
             const tag = isCandidateWork 
               ? "Our Candidates' Work" 

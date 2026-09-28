@@ -63,7 +63,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
     category: 'Web Application',
     tag: 'Featured Project',
     tags: '',
-    demoUrl: 'https://wingrootechnologies.com/',
+    demoUrl: '',
     themeColor: '#4f46e5',
     image: '',
     videoUrl: '',
@@ -402,10 +402,15 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
     setProjectPosting(true);
     setProjectSuccessMsg('');
     try {
+      const isCandidate = (newProject.tag || '').toLowerCase().includes('candidate');
+      const payload = {
+        ...newProject,
+        demoUrl: isCandidate ? '' : (newProject.demoUrl || '')
+      };
       const res = await fetch(`${API_BASE}/api/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProject)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
@@ -416,7 +421,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
           category: 'Web Application',
           tag: 'Featured Project',
           tags: '',
-          demoUrl: 'https://wingrootechnologies.com/',
+          demoUrl: '',
           themeColor: '#4f46e5',
           image: '',
           videoUrl: '',
@@ -1197,15 +1202,57 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                     </div>
 
                     <div className="admin-form-field">
-                      <label className="admin-form-label">Live Platform / Demo URL</label>
-                      <input 
-                        type="url" 
-                        placeholder="https://..."
-                        value={newProject.demoUrl}
-                        onChange={(e) => setNewProject({ ...newProject, demoUrl: e.target.value })}
-                        className="admin-input"
-                      />
+                      <label className="admin-form-label">Project Tag / Showcase Type</label>
+                      <select 
+                        value={newProject.tag}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewProject({ 
+                            ...newProject, 
+                            tag: val,
+                            demoUrl: val === "Our Candidates' Work" ? "" : newProject.demoUrl
+                          });
+                        }}
+                        className="admin-select"
+                      >
+                        <option value="Featured Project">Featured Project (Standard)</option>
+                        <option value="Our Candidates' Work">Our Candidates' Work (Overview Only - No Visit Link)</option>
+                        <option value="Web & Mobile Platform">Web & Mobile Platform</option>
+                        <option value="Client Solution">Client Solution</option>
+                      </select>
                     </div>
+
+                    {newProject.tag === "Our Candidates' Work" ? (
+                      <div className="admin-form-field" style={{ gridColumn: 'span 2' }}>
+                        <div style={{ 
+                          background: 'rgba(245, 158, 11, 0.08)', 
+                          border: '1px dashed rgba(245, 158, 11, 0.35)', 
+                          borderRadius: '10px', 
+                          padding: '12px 16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          color: '#b45309',
+                          fontSize: '0.85rem'
+                        }}>
+                          <Sparkles size={18} style={{ color: '#d97706', flexShrink: 0 }} />
+                          <span>
+                            <strong>Our Candidates' Work:</strong> Visit Page URL is omitted. On the website portfolio, only the <strong>"Project Overview"</strong> button will be displayed.
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="admin-form-field">
+                        <label className="admin-form-label">Live Platform / Demo URL (Optional)</label>
+                        <input 
+                          type="url" 
+                          placeholder="https://..."
+                          value={newProject.demoUrl}
+                          onChange={(e) => setNewProject({ ...newProject, demoUrl: e.target.value })}
+                          className="admin-input"
+                        />
+                      </div>
+                    )}
 
                     {/* PICTURE OR VIDEO UPLOAD FIELD */}
                     <div className="admin-form-field admin-form-full">
@@ -1345,6 +1392,13 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                               </td>
                               <td>
                                 <span className="admin-badge badge-tech">{p.category}</span>
+                                {((p.tag || '').toLowerCase().includes('candidate') || ['TOURIST', 'BOT', 'VIRTUE'].some(k => (p.title || '').toUpperCase().includes(k))) && (
+                                  <div style={{ marginTop: '4px' }}>
+                                    <span style={{ fontSize: '0.68rem', color: '#d97706', background: 'rgba(245, 158, 11, 0.12)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                      Candidates' Work
+                                    </span>
+                                  </div>
+                                )}
                               </td>
                               <td>
                                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', maxWidth: '240px' }}>
@@ -1356,11 +1410,15 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                                 </div>
                               </td>
                               <td>
-                                {p.demoUrl && (
+                                {p.demoUrl && !((p.tag || '').toLowerCase().includes('candidate') || ['TOURIST', 'BOT', 'VIRTUE'].some(k => (p.title || '').toUpperCase().includes(k))) ? (
                                   <a href={p.demoUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <span>Visit</span>
                                     <ExternalLink size={12} />
                                   </a>
+                                ) : (
+                                  <span style={{ fontSize: '0.74rem', color: '#d97706', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, display: 'inline-block' }}>
+                                    Overview Only
+                                  </span>
                                 )}
                               </td>
                               <td>

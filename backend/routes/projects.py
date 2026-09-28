@@ -27,6 +27,10 @@ def get_projects():
                 else:
                     tags_list = ["Digital Innovation", "Modern Solution"]
 
+                is_candidate = (
+                    "candidate" in (item.get("tag") or "").lower() or 
+                    any(k in (item.get("title") or "").upper() for k in ["TOURIST", "BOT", "VIRTUE"])
+                )
                 projects.append({
                     "id": item["id"],
                     "title": item["title"],
@@ -39,7 +43,7 @@ def get_projects():
                     "image": item.get("image") or "",
                     "videoUrl": item.get("video_url") or "",
                     "mediaType": item.get("media_type") or "image",
-                    "demoUrl": item.get("project_url") or "https://wingrootechnologies.com/"
+                    "demoUrl": "" if is_candidate else (item.get("project_url") or "")
                 })
         return jsonify({'success': True, 'projects': projects})
     except Exception as e:
@@ -55,7 +59,10 @@ def add_project():
     heading = data.get('heading', title).strip()
     tag = data.get('tag', 'Featured Project').strip()
     theme_color = data.get('themeColor', '#4f46e5').strip()
-    project_url = data.get('demoUrl', 'https://wingrootechnologies.com/').strip()
+    if tag and "candidate" in tag.lower():
+        project_url = ""
+    else:
+        project_url = data.get('demoUrl', '').strip()
     image = data.get('image', '').strip()
     video_url = data.get('videoUrl', '').strip()
     media_type = data.get('mediaType', 'image').strip()
