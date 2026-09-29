@@ -18,6 +18,7 @@ backend/fallback_wingrootech.db
 *.sqlite
 *.sqlite3
 
-# OS Files
+# OS & Archive Files
 .DS_Store
 Thumbs.db
+*.zip
