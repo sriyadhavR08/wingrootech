@@ -56,6 +56,21 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedType, setSelectedType] = useState(''); // 'contact' | 'internship'
 
+  // Helper to auto-format Google Drive links into high-res direct web links
+  const formatMediaUrl = (url, mediaType = 'image') => {
+    if (!url) return '';
+    const trimmed = url.trim();
+    const driveMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/id=([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      const fileId = driveMatch[1];
+      if (mediaType === 'video') {
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+      }
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+    }
+    return trimmed;
+  };
+
   // Form states for creating new project
   const [newProject, setNewProject] = useState({
     title: '',
@@ -1297,13 +1312,14 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                       <div style={{ marginTop: '8px' }}>
                         <input 
                           type="url" 
-                          placeholder={newProject.mediaType === 'video' ? "Or paste Video URL (https://...)" : "Or paste Picture URL (https://...)"}
+                          placeholder={newProject.mediaType === 'video' ? "Or paste Video / Google Drive URL (https://...)" : "Or paste Picture / Google Drive URL (https://...)"}
                           value={newProject.mediaType === 'video' ? newProject.videoUrl : newProject.image}
                           onChange={(e) => {
+                            const val = formatMediaUrl(e.target.value, newProject.mediaType);
                             if (newProject.mediaType === 'video') {
-                              setNewProject({ ...newProject, videoUrl: e.target.value });
+                              setNewProject({ ...newProject, videoUrl: val });
                             } else {
-                              setNewProject({ ...newProject, image: e.target.value });
+                              setNewProject({ ...newProject, image: val });
                             }
                           }}
                           className="admin-input"
@@ -1546,9 +1562,9 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                       <div style={{ marginTop: '8px' }}>
                         <input 
                           type="url" 
-                          placeholder="Or paste Poster Image URL (https://...)"
+                          placeholder="Or paste Poster Image / Google Drive URL (https://...)"
                           value={newEvent.poster_url}
-                          onChange={(e) => setNewEvent({ ...newEvent, poster_url: e.target.value })}
+                          onChange={(e) => setNewEvent({ ...newEvent, poster_url: formatMediaUrl(e.target.value, 'image') })}
                           className="admin-input"
                         />
                       </div>

@@ -60,6 +60,7 @@ def create_app():
     return app
 
 app = create_app()
+application = app  # Standard WSGI entry point for AWS Elastic Beanstalk
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
