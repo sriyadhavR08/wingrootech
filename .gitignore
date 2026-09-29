@@ -15,6 +15,8 @@ venv/
 backend/uploads/*
 !backend/uploads/.gitkeep
 backend/fallback_wingrootech.db
+*.sqlite
+*.sqlite3
 
 # OS Files
 .DS_Store
