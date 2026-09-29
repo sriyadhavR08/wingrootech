@@ -16,7 +16,7 @@ def get_db_connection():
             password=Config.MYSQL_PASSWORD,
             database=Config.MYSQL_DB,
             cursorclass=pymysql.cursors.DictCursor,
-            connect_timeout=2
+            connect_timeout=10
         )
         return connection, "mysql"
     except Exception as e:
@@ -28,14 +28,14 @@ def get_db_connection():
         return conn, "sqlite"
 
 def init_mysql_tables_if_needed():
-    """Ensure 'wingrootech_db' and all required tables exist in MySQL"""
+    """Ensure 'wingrootech_db' and all required tables exist in MySQL (AWS RDS / Local)"""
     try:
         conn = pymysql.connect(
             host=Config.MYSQL_HOST,
             port=Config.MYSQL_PORT,
             user=Config.MYSQL_USER,
             password=Config.MYSQL_PASSWORD,
-            connect_timeout=2
+            connect_timeout=10
         )
         with conn.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{Config.MYSQL_DB}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
@@ -79,7 +79,6 @@ def init_mysql_tables_if_needed():
             except Exception:
                 pass
             
-            
             # 3. Projects Table
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS projects (
@@ -88,13 +87,25 @@ def init_mysql_tables_if_needed():
                 heading VARCHAR(255),
                 tag VARCHAR(100) DEFAULT 'Featured Project',
                 tags TEXT,
+                description TEXT,
                 category VARCHAR(100) NOT NULL,
                 theme_color VARCHAR(50) DEFAULT '#4f46e5',
                 image VARCHAR(255),
+                video_url VARCHAR(255),
+                media_type VARCHAR(50) DEFAULT 'image',
                 project_url VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
+            for col_sql in [
+                "ALTER TABLE projects ADD COLUMN description TEXT",
+                "ALTER TABLE projects ADD COLUMN video_url VARCHAR(255)",
+                "ALTER TABLE projects ADD COLUMN media_type VARCHAR(50) DEFAULT 'image'"
+            ]:
+                try:
+                    cursor.execute(col_sql)
+                except Exception:
+                    pass
             
             # 4. Events Table
             cursor.execute("""
@@ -149,13 +160,16 @@ def init_mysql_tables_if_needed():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
 
-            # Seed Projects
+            # Seed Projects (All 5 Featured & Candidates' Projects)
             cursor.execute("SELECT COUNT(*) FROM projects")
             if cursor.fetchone()[0] == 0:
                 cursor.execute("""
-                INSERT INTO projects (title, description, category, project_url) VALUES 
-                ('ZENTIME', 'Zentime is one of the projects developed by Wingroo Technologies, showcasing our approach toward building modern and user-focused digital solutions. The project focuses on combining functionality with a clean and intuitive experience, demonstrating how technology can be structured around the needs of its users.', 'Web Application', 'https://wingrootechnologies.com/'),
-                ('IIE PLUS', 'IIE Plus is another project associated with Wingroo Technologies, demonstrating our focus on developing digital platforms that bring information, users and opportunities together. The project represents our approach to creating technology that is accessible, practical and designed around a clear purpose.', 'Digital Platform', 'https://wingrootechnologies.com/')
+                INSERT INTO projects (title, heading, tag, tags, description, category, theme_color, project_url, image, video_url, media_type) VALUES 
+                ('ZENTIME', 'Modern and user-focused digital solution.', 'Featured Project', 'React, Node.js, Web Platform', 'Zentime is one of the projects developed by Wingroo Technologies, showcasing our approach toward building modern and user-focused digital solutions. The project focuses on combining functionality with a clean and intuitive experience, demonstrating how technology can be structured around the needs of its users.', 'Web Application', '#4f46e5', 'https://wingrootechnologies.com/', '/zentime-preview.jpg', '', 'image'),
+                ('IIE PLUS', 'Educational & career advancement ecosystem.', 'Featured Project', 'React, Flask, MySQL, Cloud', 'IIE Plus is another project associated with Wingroo Technologies, demonstrating our focus on developing digital platforms that bring information, users and opportunities together. The project represents our approach to creating technology that is accessible, practical and designed around a clear purpose.', 'Digital Platform', '#06b6d4', 'https://wingrootechnologies.com/', '/iie-plus-preview.jpg', '', 'image'),
+                ('TOURISTS GUARD', 'Intelligent Tourist Safety & Travel Assistance Platform.', "Our Candidates' Work", 'Real-time GPS SOS, Safety Heatmaps, Multi-lingual Guide, Verified Hotspots, Cloud Alerts', 'Tourists Guard is a smart travel security and assistance platform developed by Wingroo Technologies. It provides real-time emergency alerts, geofenced tourist zone guidance, verified local services, multi-lingual SOS assistance, and live safety monitoring to ensure secure travel experiences worldwide.', 'Web & Mobile App', '#f59e0b', '', '/tourists-guard-preview.jpg', '', 'image'),
+                ('SMART AI BOT', 'Next-Gen Conversational AI & Automated Enterprise Assistant.', "Our Candidates' Work", 'Conversational AI, Natural Language Processing, 24/7 Automation, Multi-Channel, Workflow Integration', 'Smart AI Bot is an intelligent conversational agent engineered by Wingroo Technologies. Built with advanced NLP and real-time knowledge retrieval, it automates multi-channel customer inquiries, streamlines internal enterprise workflows, and delivers personalized, context-aware user interactions 24/7.', 'AI Platform', '#8b5cf6', '', '/smart-ai-bot-preview.jpg', '', 'image'),
+                ('VIRTUEHIRE', 'AI-Powered Talent Acquisition & Recruitment Pipeline.', "Our Candidates' Work", 'AI Candidate Screening, Resume Parsing, Automated Interviews, Talent Analytics, HR Pipeline', 'VirtueHire is an intelligent hiring and talent assessment platform developed by Wingroo Technologies. It transforms the recruitment lifecycle with AI-driven resume parsing, automated candidate screening, interactive interview scheduling, and skill-matching analytics to help organizations hire top talent efficiently.', 'HR Tech / SaaS', '#10b981', '', '/virtuehire-preview.jpg', '', 'image')
                 """)
 
             # Seed Events
