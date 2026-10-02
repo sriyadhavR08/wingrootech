@@ -17,18 +17,17 @@ const SECTIONS = [
 export default function ScrollNavigator() {
   const [activeSection, setActiveSection] = useState('home');
   const [hoveredSection, setHoveredSection] = useState(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [showMobileBadge, setShowMobileBadge] = useState(false);
+  const [isFooterReached, setIsFooterReached] = useState(false);
 
   useEffect(() => {
     let hideTimeout;
 
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScroll > 0) {
-        const currentProgress = (window.scrollY / totalScroll) * 100;
-        setScrollProgress(Math.min(Math.max(currentProgress, 0), 100));
-      }
+      // Check if user has scrolled down into the footer
+      const footerEl = document.querySelector('.site-footer') || document.querySelector('footer');
+      const isFooterNow = footerEl ? footerEl.getBoundingClientRect().top <= window.innerHeight * 0.62 : false;
+      setIsFooterReached(isFooterNow);
 
       const scrollPosition = window.scrollY + window.innerHeight * 0.35;
       
@@ -39,9 +38,11 @@ export default function ScrollNavigator() {
           if (scrollPosition >= top) {
             setActiveSection(prev => {
               if (prev !== SECTIONS[i].id) {
-                setShowMobileBadge(true);
-                clearTimeout(hideTimeout);
-                hideTimeout = setTimeout(() => setShowMobileBadge(false), 2400);
+                if (!isFooterNow) {
+                  setShowMobileBadge(true);
+                  clearTimeout(hideTimeout);
+                  hideTimeout = setTimeout(() => setShowMobileBadge(false), 2400);
+                }
                 return SECTIONS[i].id;
               }
               return prev;
@@ -73,7 +74,7 @@ export default function ScrollNavigator() {
   return (
     <>
       {/* Desktop Minimalist Single Line Navigator */}
-      <nav className="line-navigator-dock" aria-label="Section navigation">
+      <nav className={`line-navigator-dock ${isFooterReached ? 'dock-hidden' : ''}`} aria-label="Section navigation">
         <div className="line-navigator-spine">
           {/* Section Markers along the invisible line */}
           {SECTIONS.map((sec) => {
@@ -102,8 +103,8 @@ export default function ScrollNavigator() {
         </div>
       </nav>
 
-      {/* Mobile Subtle Section Toast Badge (No numbers) */}
-      <div className={`mobile-section-badge ${showMobileBadge ? 'visible' : ''}`}>
+      {/* Mobile Subtle Section Toast Badge (No numbers, hidden on footer) */}
+      <div className={`mobile-section-badge ${showMobileBadge && !isFooterReached ? 'visible' : ''}`}>
         <div className="mobile-badge-pill" onClick={() => scrollTo(currentSecObj.id)}>
           <span className="mb-dot" />
           <span className="mb-label">{currentSecObj.label}</span>

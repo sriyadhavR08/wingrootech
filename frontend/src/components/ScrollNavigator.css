@@ -12,6 +12,19 @@
   display: flex;
   align-items: center;
   user-select: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              visibility 0.35s ease;
+}
+
+/* Hidden when footer is reached (only shows up to contact section) */
+.line-navigator-dock.dock-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(18px);
 }
 
 /* Invisible Vertical Spine (No visible line, no blue bar) */
