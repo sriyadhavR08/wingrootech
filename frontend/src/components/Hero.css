@@ -196,10 +196,20 @@
   font-size: 0.88rem;
   line-height: 1.86;
   color: #cbd5e1;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.card-code-area::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .code-line {
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .code-line.indent {
@@ -415,15 +425,7 @@
   line-height: 1.4;
 }
 
-.card-code-area {
-  padding: 24px 26px;
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
-  line-height: 1.86;
-  color: #cbd5e1;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
+
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -523,8 +525,9 @@
   }
   .card-code-area {
     padding: 16px 14px;
-    font-size: 0.78rem;
-    line-height: 1.58;
+    font-size: 0.76rem;
+    line-height: 1.55;
+    overflow: hidden !important;
   }
   .tech-card-footer {
     padding: 12px 14px;

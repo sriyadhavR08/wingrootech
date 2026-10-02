@@ -108,35 +108,29 @@ export default function Hero() {
 
                 <div className="card-code-area">
                   <div className="code-line">
-                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">VibeCoding</span>, <span className="syntax-func">AgenticAI</span>, <span className="syntax-func">WorkflowEngine</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/core'</span>;
+                    <span className="syntax-keyword">import</span> &#123; <span className="syntax-func">VibeCoding</span>, <span className="syntax-func">AgenticAI</span> &#125; <span className="syntax-keyword">from</span> <span className="syntax-str">'@wingroo/core'</span>;
                   </div>
                   <div className="code-line">
-                    <span className="syntax-comment">// Autonomous Agent Pipeline & 72-Hour Rapid MVP Engine</span>
+                    <span className="syntax-comment">// 72-Hour Rapid MVP & Autonomous AI Engine</span>
                   </div>
                   <div className="code-line">
-                    <span className="syntax-keyword">export const</span> <span className="syntax-var">wingrooAgent</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">AgenticAI</span>.initialize(&#123;
+                    <span className="syntax-keyword">const</span> <span className="syntax-var">agent</span> = <span className="syntax-keyword">await</span> <span className="syntax-func">AgenticAI</span>.start(&#123;
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">ideWorkflow:</span> [<span className="syntax-str">'Cursor'</span>, <span className="syntax-str">'v0.dev'</span>, <span className="syntax-str">'Claude-3.5-Sonnet'</span>],
+                    <span className="syntax-prop">workflow:</span> [<span className="syntax-str">'Cursor'</span>, <span className="syntax-str">'v0'</span>, <span className="syntax-str">'Claude-3.5'</span>],
                   </div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">autonomousAgents:</span> &#123;
+                    <span className="syntax-prop">autoAgents:</span> &#123;
                   </div>
                   <div className="code-line indent-2">
-                    <span className="syntax-prop">gmailAutoResponder:</span> <span className="syntax-badge-inline">AUTO_REPLY_ACTIVE</span>,
+                    <span className="syntax-prop">gmailResponder:</span> <span className="syntax-badge-inline">ACTIVE</span>,
                   </div>
                   <div className="code-line indent-2">
-                    <span className="syntax-prop">crmLeadRouting:</span> <span className="syntax-badge-inline">DISPATCH_ONLINE</span>,
-                  </div>
-                  <div className="code-line indent-2">
-                    <span className="syntax-prop">taskAutomation:</span> <span className="syntax-badge-inline">MULTI_STEP_SYNC</span>
+                    <span className="syntax-prop">crmRouting:</span> <span className="syntax-badge-inline">ONLINE</span>
                   </div>
                   <div className="code-line indent">&#125;,</div>
                   <div className="code-line indent">
-                    <span className="syntax-prop">deploymentTarget:</span> <span className="syntax-str">'72_HOURS_PRODUCTION_READY'</span>,
-                  </div>
-                  <div className="code-line indent">
-                    <span className="syntax-prop">uptime:</span> <span className="syntax-str">'99.98% REALTIME'</span>,
+                    <span className="syntax-prop">target:</span> <span className="syntax-str">'72H_PRODUCTION_READY'</span>,
                   </div>
                   <div className="code-line indent">
                     <span className="syntax-prop">state:</span> <span className="syntax-badge-inline pulse-live">LIVE_PRODUCTION</span>
