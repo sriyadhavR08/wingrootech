@@ -18,9 +18,13 @@ def create_app():
     app.config.from_object(Config)
 
     # Enable CORS for frontend development and production
+    cors_origins = app.config.get('CORS_ORIGINS', '*')
+    if cors_origins != '*' and ',' in cors_origins:
+        cors_origins = [o.strip() for o in cors_origins.split(',') if o.strip()]
+
     CORS(app, resources={
-        r"/api/*": {"origins": "*"},
-        r"/uploads/*": {"origins": "*"}
+        r"/api/*": {"origins": cors_origins},
+        r"/uploads/*": {"origins": cors_origins}
     }, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
     # Register Blueprints
