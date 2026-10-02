@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import './ScrollNavigator.css';
 
 const SECTIONS = [
-  { id: 'home', label: 'Home', num: '01' },
-  { id: 'about', label: 'About', num: '02' },
-  { id: 'services', label: 'Services', num: '03' },
-  { id: 'internship', label: 'Internship', num: '04' },
-  { id: 'careers', label: 'Careers', num: '05' },
-  { id: 'events', label: 'Events', num: '06' },
-  { id: 'portfolio', label: 'Portfolio', num: '07' },
-  { id: 'reviews', label: 'Reviews', num: '08' },
-  { id: 'faq-knowledge-hub', label: 'FAQs Hub', num: '09' },
-  { id: 'contact', label: 'Contact', num: '10' }
+  { id: 'home', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'services', label: 'Services' },
+  { id: 'internship', label: 'Internship' },
+  { id: 'careers', label: 'Careers' },
+  { id: 'events', label: 'Events' },
+  { id: 'portfolio', label: 'Portfolio' },
+  { id: 'reviews', label: 'Reviews' },
+  { id: 'faq-knowledge-hub', label: 'FAQs' },
+  { id: 'contact', label: 'Contact' }
 ];
 
 export default function ScrollNavigator() {
@@ -24,14 +24,12 @@ export default function ScrollNavigator() {
     let hideTimeout;
 
     const handleScroll = () => {
-      // Calculate overall scroll progress (0 to 100%)
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
       if (totalScroll > 0) {
         const currentProgress = (window.scrollY / totalScroll) * 100;
         setScrollProgress(Math.min(Math.max(currentProgress, 0), 100));
       }
 
-      // Detect active section based on scroll offset
       const scrollPosition = window.scrollY + window.innerHeight * 0.35;
       
       for (let i = SECTIONS.length - 1; i >= 0; i--) {
@@ -43,7 +41,7 @@ export default function ScrollNavigator() {
               if (prev !== SECTIONS[i].id) {
                 setShowMobileBadge(true);
                 clearTimeout(hideTimeout);
-                hideTimeout = setTimeout(() => setShowMobileBadge(false), 2600);
+                hideTimeout = setTimeout(() => setShowMobileBadge(false), 2400);
                 return SECTIONS[i].id;
               }
               return prev;
@@ -74,24 +72,16 @@ export default function ScrollNavigator() {
 
   return (
     <>
-      {/* Top Thin Reading Progress Bar (Visible on all devices) */}
-      <div 
-        className="global-reading-progress" 
-        style={{ transform: `scaleX(${scrollProgress / 100})` }}
-        aria-hidden="true"
-      />
+      {/* Desktop Minimalist Single Line Navigator */}
+      <nav className="line-navigator-dock" aria-label="Section navigation">
+        <div className="line-navigator-spine">
+          {/* Active Scroll Progress Fill */}
+          <div 
+            className="line-progress-fill" 
+            style={{ height: `${scrollProgress}%` }}
+          />
 
-      {/* Desktop Floating Right-Side Scroll Navigator */}
-      <nav className="scroll-navigator-dock" aria-label="Section navigation">
-        <div className="scroll-navigator-track">
-          {/* Vertical Track Fill */}
-          <div className="navigator-progress-line">
-            <div 
-              className="navigator-progress-fill" 
-              style={{ height: `${scrollProgress}%` }}
-            />
-          </div>
-
+          {/* Section Markers along the single line */}
           {SECTIONS.map((sec) => {
             const isActive = activeSection === sec.id;
             const isHovered = hoveredSection === sec.id;
@@ -99,28 +89,18 @@ export default function ScrollNavigator() {
             return (
               <div 
                 key={sec.id} 
-                className={`nav-dot-wrapper ${isActive ? 'active' : ''}`}
+                className={`line-node ${isActive ? 'active' : ''}`}
                 onMouseEnter={() => setHoveredSection(sec.id)}
                 onMouseLeave={() => setHoveredSection(null)}
+                onClick={() => scrollTo(sec.id)}
+                title={sec.label}
               >
-                <button
-                  type="button"
-                  className={`nav-dot ${isActive ? 'dot-active' : ''}`}
-                  onClick={() => scrollTo(sec.id)}
-                  aria-label={`Scroll to ${sec.label}`}
-                  title={`${sec.num} • ${sec.label}`}
-                >
-                  <span className="dot-inner" />
-                </button>
+                {/* Node Pip on the single line */}
+                <span className="line-pip" />
 
-                {/* Glassmorphism Section Label Tooltip */}
-                <div 
-                  className={`nav-dot-tooltip ${isActive || isHovered ? 'tooltip-visible' : ''}`}
-                  onClick={() => scrollTo(sec.id)}
-                >
-                  <span className="tooltip-num">{sec.num}</span>
-                  <span className="tooltip-label">{sec.label}</span>
-                  {isActive && <span className="tooltip-active-pulse" />}
+                {/* Section Name Label (Appears neatly beside the line) */}
+                <div className={`line-label-wrap ${isActive || isHovered ? 'visible' : ''}`}>
+                  <span className="line-label-text">{sec.label}</span>
                 </div>
               </div>
             );
@@ -128,11 +108,10 @@ export default function ScrollNavigator() {
         </div>
       </nav>
 
-      {/* Mobile Dynamic Section Toast Badge (Smoothly informs mobile users of current section) */}
+      {/* Mobile Subtle Section Toast Badge (No numbers) */}
       <div className={`mobile-section-badge ${showMobileBadge ? 'visible' : ''}`}>
         <div className="mobile-badge-pill" onClick={() => scrollTo(currentSecObj.id)}>
           <span className="mb-dot" />
-          <span className="mb-num">{currentSecObj.num}</span>
           <span className="mb-label">{currentSecObj.label}</span>
         </div>
       </div>
