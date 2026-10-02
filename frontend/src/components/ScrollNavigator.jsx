@@ -75,13 +75,7 @@ export default function ScrollNavigator() {
       {/* Desktop Minimalist Single Line Navigator */}
       <nav className="line-navigator-dock" aria-label="Section navigation">
         <div className="line-navigator-spine">
-          {/* Active Scroll Progress Fill */}
-          <div 
-            className="line-progress-fill" 
-            style={{ height: `${scrollProgress}%` }}
-          />
-
-          {/* Section Markers along the single line */}
+          {/* Section Markers along the invisible line */}
           {SECTIONS.map((sec) => {
             const isActive = activeSection === sec.id;
             const isHovered = hoveredSection === sec.id;
