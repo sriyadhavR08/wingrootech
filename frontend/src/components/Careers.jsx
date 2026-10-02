@@ -298,6 +298,33 @@ export default function Careers() {
           </p>
         </div>
 
+        {/* Careers Culture & Team Spotlight Banner */}
+        <div className="careers-spotlight-banner">
+          <div className="careers-image-container">
+            <img 
+              src="/images/wingroo-careers-culture.jpg" 
+              alt="Wingroo Technologies Engineering & AI Product Development Team"
+              className="careers-main-img"
+              loading="lazy"
+            />
+            <div className="careers-gradient-shade" />
+            <div className="careers-badge-dock">
+              <div className="careers-pill">
+                <Users size={15} className="pill-icon" />
+                <span>Collaborative Tech Culture</span>
+              </div>
+              <div className="careers-pill">
+                <Cpu size={15} className="pill-icon" />
+                <span>Autonomous AI & Multi-Agent Systems</span>
+              </div>
+              <div className="careers-pill">
+                <Rocket size={15} className="pill-icon rocket-icon" />
+                <span>72-Hour Rapid MVP Engine</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Culture & Perks Grid */}
         <div className="careers-perks-grid">
           {CULTURE_PERKS.map((perk, idx) => {
