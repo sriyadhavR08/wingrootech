@@ -17,6 +17,7 @@ import AdminPortal from './components/AdminPortal'
 import StudentPortal from './components/StudentPortal'
 import AIChatbot from './components/AIChatbot'
 import SocialSidebar from './components/SocialSidebar'
+import ScrollNavigator from './components/ScrollNavigator'
 import { ShieldCheck, GraduationCap } from 'lucide-react'
 
 export default function App() {
@@ -94,6 +95,9 @@ export default function App() {
 
       {/* Floating Social Media Side Dock */}
       <SocialSidebar />
+
+      {/* Floating Right-Side Scroll Navigator & Section Spy */}
+      <ScrollNavigator />
 
       {/* Floating Triggers Container */}
       <div className="portal-floating-triggers">
