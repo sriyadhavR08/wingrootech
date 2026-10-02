@@ -1,0 +1,431 @@
+/* ========================================================
+   AEO & GEO KNOWLEDGE HUB - WINGROO TECHNOLOGIES
+   Answer Engine Optimization (Perplexity, SGE, ChatGPT)
+   Generative Engine Optimization (Coimbatore Regional)
+======================================================== */
+
+.aeo-hub-section {
+  padding: 60px 0 50px 0;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+}
+
+.aeo-header {
+  margin-bottom: 36px;
+}
+
+/* Controls: Search & Tabs */
+.aeo-controls-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 980px;
+  margin: 0 auto 28px auto;
+}
+
+/* Search Box */
+.aeo-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.aeo-search-box .search-icon {
+  position: absolute;
+  left: 18px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.aeo-search-input {
+  width: 100%;
+  padding: 14px 44px 14px 48px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--border-light);
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  transition: all 0.25s ease;
+}
+
+.aeo-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #e2e8f0;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Category Pills */
+.aeo-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.aeo-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-light);
+  background: #ffffff;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.aeo-cat-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.aeo-cat-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
+}
+
+/* Results Meta */
+.aeo-results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 980px;
+  margin: 0 auto 20px auto;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.query-badge {
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Accordion FAQ List */
+.aeo-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.aeo-card-item {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.aeo-card-item:hover {
+  border-color: rgba(79, 70, 229, 0.35);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+}
+
+.aeo-card-item.aeo-card-open {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.12);
+}
+
+.aeo-question-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.aeo-question-btn:hover {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.aeo-q-text {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.aeo-q-num {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.aeo-chevron-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.aeo-card-open .aeo-chevron-icon {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.aeo-answer-pane {
+  padding: 0 22px 20px 22px;
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
+  animation: answerSlideDown 0.25s ease-out;
+}
+
+@keyframes answerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aeo-answer-pane p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin-top: 14px;
+}
+
+/* Micro Tags */
+.aeo-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.aeo-micro-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.aeo-micro-tag:hover {
+  color: var(--primary);
+  background: rgba(79, 70, 229, 0.1);
+}
+
+/* Empty State */
+.aeo-empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.aeo-empty-state .empty-icon {
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.aeo-empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.aeo-empty-state p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* Load More Wrap */
+.aeo-load-more-wrap {
+  text-align: center;
+  margin-top: 28px;
+}
+
+.aeo-more-btn {
+  padding: 12px 28px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+/* Knowledge Footer Card */
+.aeo-hub-footer-card {
+  max-width: 980px;
+  margin: 44px auto 0 auto;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-radius: 20px;
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  color: #ffffff;
+  box-shadow: 0 16px 40px -8px rgba(30, 27, 75, 0.35);
+}
+
+.footer-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #38bdf8;
+  margin-bottom: 10px;
+}
+
+.footer-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.footer-card-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  max-width: 580px;
+}
+
+.footer-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.footer-card-actions .btn {
+  white-space: nowrap;
+}
+
+.footer-card-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.footer-card-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================================
+   Responsive Styling
+======================================================== */
+@media (max-width: 860px) {
+  .aeo-hub-section {
+    padding: 44px 0 36px 0;
+  }
+  .aeo-hub-footer-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    gap: 20px;
+  }
+  .footer-card-actions {
+    width: 100%;
+    flex-direction: row;
+  }
+  .footer-card-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .aeo-search-input {
+    font-size: 0.88rem;
+    padding: 12px 38px 12px 42px;
+  }
+  .aeo-category-tabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .aeo-cat-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+  .aeo-question-btn {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .aeo-q-text {
+    font-size: 0.95rem;
+  }
+  .aeo-answer-pane {
+    padding: 0 16px 16px 16px;
+  }
+  .aeo-answer-pane p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .footer-card-actions {
+    flex-direction: column;
+  }
+}

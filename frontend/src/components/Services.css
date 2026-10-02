@@ -60,7 +60,14 @@
 @media (max-width: 700px) {
   .service-slide-item {
     flex: 0 0 88%;
-    min-width: 280px;
+    min-width: 270px;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-slide-item {
+    flex: 0 0 94%;
+    min-width: 250px;
   }
 }
 
@@ -107,11 +114,15 @@
 }
 
 @media (max-width: 840px) {
+  .services-slider-arrow {
+    width: 38px;
+    height: 38px;
+  }
   .services-slider-prev {
-    left: -10px;
+    left: -8px;
   }
   .services-slider-next {
-    right: -10px;
+    right: -8px;
   }
 }
 

@@ -199,16 +199,6 @@ export default function Hero() {
         <div className="hero-highlights-grid">
           <div className="highlight-item">
             <div className="highlight-icon-box">
-              <Zap size={22} className="highlight-icon" />
-            </div>
-            <div className="highlight-text">
-              <h3 className="highlight-title">Vibe Coding & 72h MVPs</h3>
-              <p className="highlight-desc">From idea to live production within 72 hours using Cursor & Claude.</p>
-            </div>
-          </div>
-
-          <div className="highlight-item">
-            <div className="highlight-icon-box">
               <Bot size={22} className="highlight-icon" />
             </div>
             <div className="highlight-text">
@@ -234,6 +224,16 @@ export default function Hero() {
             <div className="highlight-text">
               <h3 className="highlight-title">15–20d College Internships</h3>
               <p className="highlight-desc">Up to 100% scholarships, daily timetables & live GitHub repos.</p>
+            </div>
+          </div>
+
+          <div className="highlight-item">
+            <div className="highlight-icon-box">
+              <Zap size={22} className="highlight-icon" />
+            </div>
+            <div className="highlight-text">
+              <h3 className="highlight-title">Vibe Coding & 72h MVPs</h3>
+              <p className="highlight-desc">From idea to live production within 72 hours using Cursor & Claude.</p>
             </div>
           </div>
         </div>

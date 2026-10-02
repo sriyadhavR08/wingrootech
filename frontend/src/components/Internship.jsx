@@ -682,6 +682,33 @@ export default function Internship({ onOpenStudentPortal }) {
           </p>
         </div>
 
+        {/* Visual Environment Spotlight Banner */}
+        <div className="internship-spotlight-banner">
+          <div className="spotlight-image-container">
+            <img 
+              src="/images/wingroo-internship-team.jpg" 
+              alt="Wingroo Technologies Engineering Students Internship & Mentorship"
+              className="spotlight-main-img"
+              loading="lazy"
+            />
+            <div className="spotlight-gradient-shade" />
+            <div className="spotlight-badge-dock">
+              <div className="spotlight-pill">
+                <Users size={15} className="pill-icon" />
+                <span>Hands-on Project Collaboration</span>
+              </div>
+              <div className="spotlight-pill">
+                <Code2 size={15} className="pill-icon" />
+                <span>Mentorship & Code Reviews</span>
+              </div>
+              <div className="spotlight-pill">
+                <Sparkles size={15} className="pill-icon sparkle-icon" />
+                <span>Up to 100% Scholarship</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Two Large Cards */}
         <div className="internship-cards-grid">
           {/* Card 1: College Internship */}

@@ -212,34 +212,12 @@
 
 /* ========================================================
    Responsive Styling
+   Hide floating vertical dock on tablet & mobile devices
+   to prevent overlapping content and keep mobile view clean
 ======================================================== */
 
-@media (max-width: 840px) {
+@media (max-width: 1024px) {
   .social-side-dock {
-    left: 8px;
-  }
-
-  .social-dock-pill {
-    padding: 8px 5px;
-    gap: 8px;
-  }
-
-  .social-dock-link {
-    width: 34px;
-    height: 34px;
-  }
-
-  .social-dock-link svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .social-dock-tag,
-  .social-dock-divider {
-    display: none;
-  }
-
-  .social-dock-tooltip {
-    display: none; /* Avoid screen overflow on small touch devices */
+    display: none !important;
   }
 }

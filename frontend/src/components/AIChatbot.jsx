@@ -13,41 +13,43 @@ import {
   GraduationCap,
   Rocket,
   Code2,
-  Briefcase
+  Briefcase,
+  HelpCircle
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
+import { AEO_GEO_FAQS } from '../data/aeoGeoFaqs';
 import './AIChatbot.css';
 
 const QUICK_PROMPTS = [
   { 
-    id: 'internship', 
-    label: 'College Internship & Scholarship', 
-    icon: <GraduationCap size={14} />,
-    reply: '🎓 **College Internship Program (15–20 Days):**\n• Structured daily timetable (09:30 AM – 12:30 PM Theory & 01:30 PM – 04:30 PM Hands-on Lab).\n• **Up to 100% Merit Scholarships** based on our 20-min online screening assessment.\n• Recognized ISO 9001:2015, MSME & Startup India certification with real GitHub repos.\n\nWould you like to explore the timetable or apply with scholarship?'
-  },
-  { 
-    id: 'live_project', 
-    label: 'Live Project Internship', 
-    icon: <Rocket size={14} />,
-    reply: '🚀 **Live Project Internship:**\n• Work directly on live production software (ZENTIME, IIE PLUS & client systems).\n• Includes git commit sprints, peer reviews, merit project stipends, and experience letters.\n• Direct application with Resume upload available!'
-  },
-  { 
-    id: 'services', 
-    label: 'Software & Vibe Coding Services', 
-    icon: <Code2 size={14} />,
-    reply: '💻 **Software Solutions & Vibe Coding:**\n• We build full-stack web and mobile apps combining traditional engineering with AI-driven **Vibe Coding**.\n• Rapid turnarounds: functional prototypes in hours and production-grade deployments in 72 hours!\n• E-commerce, modern SPAs, and enterprise systems.'
-  },
-  { 
-    id: 'agentic_ai', 
-    label: 'Agentic AI & Custom AI Agents', 
+    id: 'ai_replace', 
+    label: 'Will AI replace software developers?', 
     icon: <Sparkles size={14} />,
-    reply: '🤖 **Agentic AI & Custom Autonomous Agents:**\n• We build autonomous AI agents capable of tool execution, multi-step routing, and system integrations.\n• Examples: Autonomous Gmail customer auto-responders, CRM lead qualifiers, and self-operating business workflows using ChatGPT-4o & Claude 3.5.'
+    reply: '🤖 **Will AI replace software developers?**\nNo! AI will not replace software developers, but developers who master AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who do not.\n\nModern developers act as architectural orchestrators—guiding AI code generators, verifying system security, and building scalable production software.'
   },
   { 
-    id: 'careers', 
-    label: 'Careers & Join Our Team', 
+    id: 'fresher_start', 
+    label: 'As a fresher, where should I start?', 
+    icon: <GraduationCap size={14} />,
+    reply: '🎓 **Fresher Developer Roadmap:**\n1. Master Web Fundamentals (HTML, modern CSS, JavaScript) & REST APIs.\n2. Specialize in either Full-Stack React/Next.js or Python for Backend/AI.\n3. Learn Git from Day 1 and push all code to GitHub.\n4. Complete a structured 15-20 Days Internship with live mentors at Wingroo to get verified commercial proof-of-work!'
+  },
+  { 
+    id: 'internship', 
+    label: 'College Internship & 100% Scholarship', 
     icon: <Briefcase size={14} />,
-    reply: '💼 **Join Our Engineering Team:**\n• We are hiring developers and Prompt Engineers for live products like ZENTIME & IIE PLUS.\n• Open for both Freshers and experienced developers. You can apply directly with your resume in our Careers section!'
+    reply: '🎓 **College Internship Program (15–20 Days):**\n• Structured daily timetable (Theory & Hands-on Lab).\n• **Up to 100% Merit Scholarships** based on our 20-min online screening assessment.\n• Recognized ISO 9001:2015, MSME & Startup India certification with real GitHub repos.'
+  },
+  { 
+    id: 'vibe_coding', 
+    label: 'What is Vibe Coding?', 
+    icon: <Code2 size={14} />,
+    reply: '⚡ **What is Vibe Coding?**\nVibe Coding is the modern software development methodology where developers describe intentions and system specs in natural language while AI tools (Cursor, Claude 3.5 Sonnet, v0) write boilerplate code.\n\nWingroo pioneers this workflow to ship production MVPs in 72 hours!'
+  },
+  { 
+    id: 'location', 
+    label: 'Coimbatore Hub & Contact', 
+    icon: <Rocket size={14} />,
+    reply: '📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012 (near Gandhipuram).\n📞 Phone / WhatsApp: +91 81247 79111.'
   }
 ];
 
@@ -98,19 +100,59 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
     setInputText('');
 
     const userMsg = { sender: 'user', text: userText, time: 'Just now' };
+    const lower = userText.toLowerCase().trim();
+    const words = lower.split(/\s+/).filter(w => w.length > 2);
     
-    // Simple intelligent keyword match
-    let botReplyText = "Thank you for asking! Wingroo Technologies provides industry-grade Software Development, 15-20 Days College Internships with Up to 100% Scholarships, Live Client Projects, and Agentic AI solutions. Would you like our senior consultant to connect with you directly?";
-    const lower = userText.toLowerCase();
+    // Dynamic Intelligent Search against all 60 AEO_GEO_FAQS
+    let bestMatch = null;
+    let highestScore = 0;
 
-    if (lower.includes('intern') || lower.includes('college') || lower.includes('fee') || lower.includes('scholarship')) {
+    for (const faq of AEO_GEO_FAQS) {
+      let score = 0;
+      const qLower = faq.q.toLowerCase();
+      const aLower = faq.a.toLowerCase();
+      const tags = faq.tags || [];
+
+      // Exact phrase match in question gets massive boost
+      if (qLower.includes(lower)) {
+        score += 25;
+      }
+
+      // Keyword matches in question, tags, and answer
+      for (const w of words) {
+        if (qLower.includes(w)) score += 6;
+        if (tags.some(t => t.toLowerCase().includes(w))) score += 5;
+        if (aLower.includes(w)) score += 1;
+      }
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = faq;
+      }
+    }
+
+    let botReplyText = "";
+
+    if (bestMatch && highestScore >= 6) {
+      botReplyText = `💡 **${bestMatch.q}**\n\n${bestMatch.a}\n\n👉 *Need more details or want to join our hands-on internship cohort? You can apply on our website or leave your phone number below for our mentors to connect!*`;
+    } else if (lower.includes('replace') || lower.includes('ai replace')) {
+      botReplyText = "🤖 **Will AI replace developers?**\nNo! AI won't replace software developers, but developers who master modern AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who don't. At Wingroo, we train students to act as architectural conductors who guide AI tools to build production apps 5x faster.";
+    } else if (lower.includes('2026') || (lower.includes('job') && (lower.includes('fresher') || lower.includes('get')))) {
+      botReplyText = "🚀 **How Can Freshers Secure Software Jobs in the AI Era?**\nTech companies are actively hiring freshers who possess practical full-stack project experience, verified GitHub commits, and proficiency with AI developer tools. Rote LeetCode memorization is being replaced by practical product delivery—which is exactly what we teach in our 15-20 Days Internship!";
+    } else if (lower.includes('where to start') || lower.includes('fresher') || lower.includes('beginner') || lower.includes('roadmap')) {
+      botReplyText = "🎓 **As a Fresher, Where Should You Start?**\n1. Master Web Fundamentals (HTML, CSS, JavaScript) & REST APIs.\n2. Pick a specialization: Full-Stack React/Next.js or Python for Backend/AI.\n3. Learn Git & push every project to GitHub.\n4. Complete a structured 15-20 Days Internship with live mentors at Wingroo to get certified proof-of-work!";
+    } else if (lower.includes('coimbatore') || lower.includes('tatabad') || lower.includes('address') || lower.includes('location')) {
+      botReplyText = "📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012. We are situated right in Coimbatore's innovation district near Gandhipuram. Call or WhatsApp us at +91 81247 79111.";
+    } else if (lower.includes('intern') || lower.includes('college') || lower.includes('fee') || lower.includes('scholarship')) {
       botReplyText = "🎓 Our College Internship runs for 15 to 20 working days with daily structured timetable slots. We provide Up to 100% Merit Scholarships based on an online 20-minute screening test. Certificates are ISO 9001:2015 & MSME certified.";
     } else if (lower.includes('live') || lower.includes('project') || lower.includes('stipend')) {
       botReplyText = "🚀 Live Project Internships involve real client applications and internal platforms like ZENTIME and IIE PLUS. Resume submission is required, and top contributors receive merit stipends.";
-    } else if (lower.includes('vibe') || lower.includes('ai') || lower.includes('agent') || lower.includes('prompt')) {
-      botReplyText = "🤖 We specialize in Vibe Coding (rapid 72-hour MVP delivery using Cursor & Claude) as well as autonomous Agentic AI systems for automated workflows like Gmail responders and CRM integrations.";
+    } else if (lower.includes('vibe') || lower.includes('agent') || lower.includes('prompt')) {
+      botReplyText = "⚡ We specialize in Vibe Coding (rapid 72-hour MVP delivery using Cursor & Claude) as well as autonomous Agentic AI systems for automated workflows like Gmail responders and CRM integrations.";
     } else if (lower.includes('job') || lower.includes('career') || lower.includes('hiring') || lower.includes('apply')) {
       botReplyText = "💼 We are actively hiring developers and AI prompt engineers for our Coimbatore hub & remote projects. Head to the 'Careers' banner on this page to apply with your resume!";
+    } else {
+      botReplyText = "Thank you for asking! Wingroo Technologies provides industry-grade Software Development, 15-20 Days College Internships with Up to 100% Scholarships, Live Client Projects, and Agentic AI solutions. You can also explore our 60+ FAQs in the 'AI & Career FAQs Hub' section on our site!";
     }
 
     const botMsg = { sender: 'bot', text: botReplyText, time: 'Just now' };

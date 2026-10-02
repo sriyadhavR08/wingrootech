@@ -9,6 +9,7 @@ import Events from './components/Events'
 import Portfolio from './components/Portfolio'
 import WhyWingroo from './components/WhyWingroo'
 import Reviews from './components/Reviews'
+import AEOKnowledgeHub from './components/AEOKnowledgeHub'
 import CTA from './components/CTA'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
@@ -79,6 +80,7 @@ export default function App() {
         <Portfolio key={`portfolio-${dataVersion}`} />
         <WhyWingroo />
         <Reviews />
+        <AEOKnowledgeHub />
         <CTA />
         <Contact />
       </main>

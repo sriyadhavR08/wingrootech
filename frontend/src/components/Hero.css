@@ -415,50 +415,122 @@
   line-height: 1.4;
 }
 
+.card-code-area {
+  padding: 24px 26px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.86;
+  color: #cbd5e1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .hero-headline {
-    font-size: 2.9rem;
+    font-size: clamp(2.4rem, 4.5vw, 2.9rem);
   }
   .hero-highlights-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 24px 20px;
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 992px) {
+  .hero-section {
+    padding: 24px 0 20px 0;
+  }
   .hero-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 28px;
+    margin-bottom: 28px;
   }
   .hero-visual {
-    order: -1;
+    order: 2;
+    width: 100%;
   }
   .tech-stage {
     max-width: 100%;
-    padding: 10px 0 30px 0;
+    padding: 10px 0;
+    margin: 0 auto;
   }
-  .float-card-1 { right: 5px; }
-  .float-card-2 { left: 5px; }
+  .hero-description {
+    max-width: 100%;
+  }
+  /* Hide floating badges on tablet & mobile to eliminate horizontal overflow and awkward gaps */
+  .floating-card {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-headline {
+    font-size: clamp(2.1rem, 6.5vw, 2.6rem);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .hero-subline {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .hero-description {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 22px;
+  }
+  .hero-actions {
+    margin-bottom: 22px;
+  }
+  .hero-stats-row {
+    gap: 10px;
+  }
+  .hero-stat-pill {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px 14px;
+  }
+  .highlight-item {
+    padding: 10px;
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px solid var(--border-light);
+  }
 }
 
 @media (max-width: 580px) {
   .hero-headline {
-    font-size: 2.2rem;
+    font-size: 2.1rem;
+    line-height: 1.18;
   }
   .hero-subline {
-    font-size: 1.05rem;
-  }
-  .hero-highlights-grid {
-    grid-template-columns: 1fr;
-  }
-  .float-card-1, .float-card-2, .float-card-3 {
-    position: static;
-    margin-top: 10px;
+    font-size: 0.96rem;
+    line-height: 1.5;
   }
   .hero-actions {
     flex-direction: column;
+    gap: 12px;
   }
   .hero-btn {
     width: 100%;
+    justify-content: center;
+  }
+  .card-code-area {
+    padding: 16px 14px;
+    font-size: 0.78rem;
+    line-height: 1.58;
+  }
+  .tech-card-footer {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .footer-metric-value {
+    font-size: 0.85rem;
   }
 }
