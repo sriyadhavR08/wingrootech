@@ -83,6 +83,13 @@
   pointer-events: none;
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  padding: 5px 14px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.32);
 }
 
 .line-label-wrap.visible {
@@ -93,27 +100,26 @@
 
 .line-label-text {
   display: inline-block;
-  padding: 5px 14px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  color: #f8fafc;
   font-family: var(--font-heading, sans-serif);
-  font-size: 0.80rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
-  transition: all 0.22s ease;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35));
+}
+
+.line-node.active .line-label-wrap {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.28);
 }
 
 .line-node.active .line-label-text {
-  color: #ffffff;
-  font-weight: 700;
-  background: #0f172a;
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
 }
 
 /* Mobile & Tablet Subtle Section Toast Badge */
@@ -154,7 +160,7 @@
     background: rgba(15, 23, 42, 0.92);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.35);
     border-radius: 999px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
     cursor: pointer;
@@ -169,14 +175,16 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 6px #10b981;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
   }
 
   .mb-label {
     font-family: var(--font-heading, sans-serif);
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #f8fafc;
+    font-size: 0.80rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
