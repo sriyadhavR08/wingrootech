@@ -239,3 +239,163 @@ def update_internship_status(app_id):
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         conn.close()
+
+
+# ============================================================================
+# College Internship Postings (Created & Managed by Admin)
+# ============================================================================
+
+@internship_bp.route('/api/college-internships', methods=['GET'])
+def get_college_internships():
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, title, domain, internship_type, duration, badge, mode, 
+                   stipend_or_scholarship, poster_url, description, highlights, 
+                   schedule_info, status, created_at 
+            FROM college_internships 
+            ORDER BY id DESC
+        """)
+        rows = cursor.fetchall()
+        internships = []
+        if rows:
+            for r in rows:
+                item = dict(r)
+                internships.append({
+                    'id': item['id'],
+                    'title': item['title'],
+                    'domain': item.get('domain') or 'Full Stack Development',
+                    'internship_type': item.get('internship_type') or 'College Internship',
+                    'duration': item.get('duration') or '15 – 20 Days',
+                    'badge': item.get('badge') or 'Enrolling Now',
+                    'mode': item.get('mode') or 'Hybrid (Coimbatore / Virtual)',
+                    'stipend_or_scholarship': item.get('stipend_or_scholarship') or 'Up to 100% Fee Waiver',
+                    'poster_url': item.get('poster_url') or '',
+                    'description': item.get('description') or '',
+                    'highlights': item.get('highlights') or '',
+                    'schedule_info': item.get('schedule_info') or 'Mon – Fri (09:30 AM – 04:30 PM)',
+                    'status': item.get('status') or 'Active',
+                    'created_at': str(item.get('created_at', ''))
+                })
+        return jsonify({'success': True, 'internships': internships, 'count': len(internships)})
+    except Exception as e:
+        print(f"[Error fetching college internships] {e}")
+        return jsonify({'success': False, 'message': str(e), 'internships': []}), 500
+    finally:
+        conn.close()
+
+
+@internship_bp.route('/api/college-internships', methods=['POST', 'OPTIONS'])
+def add_college_internship():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json() or {}
+    title = data.get('title', '').strip()
+    domain = data.get('domain', 'Full Stack Development').strip()
+    internship_type = data.get('internship_type', 'College Internship').strip()
+    duration = data.get('duration', '15 – 20 Days').strip()
+    badge = data.get('badge', 'Enrolling Now').strip()
+    mode = data.get('mode', 'Hybrid (Coimbatore / Virtual)').strip()
+    stipend_or_scholarship = data.get('stipend_or_scholarship', 'Up to 100% Fee Waiver').strip()
+    poster_url = data.get('poster_url', '').strip()
+    description = data.get('description', '').strip()
+    highlights = data.get('highlights', '').strip()
+    schedule_info = data.get('schedule_info', 'Mon – Fri (09:30 AM – 04:30 PM)').strip()
+    status = data.get('status', 'Active').strip()
+
+    if not title or not description:
+        return jsonify({'success': False, 'message': 'Please provide an Internship Title and Description.'}), 400
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            sql = """
+            INSERT INTO college_internships 
+            (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status))
+        else:
+            sql = """
+            INSERT INTO college_internships 
+            (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            cursor.execute(sql, (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status))
+        
+        conn.commit()
+        new_id = cursor.lastrowid
+        return jsonify({
+            'success': True,
+            'message': 'College internship cohort posted successfully!',
+            'internship_id': new_id,
+            'internship': {
+                'id': new_id,
+                'title': title,
+                'domain': domain,
+                'internship_type': internship_type,
+                'duration': duration,
+                'badge': badge,
+                'mode': mode,
+                'stipend_or_scholarship': stipend_or_scholarship,
+                'poster_url': poster_url,
+                'description': description,
+                'highlights': highlights,
+                'schedule_info': schedule_info,
+                'status': status
+            }
+        }), 201
+    except Exception as e:
+        print(f"[Error posting college internship] {e}")
+        return jsonify({'success': False, 'message': f'Failed to post college internship: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+
+@internship_bp.route('/api/college-internships/<int:item_id>', methods=['DELETE', 'OPTIONS'])
+def delete_college_internship(item_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            cursor.execute("DELETE FROM college_internships WHERE id = %s", (item_id,))
+        else:
+            cursor.execute("DELETE FROM college_internships WHERE id = ?", (item_id,))
+        conn.commit()
+        return jsonify({'success': True, 'message': f'College internship cohort #{item_id} deleted successfully.'})
+    except Exception as e:
+        print(f"[Error deleting college internship] {e}")
+        return jsonify({'success': False, 'message': f'Failed to delete college internship: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+
+@internship_bp.route('/api/college-internships/<int:item_id>/status', methods=['PUT', 'OPTIONS'])
+def toggle_college_internship_status(item_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json() or {}
+    new_status = data.get('status', 'Active').strip()
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            cursor.execute("UPDATE college_internships SET status = %s WHERE id = %s", (new_status, item_id))
+        else:
+            cursor.execute("UPDATE college_internships SET status = ? WHERE id = ?", (new_status, item_id))
+        conn.commit()
+        return jsonify({'success': True, 'message': f'College internship cohort #{item_id} status updated to {new_status}.', 'status': new_status})
+    except Exception as e:
+        print(f"[Error updating college internship status] {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+

@@ -1801,5 +1801,306 @@
   }
 }
 
+/* ========================================================
+   DYNAMIC ACTIVE COLLEGE INTERNSHIP COHORTS (FROM ADMIN)
+   ======================================================== */
+.active-cohorts-wrapper {
+  margin-top: 50px;
+  margin-bottom: 60px;
+}
+
+.cohorts-header-bar {
+  margin-bottom: 28px;
+}
+
+.green-tag {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.green-tag .pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #059669;
+  box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7);
+  animation: cohortPulse 2s infinite;
+}
+
+@keyframes cohortPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+
+.cohorts-section-title {
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+}
+
+.cohorts-section-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  max-width: 680px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.active-cohorts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 26px;
+  margin-top: 24px;
+}
+
+.active-cohort-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  position: relative;
+}
+
+.active-cohort-card:hover {
+  transform: translateY(-6px);
+  border-color: #cbd5e1;
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+.active-cohort-card:hover .cohort-poster-img {
+  transform: scale(1.05);
+}
+
+.cohort-card-media {
+  height: 190px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+}
+
+.cohort-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.cohort-fallback-banner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #c7d2fe;
+}
+
+.cohort-banner-icon {
+  color: #818cf8;
+}
+
+.cohort-fallback-domain {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e0e7ff;
+}
+
+.cohort-badge-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.cohort-pill-badge {
+  background: rgba(5, 150, 105, 0.95);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cohort-duration-badge {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.cohort-card-content {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cohort-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cohort-domain-chip {
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.cohort-mode-chip {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.cohort-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+  margin: 0 0 8px 0;
+}
+
+.cohort-schedule-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.cohort-sched-icon {
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+.cohort-card-desc {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.55;
+  margin-bottom: 14px;
+  flex: 1;
+}
+
+.cohort-highlights-box {
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.cohort-highlights-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.cohort-highlights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cohort-highlights-list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.cohort-hl-check {
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.cohort-scholarship-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #065f46;
+  margin-bottom: 16px;
+}
+
+.cohort-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.cohort-apply-btn {
+  flex: 1;
+  justify-content: center;
+  font-size: 0.82rem;
+  padding: 10px 14px;
+  gap: 6px;
+}
+
+.cohort-curriculum-btn {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .active-cohorts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
 

@@ -67,6 +67,15 @@ def get_admin_overview():
         except Exception:
             total_event_regs = 0
         
+        # College Internships count
+        total_college_internships = 0
+        try:
+            cursor.execute("SELECT COUNT(*) AS total FROM college_internships")
+            ci_res = cursor.fetchone()
+            total_college_internships = ci_res['total'] if isinstance(ci_res, dict) else ci_res[0]
+        except Exception:
+            total_college_internships = 0
+
         # Recent contacts (latest 5)
         cursor.execute("SELECT * FROM contacts ORDER BY id DESC LIMIT 5")
         recent_contacts_raw = cursor.fetchall()
@@ -91,6 +100,7 @@ def get_admin_overview():
             'stats': {
                 'total_contacts': total_contacts,
                 'total_internships': total_internships,
+                'total_college_internships': total_college_internships,
                 'total_projects': total_projects,
                 'total_events': total_events,
                 'total_event_registrations': total_event_regs,

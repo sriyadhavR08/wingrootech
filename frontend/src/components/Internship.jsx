@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   GraduationCap, 
   Rocket, 
@@ -364,6 +364,34 @@ export default function Internship({ onOpenStudentPortal }) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // { success: bool, message: string, appNo: string, email: string }
+
+  // Dynamic College Internship Postings (Created & Managed by Admin)
+  const [collegePostings, setCollegePostings] = useState([]);
+  const [loadingPostings, setLoadingPostings] = useState(true);
+
+  const fetchCollegePostings = () => {
+    fetch(`${API_BASE_URL}/api/college-internships`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.internships)) {
+          setCollegePostings(data.internships);
+        } else {
+          setCollegePostings([]);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching college internship postings:', err);
+      })
+      .finally(() => {
+        setLoadingPostings(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchCollegePostings();
+    window.addEventListener('wingroo_data_changed', fetchCollegePostings);
+    return () => window.removeEventListener('wingroo_data_changed', fetchCollegePostings);
+  }, []);
 
   const openModal = (type = 'College Internship', tech = 'Full Stack Development', withScholarship = true) => {
     setSelectedType(type);
@@ -775,6 +803,111 @@ export default function Internship({ onOpenStudentPortal }) {
             </button>
           </div>
         </div>
+
+        {/* Dynamic Active College Internship Postings (Created & Managed by Admin) */}
+        {collegePostings.length > 0 && (
+          <div className="active-cohorts-wrapper">
+            <div className="cohorts-header-bar">
+              <div className="section-tag green-tag">
+                <span className="dot pulse-dot" />
+                <span>Live Admissions & Batch Schedules</span>
+              </div>
+              <h3 className="cohorts-section-title">Active College Internship Cohorts</h3>
+              <p className="cohorts-section-desc">
+                Current industrial batches available for university students. Explore daily timetable hours, merit scholarship fee waivers, and apply directly.
+              </p>
+            </div>
+
+            <div className="active-cohorts-grid">
+              {collegePostings.map((cohort) => {
+                const highlightsList = cohort.highlights 
+                  ? cohort.highlights.split(',').map(s => s.trim()).filter(Boolean)
+                  : [];
+
+                return (
+                  <div key={cohort.id} className="active-cohort-card modern-card">
+                    {/* Media Banner / Poster */}
+                    <div className="cohort-card-media">
+                      {cohort.poster_url ? (
+                        <img 
+                          src={cohort.poster_url} 
+                          alt={cohort.title}
+                          className="cohort-poster-img"
+                          loading="lazy" 
+                        />
+                      ) : (
+                        <div className="cohort-fallback-banner">
+                          <GraduationCap size={40} className="cohort-banner-icon" />
+                          <span className="cohort-fallback-domain">{cohort.domain}</span>
+                        </div>
+                      )}
+                      <div className="cohort-badge-overlay">
+                        <span className="cohort-pill-badge">{cohort.badge || 'Enrolling Now'}</span>
+                        <span className="cohort-duration-badge">{cohort.duration}</span>
+                      </div>
+                    </div>
+
+                    <div className="cohort-card-content">
+                      <div className="cohort-meta-row">
+                        <span className="cohort-domain-chip">{cohort.domain}</span>
+                        <span className="cohort-mode-chip">{cohort.mode}</span>
+                      </div>
+
+                      <h4 className="cohort-card-title">{cohort.title}</h4>
+                      
+                      <div className="cohort-schedule-bar">
+                        <Clock size={14} className="cohort-sched-icon" />
+                        <span>{cohort.schedule_info}</span>
+                      </div>
+
+                      <p className="cohort-card-desc">{cohort.description}</p>
+
+                      {/* Highlights */}
+                      {highlightsList.length > 0 && (
+                        <div className="cohort-highlights-box">
+                          <div className="cohort-highlights-title">Curriculum Focus:</div>
+                          <ul className="cohort-highlights-list">
+                            {highlightsList.slice(0, 3).map((hl, i) => (
+                              <li key={i}>
+                                <Check size={13} className="cohort-hl-check" />
+                                <span>{hl}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Scholarship Tier */}
+                      <div className="cohort-scholarship-tier">
+                        <Sparkles size={14} style={{ color: '#059669', flexShrink: 0 }} />
+                        <span>Scholarship: <strong>{cohort.stipend_or_scholarship}</strong></span>
+                      </div>
+
+                      {/* Action CTA Buttons */}
+                      <div className="cohort-card-actions">
+                        <button 
+                          onClick={() => openModal(cohort.internship_type || 'College Internship', cohort.domain, true)}
+                          className="btn btn-primary cohort-apply-btn"
+                        >
+                          <span>Apply for this Cohort</span>
+                          <ArrowRight size={15} />
+                        </button>
+                        <button 
+                          onClick={() => openScheduleModal(cohort.internship_type || 'College Internship', cohort.domain)}
+                          className="btn btn-secondary cohort-curriculum-btn"
+                          title="View 15-20 Days Curriculum Timetable"
+                        >
+                          <BookOpen size={15} />
+                          <span>Timetable</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Technology Domains */}
         <div className="tech-domains-wrapper">

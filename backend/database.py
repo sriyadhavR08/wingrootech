@@ -183,6 +183,38 @@ def init_mysql_tables_if_needed():
                 ('Career & Industry Sessions', 'Sessions designed to help students understand industry expectations, career paths, technical skills and the transition from student life to professional life.', 'Upcoming Session', 'Live Webinar & Campus Audits')
                 """)
 
+            # 7. College Internship Postings Table (Created by Admin)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS college_internships (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(150) NOT NULL,
+                domain VARCHAR(100) NOT NULL,
+                internship_type VARCHAR(100) DEFAULT 'College Internship',
+                duration VARCHAR(100) DEFAULT '15 – 20 Days',
+                badge VARCHAR(100) DEFAULT 'Enrolling Now',
+                mode VARCHAR(100) DEFAULT 'Hybrid (Coimbatore / Virtual)',
+                stipend_or_scholarship VARCHAR(150) DEFAULT 'Up to 100% Fee Waiver',
+                poster_url VARCHAR(255) DEFAULT '',
+                description TEXT NOT NULL,
+                highlights TEXT,
+                schedule_info VARCHAR(255) DEFAULT 'Mon – Fri (09:30 AM – 04:30 PM)',
+                status VARCHAR(50) DEFAULT 'Active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            """)
+
+            # Seed College Internships if empty
+            cursor.execute("SELECT COUNT(*) FROM college_internships")
+            if cursor.fetchone()[0] == 0:
+                cursor.execute("""
+                INSERT INTO college_internships 
+                (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status) 
+                VALUES 
+                ('Full Stack Web & Cloud Cohort (15–20 Days)', 'Full Stack Development', 'College Internship', '15 – 20 Days', 'Up to 100% Scholarship', 'Hybrid (Coimbatore / Virtual)', 'Up to 100% Fee Waiver', '/images/wingroo-internship-team.jpg', 'Master client-server architecture, modern React UI, RESTful backends, database models, and production cloud deployment with daily hands-on industry labs.', 'React 19 Component Architecture, RESTful Flask/Express APIs, MySQL Relational Database, Cloud Deployment on Render/Vercel, Verified Certificate & GitHub Proof', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active'),
+                ('Applied AI & Machine Learning Fellowship', 'AI & Machine Learning', 'College Internship', '15 – 20 Days', 'Fast-Track Cohort', 'Hybrid (Coimbatore / Virtual)', 'Merit Grants + Capstone Project', '/smart-ai-bot-preview.jpg', 'Hands-on data preprocessing, exploratory analysis, supervised & unsupervised machine learning models, neural networks, and live API deployment.', 'NumPy & Pandas Data Wrangling, Scikit-Learn Classifiers & Regression, Deep Learning Intro, REST API Model Serving, Capstone Defense & Viva', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active'),
+                ('Python Backend & Automation Systems', 'Python Development', 'College Internship', '15 – 20 Days', 'Enrolling Now', 'Hybrid (Coimbatore / Virtual)', 'Up to 100% Fee Waiver', '/tourists-guard-preview.jpg', 'Designed for backend engineering, REST microservices, database ORMs, automation tools, and production API architectures with Python.', 'Advanced Python 3 OOP, Flask Application Blueprints, Relational DB with MySQL, JWT Authentication & Security, WSGI & Production Tuning', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active')
+                """)
+
             conn.commit()
             print(f"[Database] Standalone project database '{Config.MYSQL_DB}' initialized successfully.")
         conn.close()
@@ -279,4 +311,34 @@ def init_sqlite_tables(conn):
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS college_internships (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        domain TEXT NOT NULL,
+        internship_type TEXT DEFAULT 'College Internship',
+        duration TEXT DEFAULT '15 – 20 Days',
+        badge TEXT DEFAULT 'Enrolling Now',
+        mode TEXT DEFAULT 'Hybrid (Coimbatore / Virtual)',
+        stipend_or_scholarship TEXT DEFAULT 'Up to 100% Fee Waiver',
+        poster_url TEXT DEFAULT '',
+        description TEXT NOT NULL,
+        highlights TEXT,
+        schedule_info TEXT DEFAULT 'Mon – Fri (09:30 AM – 04:30 PM)',
+        status TEXT DEFAULT 'Active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    cursor.execute("SELECT COUNT(*) FROM college_internships")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+        INSERT INTO college_internships 
+        (title, domain, internship_type, duration, badge, mode, stipend_or_scholarship, poster_url, description, highlights, schedule_info, status) 
+        VALUES 
+        ('Full Stack Web & Cloud Cohort (15–20 Days)', 'Full Stack Development', 'College Internship', '15 – 20 Days', 'Up to 100% Scholarship', 'Hybrid (Coimbatore / Virtual)', 'Up to 100% Fee Waiver', '/images/wingroo-internship-team.jpg', 'Master client-server architecture, modern React UI, RESTful backends, database models, and production cloud deployment with daily hands-on industry labs.', 'React 19 Component Architecture, RESTful Flask/Express APIs, MySQL Relational Database, Cloud Deployment on Render/Vercel, Verified Certificate & GitHub Proof', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active'),
+        ('Applied AI & Machine Learning Fellowship', 'AI & Machine Learning', 'College Internship', '15 – 20 Days', 'Fast-Track Cohort', 'Hybrid (Coimbatore / Virtual)', 'Merit Grants + Capstone Project', '/smart-ai-bot-preview.jpg', 'Hands-on data preprocessing, exploratory analysis, supervised & unsupervised machine learning models, neural networks, and live API deployment.', 'NumPy & Pandas Data Wrangling, Scikit-Learn Classifiers & Regression, Deep Learning Intro, REST API Model Serving, Capstone Defense & Viva', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active'),
+        ('Python Backend & Automation Systems', 'Python Development', 'College Internship', '15 – 20 Days', 'Enrolling Now', 'Hybrid (Coimbatore / Virtual)', 'Up to 100% Fee Waiver', '/tourists-guard-preview.jpg', 'Designed for backend engineering, REST microservices, database ORMs, automation tools, and production API architectures with Python.', 'Advanced Python 3 OOP, Flask Application Blueprints, Relational DB with MySQL, JWT Authentication & Security, WSGI & Production Tuning', 'Mon – Fri (09:30 AM – 04:30 PM)', 'Active')
+        """)
+
     conn.commit()

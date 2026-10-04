@@ -103,6 +103,26 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
   const [eventUploading, setEventUploading] = useState(false);
   const [eventSuccessMsg, setEventSuccessMsg] = useState('');
 
+  // Form states for creating new college internship posting
+  const [collegeInternships, setCollegeInternships] = useState([]);
+  const [newCollegeInternship, setNewCollegeInternship] = useState({
+    title: '',
+    domain: 'Full Stack Development',
+    internship_type: 'College Internship',
+    duration: '15 – 20 Days',
+    badge: 'Enrolling Now',
+    mode: 'Hybrid (Coimbatore / Virtual)',
+    stipend_or_scholarship: 'Up to 100% Fee Waiver',
+    poster_url: '',
+    description: '',
+    highlights: '',
+    schedule_info: 'Mon – Fri (09:30 AM – 04:30 PM)',
+    status: 'Active'
+  });
+  const [collegeInternshipPosting, setCollegeInternshipPosting] = useState(false);
+  const [collegeInternshipUploading, setCollegeInternshipUploading] = useState(false);
+  const [collegeInternshipSuccessMsg, setCollegeInternshipSuccessMsg] = useState('');
+
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadAllData();
@@ -186,6 +206,15 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
           setEvents(evData.events || []);
         }
       }
+
+      // 6. College Internships (Postings created by Admin)
+      const ciRes = await fetch(`${API_BASE}/api/college-internships`);
+      if (ciRes.ok) {
+        const ciData = await ciRes.json();
+        if (ciData.success) {
+          setCollegeInternships(ciData.internships || []);
+        }
+      }
     } catch (err) {
       console.error('Error loading admin data:', err);
     } finally {
@@ -247,6 +276,32 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
       alert('Error uploading poster: ' + err.message);
     } finally {
       setEventUploading(false);
+    }
+  };
+
+  const handleCollegeInternshipPosterUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setCollegeInternshipUploading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewCollegeInternship(prev => ({ ...prev, poster_url: data.url }));
+      } else {
+        alert(data.message || 'Poster upload failed');
+      }
+    } catch (err) {
+      alert('Error uploading poster: ' + err.message);
+    } finally {
+      setCollegeInternshipUploading(false);
     }
   };
 
@@ -499,6 +554,72 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
     }
   };
 
+  // --- POST NEW COLLEGE INTERNSHIP ---
+  const handlePostCollegeInternship = async (e) => {
+    e.preventDefault();
+    if (!newCollegeInternship.title || !newCollegeInternship.description) {
+      alert('Please fill Internship Title and Description.');
+      return;
+    }
+
+    setCollegeInternshipPosting(true);
+    setCollegeInternshipSuccessMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/api/college-internships`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCollegeInternship)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCollegeInternshipSuccessMsg('College Internship cohort published successfully to website!');
+        setNewCollegeInternship({
+          title: '',
+          domain: 'Full Stack Development',
+          internship_type: 'College Internship',
+          duration: '15 – 20 Days',
+          badge: 'Enrolling Now',
+          mode: 'Hybrid (Coimbatore / Virtual)',
+          stipend_or_scholarship: 'Up to 100% Fee Waiver',
+          poster_url: '',
+          description: '',
+          highlights: '',
+          schedule_info: 'Mon – Fri (09:30 AM – 04:30 PM)',
+          status: 'Active'
+        });
+        loadAllData();
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (typeof onDataChanged === 'function') onDataChanged();
+        setTimeout(() => setCollegeInternshipSuccessMsg(''), 4000);
+      } else {
+        alert(data.message || 'Error posting college internship.');
+      }
+    } catch (err) {
+      alert('Failed to connect to backend server: ' + err.message);
+    } finally {
+      setCollegeInternshipPosting(false);
+    }
+  };
+
+  const handleDeleteCollegeInternship = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete college internship #${id}?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/college-internships/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setCollegeInternships(prev => prev.filter(item => item.id !== id));
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.message || 'Failed to delete college internship.');
+      }
+    } catch (err) {
+      alert('Failed to delete college internship: ' + err.message);
+    }
+  };
+
   const exportToCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
     if (activeTab === 'contacts') {
@@ -512,6 +633,11 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
       internships.forEach(i => {
         const cleanMsg = `"${(i.message || '').replace(/"/g, '""')}"`;
         csvContent += `${i.id},"${i.name}","${i.email}","${i.phone}","${i.college}","${i.course}","${i.year}","${i.internship_type}","${i.technology}",${cleanMsg},"${i.created_at || ''}"\n`;
+      });
+    } else if (activeTab === 'college_internships') {
+      csvContent += "ID,Title,Domain,Type,Duration,Badge,Mode,Scholarship,Schedule,Status,Date\n";
+      collegeInternships.forEach(ci => {
+        csvContent += `${ci.id},"${ci.title}","${ci.domain}","${ci.internship_type}","${ci.duration}","${ci.badge}","${ci.mode}","${ci.stipend_or_scholarship}","${ci.schedule_info}","${ci.status}","${ci.created_at || ''}"\n`;
       });
     } else if (activeTab === 'event_registrations') {
       csvContent += "ID,RegNo,Event,Name,Email,Phone,College,Year,Status,Date\n";
@@ -593,6 +719,17 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
       (ev.tagline && ev.tagline.toLowerCase().includes(q)) ||
       (ev.location && ev.location.toLowerCase().includes(q)) ||
       (ev.description && ev.description.toLowerCase().includes(q))
+    );
+  });
+
+  const filteredCollegeInternships = collegeInternships.filter(ci => {
+    const q = searchQuery.toLowerCase();
+    return (
+      (ci.title && ci.title.toLowerCase().includes(q)) ||
+      (ci.domain && ci.domain.toLowerCase().includes(q)) ||
+      (ci.badge && ci.badge.toLowerCase().includes(q)) ||
+      (ci.mode && ci.mode.toLowerCase().includes(q)) ||
+      (ci.description && ci.description.toLowerCase().includes(q))
     );
   });
 
@@ -739,9 +876,19 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                   <div className="admin-stat-label">Public Events</div>
                 </div>
               </div>
+
+              <div className="admin-stat-card">
+                <div className="admin-stat-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
+                  <GraduationCap size={24} />
+                </div>
+                <div>
+                  <div className="admin-stat-val">{collegeInternships.length}</div>
+                  <div className="admin-stat-label">College Intern Postings</div>
+                </div>
+              </div>
             </div>
 
-            {/* Controls Bar: 5 Tabs, Search, Export */}
+            {/* Controls Bar: 6 Tabs, Search, Export */}
             <div className="admin-controls-bar">
               <div className="admin-tabs-list">
                 <button 
@@ -757,8 +904,16 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                   onClick={() => setActiveTab('internships')}
                 >
                   <GraduationCap size={16} />
-                  <span>Internships</span>
+                  <span>Intern Applications</span>
                   <span className="admin-tab-count">{internships.length}</span>
+                </button>
+                <button 
+                  className={`admin-tab-btn ${activeTab === 'college_internships' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('college_internships')}
+                >
+                  <GraduationCap size={16} />
+                  <span>College Internship Postings</span>
+                  <span className="admin-tab-count">{collegeInternships.length}</span>
                 </button>
                 <button 
                   className={`admin-tab-btn ${activeTab === 'event_registrations' ? 'active' : ''}`}
@@ -1656,6 +1811,293 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                           <tr>
                             <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                               No events found. Use the form above to add an event.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: COLLEGE INTERNSHIP POSTINGS (CREATED & MANAGED BY ADMIN) */}
+            {activeTab === 'college_internships' && (
+              <div className="admin-tab-content">
+                {/* Post New College Internship Card */}
+                <div className="admin-form-card">
+                  <div className="admin-form-header">
+                    <div className="admin-form-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
+                      <GraduationCap size={20} />
+                    </div>
+                    <div>
+                      <h4 className="admin-form-title">Post New College Internship / Cohort Program</h4>
+                      <p className="admin-form-subtitle">
+                        Publish live internship cohorts directly to the College Internship section on the website. Students will be able to see the poster, timetable, scholarship tier, and apply instantly.
+                      </p>
+                    </div>
+                  </div>
+
+                  {collegeInternshipSuccessMsg && (
+                    <div className="admin-success-toast">
+                      <CheckCircle size={16} />
+                      <span>{collegeInternshipSuccessMsg}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handlePostCollegeInternship} className="admin-form-grid">
+                    <div className="admin-form-field admin-form-full">
+                      <label className="admin-form-label">Internship Cohort Title *</label>
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="e.g. Full Stack Web & Cloud Cohort (15–20 Days) or Winter AI Fellowship"
+                        value={newCollegeInternship.title}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, title: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Technology Domain *</label>
+                      <select 
+                        value={newCollegeInternship.domain}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, domain: e.target.value })}
+                        className="admin-select"
+                      >
+                        <option value="Full Stack Development">Full Stack Development</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Python Development">Python Development</option>
+                        <option value="Java Development">Java Development</option>
+                        <option value="AI & Machine Learning">AI & Machine Learning</option>
+                        <option value="Mobile App Development">Mobile App Development</option>
+                        <option value="UI/UX Design">UI/UX Design</option>
+                        <option value="Cloud & DevOps">Cloud & DevOps</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Program Type</label>
+                      <select 
+                        value={newCollegeInternship.internship_type}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, internship_type: e.target.value })}
+                        className="admin-select"
+                      >
+                        <option value="College Internship">College Internship (Academic)</option>
+                        <option value="Live Project Internship">Live Project Internship (Production)</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Duration</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. 15 – 20 Days or 30 Days"
+                        value={newCollegeInternship.duration}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, duration: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Badge / Highlight</label>
+                      <select 
+                        value={newCollegeInternship.badge}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, badge: e.target.value })}
+                        className="admin-select"
+                      >
+                        <option value="Enrolling Now">Enrolling Now</option>
+                        <option value="Up to 100% Scholarship">Up to 100% Scholarship</option>
+                        <option value="Fast-Track Cohort">Fast-Track Cohort</option>
+                        <option value="Limited Seats">Limited Seats</option>
+                        <option value="Popular Choice">Popular Choice</option>
+                        <option value="Weekend Batch">Weekend Batch</option>
+                      </select>
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Delivery Mode</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Hybrid (Coimbatore / Virtual) or Offline Campus"
+                        value={newCollegeInternship.mode}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, mode: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Scholarship / Fee Waiver</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Up to 100% Fee Waiver or 50% Merit Grant"
+                        value={newCollegeInternship.stipend_or_scholarship}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, stipend_or_scholarship: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-field admin-form-full">
+                      <label className="admin-form-label">Timetable Schedule Hours</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Mon – Fri (09:30 AM – 04:30 PM): Morning Lecture + Afternoon Lab"
+                        value={newCollegeInternship.schedule_info}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, schedule_info: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    {/* POSTER UPLOAD FIELD FOR INTERNSHIP */}
+                    <div className="admin-form-field admin-form-full">
+                      <label className="admin-form-label">Internship Poster / Banner Image (Upload or Paste URL)</label>
+                      <div className="admin-file-upload-box">
+                        <label className="admin-file-upload-label">
+                          <Upload size={18} style={{ color: '#059669' }} />
+                          <span>{collegeInternshipUploading ? 'Uploading poster...' : 'Click to Upload Internship Poster (PNG, JPG, WebP)'}</span>
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleCollegeInternshipPosterUpload}
+                            className="admin-file-hidden-input"
+                            disabled={collegeInternshipUploading}
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ marginTop: '8px' }}>
+                        <input 
+                          type="url" 
+                          placeholder="Or paste Poster Image / Google Drive URL (https://...)"
+                          value={newCollegeInternship.poster_url}
+                          onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, poster_url: formatMediaUrl(e.target.value, 'image') })}
+                          className="admin-input"
+                        />
+                      </div>
+
+                      {newCollegeInternship.poster_url && (
+                        <div className="admin-media-preview-box">
+                          <img src={newCollegeInternship.poster_url} alt="Poster Preview" className="admin-preview-img" />
+                          <button 
+                            type="button" 
+                            onClick={() => setNewCollegeInternship({ ...newCollegeInternship, poster_url: '' })} 
+                            className="admin-remove-media-btn"
+                            title="Remove Poster"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="admin-form-field admin-form-full">
+                      <label className="admin-form-label">Program Overview & Description *</label>
+                      <textarea 
+                        required
+                        rows="3"
+                        placeholder="Clear overview of what students will learn, hands-on tasks, and real-world tools..."
+                        value={newCollegeInternship.description}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, description: e.target.value })}
+                        className="admin-textarea"
+                      />
+                    </div>
+
+                    <div className="admin-form-field admin-form-full">
+                      <label className="admin-form-label">Key Highlights / Syllabus Topics (Comma-separated)</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. React 19 Component Architecture, RESTful APIs, MySQL Database, Cloud Deployment, Verified Certificate & GitHub Proof"
+                        value={newCollegeInternship.highlights}
+                        onChange={(e) => setNewCollegeInternship({ ...newCollegeInternship, highlights: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-full">
+                      <button type="submit" disabled={collegeInternshipPosting || collegeInternshipUploading} className="admin-submit-btn" style={{ background: '#059669' }}>
+                        <PlusCircle size={16} />
+                        <span>{collegeInternshipPosting ? 'Publishing...' : 'Publish College Internship to Website'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Current Active College Internships List */}
+                <div className="admin-table-card">
+                  <div className="admin-table-header-row" style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+                      Active College Internship Postings ({collegeInternships.length})
+                    </h4>
+                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                      These appear live on the public College Internship page
+                    </span>
+                  </div>
+
+                  <div className="admin-table-responsive">
+                    <table className="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Cohort Title & Poster</th>
+                          <th>Domain & Type</th>
+                          <th>Duration & Mode</th>
+                          <th>Badge</th>
+                          <th>Scholarship</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredCollegeInternships.length > 0 ? (
+                          filteredCollegeInternships.map((ci) => (
+                            <tr key={ci.id}>
+                              <td><strong>#{ci.id}</strong></td>
+                              <td>
+                                <div className="candidate-name-cell" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  {ci.poster_url ? (
+                                    <img src={ci.poster_url} alt="" style={{ width: '42px', height: '42px', borderRadius: '8px', objectFit: 'cover' }} />
+                                  ) : (
+                                    <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <GraduationCap size={20} />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{ci.title}</div>
+                                    <div className="candidate-contact-sub">{ci.schedule_info}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <div style={{ fontWeight: 500, color: '#4f46e5' }}>{ci.domain}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{ci.internship_type}</div>
+                              </td>
+                              <td>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{ci.duration}</div>
+                                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{ci.mode}</div>
+                              </td>
+                              <td>
+                                <span className="admin-badge" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                                  {ci.badge}
+                                </span>
+                              </td>
+                              <td style={{ fontSize: '0.82rem', color: '#0284c7', fontWeight: 500 }}>
+                                {ci.stipend_or_scholarship}
+                              </td>
+                              <td>
+                                <button 
+                                  onClick={(e) => handleDeleteCollegeInternship(ci.id, e)}
+                                  className="action-pill-btn action-delete"
+                                  title="Delete College Internship Posting"
+                                >
+                                  <Trash2 size={13} />
+                                  <span>Delete</span>
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                              No college internships found. Use the form above to post a new cohort!
                             </td>
                           </tr>
                         )}
