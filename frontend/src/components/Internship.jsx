@@ -926,8 +926,10 @@ export default function Internship({ onOpenStudentPortal }) {
               </p>
             </div>
 
-            {/* Timetable Schedule Meta Bar */}
-            <div className="timetable-meta-bar">
+            {/* Scrollable Modal Body */}
+            <div className="schedule-scroll-body">
+              {/* Timetable Schedule Meta Bar */}
+              <div className="timetable-meta-bar">
               <div className="meta-bar-item">
                 <Clock size={16} className="meta-bar-icon" />
                 <div>
@@ -1127,6 +1129,7 @@ export default function Internship({ onOpenStudentPortal }) {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       )}
