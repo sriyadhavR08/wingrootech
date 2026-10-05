@@ -33,40 +33,57 @@ export default function Hero() {
           <div className="hero-content">
             <div className="hero-tech-badge">
               <Zap size={14} className="badge-sparkle" />
-              <span>Next-Gen Tech Hub • Vibe Coding • Agentic AI • 72h Rapid MVPs</span>
+              <span>Coimbatore's Modern Software Hub • Web Apps • Agentic AI • 72h Rapid MVPs</span>
             </div>
 
             <h1 className="hero-headline">
-              Building the Future with <span className="text-gradient">Vibe Coding & Agentic AI.</span>
+              Custom Software & Web Development Powered by <span className="text-gradient">Agentic AI & Vibe Coding.</span>
             </h1>
 
             <p className="hero-subline">
-              Autonomous AI Agents • Prompt Engineering • 72-Hour Rapid MVPs • Practical Engineering
+              Enterprise Web Platforms • 72-Hour Rapid MVPs • Autonomous AI Agents • Practical Engineering
             </p>
 
             <p className="hero-description">
-              Wingroo Technologies is a forward-thinking software and AI development company in Coimbatore. We pioneer 
-              <strong> Vibe Coding</strong> workflows (using Cursor, v0 & Claude 3.5), build <strong>Custom Autonomous AI Agents</strong> (Gmail auto-responders, CRM lead routing & task automation), 
-              and ship <strong>72-Hour Production-Ready MVPs</strong>. For engineering students, we conduct intensive 
-              15–20 days college internships with up to 100% scholarships, daily timetables, and verified GitHub commits.
+              Wingroo Technologies is a premier software & web development company in Coimbatore. We build high-performance 
+              <strong> Custom Web Applications, Enterprise Portals, and Cloud Platforms</strong>, alongside cutting-edge 
+              <strong> Autonomous AI Agents</strong> and <strong>72-Hour Rapid MVPs</strong>. For engineering students and graduates, 
+              we conduct intensive 15–20 days college internships with up to 100% scholarships, daily timetables, and verified GitHub project deliverables.
             </p>
 
             <div className="hero-actions">
               <button 
-                onClick={() => scrollTo('#portfolio')} 
-                className="btn btn-primary hero-btn"
+                onClick={() => scrollTo('#contact')} 
+                className="btn btn-primary hero-btn hero-b2b-primary"
+                title="Start Your Project / Book a Free Consultation"
               >
-                <span>Explore Our Work</span>
+                <span>Start Your Project / Free Consultation</span>
                 <ArrowRight size={18} />
               </button>
 
-              <button 
-                onClick={() => scrollTo('#contact')} 
-                className="btn btn-secondary hero-btn"
+              <a 
+                href="https://wa.me/918124779111?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20project%20consultation." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-secondary hero-btn hero-whatsapp-btn"
+                title="Direct WhatsApp Consultation with Software Engineers"
               >
-                <span>Start a Conversation</span>
+                <span>Chat on WhatsApp</span>
                 <ArrowRight size={18} />
+              </a>
+
+              <button 
+                onClick={() => scrollTo('#portfolio')} 
+                className="btn hero-explore-btn"
+                title="Explore Featured Portfolio Projects"
+              >
+                <span>View Portfolio ↗</span>
               </button>
+            </div>
+
+            <div className="hero-b2b-trust-note">
+              <span className="trust-dot" />
+              <span>Free 30-min Architecture Consultation • Direct Senior Engineer Access • Rapid Scope & Estimate</span>
             </div>
 
             <div className="hero-stats-row">

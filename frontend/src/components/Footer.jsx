@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ArrowUp,
   MapPin,
   Phone,
   Mail,
   ExternalLink,
-  Lock
+  Lock,
+  X,
+  FileText,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 import './Footer.css';
 
@@ -39,6 +43,8 @@ const WhatsappIcon = () => (
 );
 
 export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
+  const [legalModal, setLegalModal] = useState(null); // 'privacy' | 'terms' | null
+
   const scrollTo = (id) => {
     const el = document.querySelector(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -125,12 +131,13 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
               <li><a href="#home" onClick={(e) => { e.preventDefault(); scrollTo('#home'); }}>Home</a></li>
               <li><a href="#about" onClick={(e) => { e.preventDefault(); scrollTo('#about'); }}>About</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollTo('#services'); }}>Services</a></li>
+              <li><a href="#how-we-work" onClick={(e) => { e.preventDefault(); scrollTo('#how-we-work'); }}>How We Work</a></li>
               <li><a href="#internship" onClick={(e) => { e.preventDefault(); scrollTo('#internship'); }}>Internship</a></li>
               <li><a href="#careers" onClick={(e) => { e.preventDefault(); scrollTo('#careers'); }}>Careers</a></li>
               <li><a href="#events" onClick={(e) => { e.preventDefault(); scrollTo('#events'); }}>Events</a></li>
               <li><a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }}>Portfolio</a></li>
               <li><a href="#reviews" onClick={(e) => { e.preventDefault(); scrollTo('#reviews'); }}>Reviews</a></li>
-              <li><a href="#faq-knowledge-hub" onClick={(e) => { e.preventDefault(); scrollTo('#faq-knowledge-hub'); }}>AI & Career FAQs Hub</a></li>
+              <li><a href="#faq-knowledge-hub" onClick={(e) => { e.preventDefault(); scrollTo('#faq-knowledge-hub'); }}>AI & FAQs Hub</a></li>
               <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>
             </ul>
           </div>
@@ -184,9 +191,32 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
           <p className="copyright-text">
             © 2026 Wingroo Technologies. All Rights Reserved.
           </p>
+
+          {/* Legal Compliance Links */}
+          <div className="footer-legal-links">
+            <button 
+              type="button" 
+              onClick={() => setLegalModal('privacy')} 
+              className="footer-legal-btn"
+              title="Read our Privacy Policy"
+            >
+              Privacy Policy
+            </button>
+            <span className="footer-legal-dot">•</span>
+            <button 
+              type="button" 
+              onClick={() => setLegalModal('terms')} 
+              className="footer-legal-btn"
+              title="Read our Terms of Service"
+            >
+              Terms of Service
+            </button>
+          </div>
+
           <div className="footer-bottom-sub">
             Built with modern technology & purposeful engineering.
           </div>
+
           {onOpenAdmin && (
             <button 
               onClick={onOpenAdmin} 
@@ -199,6 +229,155 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal }) {
           )}
         </div>
       </div>
+
+      {/* Legal Modal Drawer */}
+      {legalModal && (
+        <div className="legal-modal-overlay" onClick={() => setLegalModal(null)}>
+          <div 
+            className="legal-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="legal-modal-header">
+              <div className="legal-modal-title-wrap">
+                {legalModal === 'privacy' ? (
+                  <ShieldCheck size={24} className="legal-modal-icon" />
+                ) : (
+                  <FileText size={24} className="legal-modal-icon" />
+                )}
+                <div>
+                  <h3 className="legal-modal-title">
+                    {legalModal === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+                  </h3>
+                  <p className="legal-modal-subtitle">
+                    Wingroo Technologies • Coimbatore, Tamil Nadu • Last Updated: October 2026
+                  </p>
+                </div>
+              </div>
+              <button 
+                className="legal-modal-close"
+                onClick={() => setLegalModal(null)}
+                aria-label="Close dialog"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="legal-modal-body">
+              {legalModal === 'privacy' ? (
+                <div className="legal-content">
+                  <div className="legal-highlight-box">
+                    <p>
+                      <strong>Summary:</strong> Wingroo Technologies is committed to safeguarding client intellectual property, proprietary business data, and student educational records. We do not sell or monetize personal data under any circumstances.
+                    </p>
+                  </div>
+
+                  <section className="legal-section">
+                    <h4>1. Information We Collect</h4>
+                    <p>We collect information necessary to deliver high-quality technology solutions and educational services:</p>
+                    <ul>
+                      <li><strong>Client Enquiries:</strong> Business contact details, company name, scope of software requirements, and architectural preferences.</li>
+                      <li><strong>Student & Intern Applications:</strong> Name, college affiliation, academic degree, contact email, phone number, and domain interests for verification and certification.</li>
+                      <li><strong>Technical Usage:</strong> Aggregated anonymous web analytics to ensure optimal site performance, uptime, and accessibility.</li>
+                    </ul>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>2. Non-Disclosure & Intellectual Property Protection</h4>
+                    <p>
+                      For all custom software development and enterprise clients, Wingroo Technologies executes strict mutual Non-Disclosure Agreements (NDAs). Proprietary codebase, system architectures, credentials, and business logic remain the sole property of our clients.
+                    </p>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>3. Data Security & Storage</h4>
+                    <p>
+                      We utilize enterprise-grade encryption (TLS/SSL in transit, encrypted storage at rest), strict role-based access controls, and audited cloud infrastructures. Internal databases containing student applications or customer enquiries are isolated and accessible only by authorized personnel.
+                    </p>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>4. Third-Party Disclosures</h4>
+                    <p>
+                      Wingroo Technologies never rents, trades, or sells data to third-party advertisers. Data is only processed through trusted infrastructure providers (e.g., cloud hosting, email delivery) strictly bounded by data processing agreements.
+                    </p>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>5. Grievances & Contact</h4>
+                    <p>
+                      For privacy concerns or to request data rectification, write to us at:
+                      <br />
+                      <strong>Wingroo Technologies</strong>, Coimbatore, Tamil Nadu, India.
+                      <br />
+                      Email: <code>info@wingrootechnologies.com</code> | Phone: <code>+91 81247 79111</code>
+                    </p>
+                  </section>
+                </div>
+              ) : (
+                <div className="legal-content">
+                  <div className="legal-highlight-box">
+                    <p>
+                      <strong>Summary:</strong> These terms govern all software development contracts, consulting engagements, internship programs, and portal access provided by Wingroo Technologies.
+                    </p>
+                  </div>
+
+                  <section className="legal-section">
+                    <h4>1. Client Software Development Engagements</h4>
+                    <ul>
+                      <li><strong>Scope of Work (SOW):</strong> Project deliverables, timelines, milestones, and tech stacks are defined and mutually confirmed prior to project kickoff.</li>
+                      <li><strong>Milestone Approvals:</strong> Clients inspect deliverables at each phase (Discover, Plan, Design, Develop, Launch). Production deployment proceeds upon client sign-off.</li>
+                      <li><strong>IP Transfer:</strong> Full source code, deployment assets, and intellectual property are transferred completely to the client upon final milestone settlement.</li>
+                    </ul>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>2. Internship & Training Programs</h4>
+                    <ul>
+                      <li><strong>Eligibility & Conduct:</strong> Students must adhere to professional ethics, maintain project confidentiality, and submit required milestone reports.</li>
+                      <li><strong>Certification:</strong> Official ISO 9001:2015 & MSME recognized completion certificates and Letters of Recommendation are awarded strictly upon verified project completion and mentor review.</li>
+                      <li><strong>Academic Integrity:</strong> Plagiarism or unauthorized copying of open-source licenses is strictly prohibited.</li>
+                    </ul>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>3. Payment & Invoicing Terms</h4>
+                    <p>
+                      All invoices are denominated in INR (or mutually agreed international currency for overseas clients). Transparent milestone-based billing applies with zero hidden costs. Taxes (GST) are levied as applicable under Indian Law.
+                    </p>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>4. Limitation of Liability & Warranty</h4>
+                    <p>
+                      Wingroo Technologies provides a post-launch warranty period (as defined in the specific client agreement) covering bug fixes and maintenance for delivered software scopes. Wingroo Technologies is not liable for downstream indirect damages or third-party service outages.
+                    </p>
+                  </section>
+
+                  <section className="legal-section">
+                    <h4>5. Governing Law & Jurisdiction</h4>
+                    <p>
+                      These terms and any agreements entered into with Wingroo Technologies shall be governed by and construed in accordance with the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the competent courts in <strong>Coimbatore, Tamil Nadu, India</strong>.
+                    </p>
+                  </section>
+                </div>
+              )}
+            </div>
+
+            <div className="legal-modal-footer">
+              <button 
+                type="button" 
+                className="legal-modal-action-btn"
+                onClick={() => setLegalModal(null)}
+              >
+                <CheckCircle2 size={16} />
+                <span>I Understand & Close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }

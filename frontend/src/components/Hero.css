@@ -95,13 +95,83 @@
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 32px;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .hero-btn {
-  padding: 14px 28px;
-  font-size: 1rem;
+  padding: 14px 24px;
+  font-size: 0.96rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-b2b-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+  transition: all 0.25s ease;
+}
+
+.hero-b2b-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(79, 70, 229, 0.45);
+}
+
+.hero-whatsapp-btn {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hero-whatsapp-btn:hover {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #166534;
+  transform: translateY(-2px);
+}
+
+.hero-explore-btn {
+  background: transparent;
+  color: #475569;
+  border: 1px dashed #cbd5e1;
+  font-weight: 600;
+  padding: 12px 18px;
+  font-size: 0.92rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-explore-btn:hover {
+  border-color: #4f46e5;
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.hero-b2b-trust-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+.hero-b2b-trust-note .trust-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .hero-stats-row {

@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
 import Services from './components/Services'
+import HowWeWork from './components/HowWeWork'
 import Internship from './components/Internship'
 import Careers from './components/Careers'
 import Events from './components/Events'
@@ -75,6 +76,7 @@ export default function App() {
         <Hero />
         <About />
         <Services />
+        <HowWeWork />
         <Internship onOpenStudentPortal={handleOpenStudent} />
         <Careers />
         <Events key={`events-${dataVersion}`} />
