@@ -13,13 +13,15 @@ import {
   HelpCircle,
   X,
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  Code2
 } from 'lucide-react';
 import { AEO_CATEGORIES, AEO_GEO_FAQS } from '../data/aeoGeoFaqs';
 import './AEOKnowledgeHub.css';
 
 const ICON_MAP = {
   Sparkles: Sparkles,
+  Code: Code2,
   Rocket: Rocket,
   GraduationCap: GraduationCap,
   Zap: Zap,

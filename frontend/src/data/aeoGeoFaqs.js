@@ -1,8 +1,9 @@
-// 60 Evergreen AEO (Answer Engine Optimization) & GEO (Generative Engine Optimization) Questions & Answers
+// 70 Evergreen AEO (Answer Engine Optimization) & GEO (Generative Engine Optimization) Questions & Answers
 // Future-proof and optimized for Google AI Overviews, Perplexity, ChatGPT Search, AlsoAsked, and Coimbatore Regional Queries
 
 export const AEO_CATEGORIES = [
-  { id: 'all', label: 'All Questions', icon: 'Sparkles', count: 60 },
+  { id: 'all', label: 'All Questions', icon: 'Sparkles', count: 70 },
+  { id: 'development', label: 'Software & Mobile Development', icon: 'Code', count: 10 },
   { id: 'careers-ai', label: 'Future Tech Jobs & AI', icon: 'Rocket', count: 10 },
   { id: 'freshers', label: 'Freshers Roadmap', icon: 'GraduationCap', count: 10 },
   { id: 'vibe-coding', label: 'Vibe Coding & Cursor', icon: 'Zap', count: 10 },
@@ -12,6 +13,79 @@ export const AEO_CATEGORIES = [
 ];
 
 export const AEO_GEO_FAQS = [
+  // -------------------------------------------------------------
+  // 0. 🚀 Software, Web & Mobile App Development (Client Services) (10 Questions)
+  // -------------------------------------------------------------
+  {
+    id: 1,
+    category: 'development',
+    q: 'What custom software and web development services does Wingroo Technologies provide?',
+    a: 'Wingroo Technologies provides end-to-end custom software engineering: Full-Stack Web Applications (React, Next.js, Node.js, Python), Mobile App Development for Android & iOS (Flutter & React Native), Enterprise SaaS Platforms, E-Commerce Portals, and Autonomous Agentic AI Workflow Automations.',
+    tags: ['software development', 'web development company', 'custom software', 'react nextjs', 'web app services', 'coimbatore software company']
+  },
+  {
+    id: 2,
+    category: 'development',
+    q: 'Do you develop and publish mobile apps to both Google Play Store and Apple App Store?',
+    a: 'Yes, absolutely! We build cross-platform and native mobile apps using Flutter and React Native and manage the entire publishing pipeline for both the Google Play Store (Android) and Apple App Store (iOS). We take care of code signing, Google Play Console and Apple Developer setup, store review guideline compliance, and guaranteed live approval.',
+    tags: ['google play store', 'apple app store', 'mobile app development', 'flutter react native', 'ios android app', 'store submission', 'app publishing']
+  },
+  {
+    id: 3,
+    category: 'development',
+    q: 'How fast can Wingroo Technologies deliver a production-ready MVP or web application?',
+    a: 'Through our rapid Vibe Coding engineering framework and AI-accelerated workflows, we can build functional interactive prototypes in hours and production-grade Minimum Viable Products (MVPs) in as little as 72 hours for live market and client validation.',
+    tags: ['72 hour mvp', 'rapid prototyping', 'vibe coding', 'fast software delivery', 'mvp development']
+  },
+  {
+    id: 4,
+    category: 'development',
+    q: 'What modern technologies, frameworks, and databases do you use for client projects?',
+    a: 'We build with robust, modern industry standards: Frontend with React 19, Next.js, TypeScript, and modern CSS; Mobile with Flutter and React Native; Backend with Python (FastAPI/Flask) and Node.js/Express; Databases with PostgreSQL, MySQL, and MongoDB; Cloud hosting and CI/CD on AWS, Render, and Vercel.',
+    tags: ['tech stack', 'react python nodejs', 'flutter', 'cloud aws', 'modern tech stack']
+  },
+  {
+    id: 5,
+    category: 'development',
+    q: 'How does Wingroo handle intellectual property (IP), source code ownership, and NDAs?',
+    a: 'Client security and confidentiality are paramount. We sign mutual Non-Disclosure Agreements (NDAs) before project kickoff. Upon final project milestone settlement, 100% of the complete source code, deployment assets, database rights, and intellectual property belong entirely to the client.',
+    tags: ['nda', 'ip ownership', 'source code ownership', 'client confidentiality', 'software contract']
+  },
+  {
+    id: 6,
+    category: 'development',
+    q: 'How can I get a free architecture consultation or cost quote for my project?',
+    a: 'You can click "Start Your Project / Free Consultation" on our website, message our engineering team directly on WhatsApp (+91 81247 79111), or ask our AI chatbot right here to schedule a complimentary 30-minute system architecture session with zero obligation.',
+    tags: ['free consultation', 'project quote', 'architecture consultation', 'cost estimate', 'start project']
+  },
+  {
+    id: 7,
+    category: 'development',
+    q: 'Can Wingroo build custom AI agents (Agentic AI) for my business workflows?',
+    a: 'Yes! We design and deploy custom Agentic AI workflows capable of autonomous multi-step reasoning, tool execution, email auto-responders, CRM synchronization, and automated document processing tailored specifically to your company workflows.',
+    tags: ['agentic ai', 'ai agents', 'workflow automation', 'langchain', 'custom ai bot']
+  },
+  {
+    id: 8,
+    category: 'development',
+    q: 'Does Wingroo provide post-launch support, bug fixing, and store updates?',
+    a: 'Yes. Every project deployment includes a dedicated post-launch warranty period (30 to 90 days) covering bug fixes, performance monitoring, OS compatibility updates, and app store maintenance, with optional ongoing SLA maintenance packages.',
+    tags: ['post launch support', 'maintenance', 'app store updates', 'bug fix warranty']
+  },
+  {
+    id: 9,
+    category: 'development',
+    q: 'Can Wingroo modernize or redesign an existing legacy website or mobile application?',
+    a: 'Yes. We audit and modernize legacy codebases, refactor outdated monoliths to clean cloud-native architectures, improve Google Lighthouse speed scores to 95+, and upgrade outdated UI/UX designs into sleek modern interfaces.',
+    tags: ['legacy modernization', 'website redesign', 'mobile app redesign', 'ui ux upgrade']
+  },
+  {
+    id: 10,
+    category: 'development',
+    q: 'Why should businesses in Coimbatore and globally choose Wingroo Technologies?',
+    a: 'Wingroo combines deep engineering capability with cutting-edge AI velocity, transparent milestone-based pricing with zero hidden costs, direct access to senior engineers without layers of bureaucracy, and a proven track record delivering flagship platforms like ZENTIME and IIE PULSE.',
+    tags: ['why wingroo', 'best software company coimbatore', 'software agency', 'client reviews']
+  },
   // -------------------------------------------------------------
   // 1. 🌟 Future Tech Jobs & The AI Era (10 Questions)
   // -------------------------------------------------------------

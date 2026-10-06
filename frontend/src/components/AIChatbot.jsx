@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, 
   X, 
@@ -8,13 +7,15 @@ import {
   MessageSquare, 
   ChevronRight, 
   Check, 
-  ArrowRight,
-  ExternalLink,
-  GraduationCap,
-  Rocket,
-  Code2,
-  Briefcase,
-  HelpCircle
+  ArrowRight, 
+  ExternalLink, 
+  GraduationCap, 
+  Rocket, 
+  Code2, 
+  Briefcase, 
+  Smartphone,
+  Zap,
+  HelpCircle 
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import { AEO_GEO_FAQS } from '../data/aeoGeoFaqs';
@@ -22,34 +23,50 @@ import './AIChatbot.css';
 
 const QUICK_PROMPTS = [
   { 
-    id: 'ai_replace', 
-    label: 'Will AI replace software developers?', 
-    icon: <Sparkles size={14} />,
-    reply: '🤖 **Will AI replace software developers?**\nNo! AI will not replace software developers, but developers who master AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who do not.\n\nModern developers act as architectural orchestrators—guiding AI code generators, verifying system security, and building scalable production software.'
+    id: 'start_project', 
+    label: '🚀 Start a Web or Mobile Project', 
+    icon: <Rocket size={14} />,
+    reply: '🚀 **Start Your Project with Wingroo:**\nWe engineer custom Web Apps, SaaS platforms, and Mobile Apps deployed to both Google Play Store (Android) & Apple App Store (iOS). We also ship 72-Hour MVPs with Vibe Coding & Agentic AI!\n\n👇 Please share your contact details below so our lead engineer can get in touch with a free architecture plan & estimate.',
+    isDev: true,
+    defaultType: 'Custom Web & Mobile Application'
   },
   { 
-    id: 'fresher_start', 
-    label: 'As a fresher, where should I start?', 
-    icon: <GraduationCap size={14} />,
-    reply: '🎓 **Fresher Developer Roadmap:**\n1. Master Web Fundamentals (HTML, modern CSS, JavaScript) & REST APIs.\n2. Specialize in either Full-Stack React/Next.js or Python for Backend/AI.\n3. Learn Git from Day 1 and push all code to GitHub.\n4. Complete a structured 15-20 Days Internship with live mentors at Wingroo to get verified commercial proof-of-work!'
+    id: 'mobile_stores', 
+    label: '📱 Play Store & App Store Deployment', 
+    icon: <Smartphone size={14} />,
+    reply: '📱 **Google Play Store & Apple App Store Publishing:**\nYes, we provide end-to-end publishing! We build cross-platform apps with Flutter & React Native, handle Apple Developer & Google Play Console submissions, store guideline compliance, and ensure guaranteed live store approval.\n\n👇 Drop your contact details below to discuss your mobile app idea!',
+    isDev: true,
+    defaultType: 'Mobile App (Google Play Store & Apple App Store)'
+  },
+  { 
+    id: 'mvp_speed', 
+    label: '⚡ 72-Hour Production MVP Sprint', 
+    icon: <Zap size={14} />,
+    reply: '⚡ **72-Hour Rapid MVP Delivery:**\nNeed to launch fast? Using our Vibe Coding & Agentic AI workflows, we can build functional interactive prototypes and production-grade MVPs within 72 hours for live market validation.\n\n👇 Leave your details below for a free technical feasibility check!',
+    isDev: true,
+    defaultType: '72-Hour Rapid MVP'
   },
   { 
     id: 'internship', 
-    label: 'College Internship & 100% Scholarship', 
-    icon: <Briefcase size={14} />,
-    reply: '🎓 **College Internship Program (15–20 Days):**\n• Structured daily timetable (Theory & Hands-on Lab).\n• **Up to 100% Merit Scholarships** based on our 20-min online screening assessment.\n• Recognized ISO 9001:2015, MSME & Startup India certification with real GitHub repos.'
+    label: '🎓 College Internship & 100% Scholarship', 
+    icon: <GraduationCap size={14} />,
+    reply: '🎓 **College Internship Program (15–20 Days):**\n• Structured daily timetable (Theory & Hands-on Lab).\n• **Up to 100% Merit Scholarships** based on our 20-min online screening assessment.\n• Recognized ISO 9001:2015, MSME & Startup India certification with real GitHub repos.\n• Apply right on our site or track your status in the Student Portal!',
+    isDev: false,
+    defaultType: 'College Internship / Student Inquiry'
   },
   { 
-    id: 'vibe_coding', 
-    label: 'What is Vibe Coding?', 
-    icon: <Code2 size={14} />,
-    reply: '⚡ **What is Vibe Coding?**\nVibe Coding is the modern software development methodology where developers describe intentions and system specs in natural language while AI tools (Cursor, Claude 3.5 Sonnet, v0) write boilerplate code.\n\nWingroo pioneers this workflow to ship production MVPs in 72 hours!'
+    id: 'ai_replace', 
+    label: '🤖 Will AI replace software developers?', 
+    icon: <Sparkles size={14} />,
+    reply: '🤖 **Will AI replace software developers?**\nNo! AI will not replace software developers, but developers who master AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who do not.\n\nModern developers act as architectural orchestrators—guiding AI code generators, verifying system security, and building scalable production software.',
+    isDev: false
   },
   { 
     id: 'location', 
-    label: 'Coimbatore Hub & Contact', 
-    icon: <Rocket size={14} />,
-    reply: '📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012 (near Gandhipuram).\n📞 Phone / WhatsApp: +91 81247 79111.'
+    label: '📍 Coimbatore Hub & WhatsApp', 
+    icon: <Phone size={14} />,
+    reply: '📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012 (near Gandhipuram).\n📞 Phone / WhatsApp: +91 81247 79111.',
+    isDev: false
   }
 ];
 
@@ -58,13 +75,19 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: "Hello! 👋 I'm **Wingy**, your Wingroo AI Assistant. How can I help you today with our Internships, Software Services, or Engineering Roles?",
+      text: "Hello! 👋 I'm **Wingy**, your Wingroo AI Assistant. How can I help you today with Custom Software Development (Web & Mobile Apps for Play Store & App Store), Rapid 72h MVPs, or our College Internships?",
       time: 'Just now'
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadContact, setLeadContact] = useState({ name: '', phone: '' });
+  const [leadContact, setLeadContact] = useState({ 
+    name: '', 
+    phone: '', 
+    email: '', 
+    projectType: 'Mobile App (Google Play Store & Apple App Store)',
+    notes: ''
+  });
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -84,8 +107,14 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
 
     setMessages(prev => [...prev, userMsg, botMsg]);
 
-    // After 2 messages, softly prompt for lead contact if not yet submitted
-    if (!leadSubmitted && messages.length >= 2) {
+    if (prompt.isDev) {
+      if (prompt.defaultType) {
+        setLeadContact(prev => ({ ...prev, projectType: prompt.defaultType }));
+      }
+      setTimeout(() => {
+        setShowLeadForm(true);
+      }, 400);
+    } else if (!leadSubmitted && messages.length >= 2) {
       setTimeout(() => {
         setShowLeadForm(true);
       }, 800);
@@ -133,8 +162,14 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
 
     let botReplyText = "";
 
+    const isDevQuery = lower.includes('dev') || lower.includes('app') || lower.includes('play store') || lower.includes('app store') || lower.includes('web') || lower.includes('software') || lower.includes('build') || lower.includes('project') || lower.includes('mvp') || lower.includes('cost') || lower.includes('quote') || lower.includes('price') || lower.includes('hire') || lower.includes('client') || lower.includes('android') || lower.includes('ios');
+
     if (bestMatch && highestScore >= 6) {
-      botReplyText = `💡 **${bestMatch.q}**\n\n${bestMatch.a}\n\n👉 *Need more details or want to join our hands-on internship cohort? You can apply on our website or leave your phone number below for our mentors to connect!*`;
+      botReplyText = `💡 **${bestMatch.q}**\n\n${bestMatch.a}\n\n👉 *Need a custom architecture plan or cost estimate for your project? Share your contact details below to get a free 30-min consultation!*`;
+    } else if (lower.includes('play store') || lower.includes('app store') || (lower.includes('mobile') && lower.includes('app'))) {
+      botReplyText = "📱 **Mobile App Development (Google Play Store & Apple App Store):**\nYes! We build high-performance mobile apps with Flutter & React Native and manage the entire publishing pipeline for both Google Play Store (Android) and Apple App Store (iOS)—including Apple Developer and Google Play Console setup, app signing, store guidelines compliance, and guaranteed live approval.\n\n👇 Please share your contact details below to discuss your app idea!";
+    } else if (lower.includes('72') || lower.includes('mvp') || lower.includes('speed') || lower.includes('fast')) {
+      botReplyText = "⚡ **72-Hour Rapid MVP Delivery:**\nThrough our Vibe Coding & Agentic AI framework, we deliver functional prototypes in hours and production-grade Minimum Viable Products in as little as 72 hours for live market validation.\n\n👇 Leave your details below for a free technical feasibility check!";
     } else if (lower.includes('replace') || lower.includes('ai replace')) {
       botReplyText = "🤖 **Will AI replace developers?**\nNo! AI won't replace software developers, but developers who master modern AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who don't. At Wingroo, we train students to act as architectural conductors who guide AI tools to build production apps 5x faster.";
     } else if (lower.includes('2026') || (lower.includes('job') && (lower.includes('fresher') || lower.includes('get')))) {
@@ -145,20 +180,31 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
       botReplyText = "📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012. We are situated right in Coimbatore's innovation district near Gandhipuram. Call or WhatsApp us at +91 81247 79111.";
     } else if (lower.includes('intern') || lower.includes('college') || lower.includes('fee') || lower.includes('scholarship')) {
       botReplyText = "🎓 Our College Internship runs for 15 to 20 working days with daily structured timetable slots. We provide Up to 100% Merit Scholarships based on an online 20-minute screening test. Certificates are ISO 9001:2015 & MSME certified.";
-    } else if (lower.includes('live') || lower.includes('project') || lower.includes('stipend')) {
+    } else if (lower.includes('live') || lower.includes('stipend')) {
       botReplyText = "🚀 Live Project Internships involve real client applications and internal platforms like ZENTIME and IIE PLUS. Resume submission is required, and top contributors receive merit stipends.";
     } else if (lower.includes('vibe') || lower.includes('agent') || lower.includes('prompt')) {
       botReplyText = "⚡ We specialize in Vibe Coding (rapid 72-hour MVP delivery using Cursor & Claude) as well as autonomous Agentic AI systems for automated workflows like Gmail responders and CRM integrations.";
     } else if (lower.includes('job') || lower.includes('career') || lower.includes('hiring') || lower.includes('apply')) {
       botReplyText = "💼 We are actively hiring developers and AI prompt engineers for our Coimbatore hub & remote projects. Head to the 'Careers' banner on this page to apply with your resume!";
     } else {
-      botReplyText = "Thank you for asking! Wingroo Technologies provides industry-grade Software Development, 15-20 Days College Internships with Up to 100% Scholarships, Live Client Projects, and Agentic AI solutions. You can also explore our 60+ FAQs in the 'AI & Career FAQs Hub' section on our site!";
+      botReplyText = "Thank you for asking! Wingroo Technologies provides custom Software Development (Web & Mobile Apps for Play Store & App Store), 72-Hour Rapid MVPs, Agentic AI, and 15-20 Days College Internships with Up to 100% Scholarships.\n\n👇 Feel free to leave your contact details below to discuss your project with our engineering team!";
     }
 
     const botMsg = { sender: 'bot', text: botReplyText, time: 'Just now' };
     setMessages(prev => [...prev, userMsg, botMsg]);
 
-    if (!leadSubmitted) {
+    if (isDevQuery) {
+      if (lower.includes('mobile') || lower.includes('play store') || lower.includes('app store') || lower.includes('android') || lower.includes('ios')) {
+        setLeadContact(prev => ({ ...prev, projectType: 'Mobile App (Google Play Store & Apple App Store)' }));
+      } else if (lower.includes('mvp') || lower.includes('72')) {
+        setLeadContact(prev => ({ ...prev, projectType: '72-Hour Rapid MVP' }));
+      } else if (lower.includes('ai') || lower.includes('agent')) {
+        setLeadContact(prev => ({ ...prev, projectType: 'Agentic AI / Automation Workflow' }));
+      } else {
+        setLeadContact(prev => ({ ...prev, projectType: 'Custom Web Application & SaaS' }));
+      }
+      setTimeout(() => setShowLeadForm(true), 400);
+    } else if (!leadSubmitted) {
       setTimeout(() => setShowLeadForm(true), 600);
     }
   };
@@ -172,11 +218,11 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: leadContact.name || 'Chatbot Visitor',
-          email: 'chatbot-lead@wingrootech.com',
+          name: leadContact.name || 'Chatbot Project Client',
+          email: leadContact.email || 'chatbot-lead@wingrootech.com',
           phone: leadContact.phone,
-          subject: 'AI Chatbot Callback Request',
-          message: 'Visitor requested direct callback / WhatsApp connection via AI Chatbot widget.'
+          subject: `Chatbot Project Lead: ${leadContact.projectType || 'Development Inquiry'}`,
+          message: `[AI Chatbot Client Lead]\nClient Name: ${leadContact.name || 'Not provided'}\nPhone/WhatsApp: ${leadContact.phone}\nEmail: ${leadContact.email || 'N/A'}\nProject Type: ${leadContact.projectType}\nRequirement: ${leadContact.notes || 'Client requested free architecture consultation and quote.'}`
         })
       });
     } catch (err) {
@@ -189,7 +235,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
       ...prev,
       {
         sender: 'bot',
-        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! Our academic and technical leads will reach out to you on **${leadContact.phone}** shortly. You can also message us directly on WhatsApp at +91 81247 79111.`,
+        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! We have received your project inquiry for **${leadContact.projectType}**.\n\nOur senior engineering lead will review your requirements and reach out to you on **${leadContact.phone}** to schedule your free 30-minute architecture consultation.\n\n👉 Need an immediate response? Message us directly on WhatsApp at **+91 81247 79111**!`,
         time: 'Just now'
       }
     ]);
@@ -277,20 +323,21 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
               </div>
             </div>
 
-            {/* Optional Lead Callback Capture Box */}
+            {/* Project Consultation & Lead Capture Card */}
             {showLeadForm && !leadSubmitted && (
               <div className="lead-capture-card">
                 <div className="lead-capture-header">
-                  <Phone size={16} className="lead-icon" />
+                  <Rocket size={18} className="lead-icon" />
                   <div>
-                    <strong>Direct Callback / WhatsApp Connection</strong>
-                    <p>Leave your contact in case the chat ends or to get personalized counseling.</p>
+                    <strong>Request Free Architecture Consultation & Quote</strong>
+                    <p>Share your project details — our senior engineering lead will connect with you directly.</p>
                   </div>
                 </div>
                 <form onSubmit={handleLeadSubmit} className="lead-form">
                   <input 
                     type="text" 
-                    placeholder="Your Name (Optional)" 
+                    placeholder="Enter your full name *" 
+                    required
                     value={leadContact.name}
                     onChange={(e) => setLeadContact(prev => ({ ...prev, name: e.target.value }))}
                     className="lead-input"
@@ -303,9 +350,36 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
                     onChange={(e) => setLeadContact(prev => ({ ...prev, phone: e.target.value }))}
                     className="lead-input"
                   />
+                  <input 
+                    type="email" 
+                    placeholder="Email Address (Optional)" 
+                    value={leadContact.email}
+                    onChange={(e) => setLeadContact(prev => ({ ...prev, email: e.target.value }))}
+                    className="lead-input"
+                  />
+                  <select
+                    value={leadContact.projectType}
+                    onChange={(e) => setLeadContact(prev => ({ ...prev, projectType: e.target.value }))}
+                    className="lead-input lead-select"
+                  >
+                    <option value="Mobile App (Google Play Store & Apple App Store)">Mobile App (Google Play Store & Apple App Store)</option>
+                    <option value="Custom Web Application & SaaS">Custom Web Application & SaaS</option>
+                    <option value="72-Hour Rapid MVP">72-Hour Rapid MVP</option>
+                    <option value="Agentic AI / Automation Workflow">Agentic AI / Automation Workflow</option>
+                    <option value="E-Commerce Storefront">E-Commerce Storefront</option>
+                    <option value="College Internship / Academic Project">College Internship / Academic Project</option>
+                    <option value="Other Technology Solution">Other Technology Solution</option>
+                  </select>
+                  <input 
+                    type="text" 
+                    placeholder="Brief Project Requirement / Idea (Optional)" 
+                    value={leadContact.notes}
+                    onChange={(e) => setLeadContact(prev => ({ ...prev, notes: e.target.value }))}
+                    className="lead-input"
+                  />
                   <div className="lead-actions-row">
                     <button type="submit" className="btn-lead-submit">
-                      <span>Request Callback</span>
+                      <span>Request Free Consultation 🚀</span>
                       <ArrowRight size={13} />
                     </button>
                     <button 
@@ -313,9 +387,17 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
                       onClick={() => setShowLeadForm(false)} 
                       className="btn-lead-skip"
                     >
-                      Skip & Chat
+                      Dismiss
                     </button>
                   </div>
+                  <a 
+                    href="https://wa.me/918124779111?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20new%20project" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="lead-whatsapp-direct"
+                  >
+                    <span>Or Chat on WhatsApp: +91 81247 79111 ↗</span>
+                  </a>
                 </form>
               </div>
             )}

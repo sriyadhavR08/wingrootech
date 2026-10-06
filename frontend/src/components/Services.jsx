@@ -35,16 +35,17 @@ const SERVICES_DATA = [
   },
   {
     num: '02',
-    category: 'Mobile App Development',
-    title: 'Ideas Designed for the Mobile World.',
-    desc: 'Mobile has become the primary medium for customer interaction. We engineer native and cross-platform mobile apps using Flutter and React Native focusing on speed, native gesture fluidity, offline-first caching, and seamless cloud sync.',
+    category: 'Mobile App Development (Android & iOS)',
+    title: 'Mobile Apps Published to Google Play Store & Apple App Store.',
+    desc: 'Mobile is the core of modern business engagement. We engineer high-performance native and cross-platform mobile apps using Flutter and React Native, providing end-to-end publishing, code signing, store guideline compliance, and guaranteed live deployment to both Google Play Store (Android) and Apple App Store (iOS).',
     icon: <Smartphone size={26} />,
     tags: [
-      'iOS & Android Solutions',
-      'Cross-Platform Apps (Flutter/React Native)',
-      'Offline-First Data Caching',
-      'High Performance & Fluidity',
-      'Intuitive Navigation & UX'
+      'Google Play Store & Apple App Store Publishing',
+      'iOS & Android Cross-Platform Apps (Flutter & React Native)',
+      'Store Review Compliance & Approval Handling',
+      'Offline-First Caching & Realtime Cloud Sync',
+      'Native Fluid Gestures & Biometric Security',
+      'Push Notifications & Custom In-App Features'
     ]
   },
   {
