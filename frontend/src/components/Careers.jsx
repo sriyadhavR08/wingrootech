@@ -543,7 +543,7 @@ export default function Careers() {
                         type="text"
                         required
                         className="job-input"
-                        placeholder="e.g. Sri Yadhav"
+                        placeholder="Enter your full name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -555,7 +555,7 @@ export default function Careers() {
                         type="email"
                         required
                         className="job-input"
-                        placeholder="e.g. candidate@example.com"
+                        placeholder="Enter your email address"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
@@ -569,7 +569,7 @@ export default function Careers() {
                         type="tel"
                         required
                         className="job-input"
-                        placeholder="e.g. +91 96267 79609"
+                        placeholder="Enter your mobile number"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       />
@@ -644,7 +644,7 @@ export default function Careers() {
                     <input
                       type="url"
                       className="job-input"
-                      placeholder="e.g. https://github.com/your-username"
+                      placeholder="Enter portfolio, GitHub, or LinkedIn URL"
                       value={formData.portfolio_url}
                       onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
                     />
