@@ -1328,79 +1328,75 @@ export default function Internship({ onOpenStudentPortal }) {
                 />
               </div>
 
-              {/* Resume Upload Component */}
-              <div className={`form-group resume-upload-group ${selectedType === 'Live Project Internship' ? 'highlight-resume-group' : ''}`}>
-                <div className="resume-label-row">
-                  <label className="form-label" style={{ margin: 0 }}>
-                    <span>Upload Resume / CV </span>
-                    {selectedType === 'Live Project Internship' ? (
+              {/* Resume Upload Component (Shown only for Live Project Internship) */}
+              {selectedType === 'Live Project Internship' && (
+                <div className="form-group resume-upload-group highlight-resume-group">
+                  <div className="resume-label-row">
+                    <label className="form-label" style={{ margin: 0 }}>
+                      <span>Upload Resume / CV </span>
                       <span className="req-tag">* Required for Live Project</span>
-                    ) : (
-                      <span className="opt-tag">(Optional)</span>
-                    )}
-                  </label>
-                  <span className="resume-types-hint">PDF, DOC, DOCX up to 10MB</span>
-                </div>
-
-                {!resumeUrl ? (
-                  <div className="resume-dropzone">
-                    <input 
-                      type="file" 
-                      id="resumeFileInput"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleResumeChange}
-                      className="resume-file-input"
-                      disabled={uploadingResume}
-                    />
-                    <label htmlFor="resumeFileInput" className="resume-dropzone-label">
-                      {uploadingResume ? (
-                        <div className="resume-uploading-box">
-                          <Loader2 size={24} className="spin-icon" style={{ color: '#4f46e5' }} />
-                          <span className="resume-uploading-text">Uploading {resumeName}...</span>
-                        </div>
-                      ) : (
-                        <div className="resume-placeholder-box">
-                          <UploadCloud size={28} className="resume-upload-icon" />
-                          <span className="resume-main-prompt">
-                            {selectedType === 'Live Project Internship' 
-                              ? 'Click or browse to attach your Resume / CV *' 
-                              : 'Attach your Resume / CV (Optional)'}
-                          </span>
-                          <span className="resume-sub-prompt">Evaluated by our engineering leads for project placement</span>
-                        </div>
-                      )}
                     </label>
+                    <span className="resume-types-hint">PDF, DOC, DOCX up to 10MB</span>
                   </div>
-                ) : (
-                  <div className="resume-uploaded-card">
-                    <div className="resume-card-left">
-                      <div className="resume-icon-circle">
-                        <FileText size={20} />
-                      </div>
-                      <div className="resume-details">
-                        <span className="resume-name-text">{resumeName || 'Resume Document'}</span>
-                        <span className="resume-success-status">✓ Uploaded & Attached to Application</span>
-                      </div>
-                    </div>
-                    <div className="resume-card-actions">
-                      <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="btn-resume-preview" title="Preview Resume">
-                        <ExternalLink size={14} />
-                        <span>View</span>
-                      </a>
-                      <button type="button" onClick={handleRemoveResume} className="btn-resume-remove" title="Remove Resume">
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                )}
 
-                {uploadResumeError && (
-                  <div className="resume-validation-alert">
-                    <AlertCircle size={15} />
-                    <span>{uploadResumeError}</span>
-                  </div>
-                )}
-              </div>
+                  {!resumeUrl ? (
+                    <div className="resume-dropzone">
+                      <input 
+                        type="file" 
+                        id="resumeFileInput"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleResumeChange}
+                        className="resume-file-input"
+                        disabled={uploadingResume}
+                      />
+                      <label htmlFor="resumeFileInput" className="resume-dropzone-label">
+                        {uploadingResume ? (
+                          <div className="resume-uploading-box">
+                            <Loader2 size={24} className="spin-icon" style={{ color: '#4f46e5' }} />
+                            <span className="resume-uploading-text">Uploading {resumeName}...</span>
+                          </div>
+                        ) : (
+                          <div className="resume-placeholder-box">
+                            <UploadCloud size={28} className="resume-upload-icon" />
+                            <span className="resume-main-prompt">
+                              Click or browse to attach your Resume / CV *
+                            </span>
+                            <span className="resume-sub-prompt">Evaluated by our engineering leads for project placement</span>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="resume-uploaded-card">
+                      <div className="resume-card-left">
+                        <div className="resume-icon-circle">
+                          <FileText size={20} />
+                        </div>
+                        <div className="resume-details">
+                          <span className="resume-name-text">{resumeName || 'Resume Document'}</span>
+                          <span className="resume-success-status">✓ Uploaded & Attached to Application</span>
+                        </div>
+                      </div>
+                      <div className="resume-card-actions">
+                        <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="btn-resume-preview" title="Preview Resume">
+                          <ExternalLink size={14} />
+                          <span>View</span>
+                        </a>
+                        <button type="button" onClick={handleRemoveResume} className="btn-resume-remove" title="Remove Resume">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadResumeError && (
+                    <div className="resume-validation-alert">
+                      <AlertCircle size={15} />
+                      <span>{uploadResumeError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Portfolio / GitHub Link */}
               <div className="form-group">
