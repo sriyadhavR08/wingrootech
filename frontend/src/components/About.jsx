@@ -1,5 +1,6 @@
 import React from 'react';
 import { Lightbulb, Wrench, BookOpen, Users2, Quote, CheckCircle, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import HowWeWork from './HowWeWork';
 import './About.css';
 
 export default function About() {
@@ -139,6 +140,9 @@ export default function About() {
           </div>
         </div>
       </div>
+
+      {/* Embedded 5-Step Execution & Delivery Methodology */}
+      <HowWeWork />
     </section>
   );
 }
