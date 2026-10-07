@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -138,6 +138,11 @@ function LandingPage() {
   );
 }
 
+function VerifyTokenRedirect() {
+  const { token } = useParams();
+  return <Navigate to={token ? `/internship/verify/${token}` : `/internship/verify`} replace />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -148,12 +153,12 @@ export default function App() {
       <Route path="/internship/*" element={<InternshipApp />} />
 
       {/* 3. Direct Route Shortcuts & QR Code Verification Links */}
-      <Route path="/verify" element={<InternshipApp />} />
-      <Route path="/verify/:token" element={<InternshipApp />} />
-      <Route path="/student/*" element={<InternshipApp />} />
-      <Route path="/admin/*" element={<InternshipApp />} />
-      <Route path="/login" element={<InternshipApp />} />
-      <Route path="/register" element={<InternshipApp />} />
+      <Route path="/verify" element={<Navigate to="/internship/verify" replace />} />
+      <Route path="/verify/:token" element={<VerifyTokenRedirect />} />
+      <Route path="/login" element={<Navigate to="/internship/login" replace />} />
+      <Route path="/register" element={<Navigate to="/internship/register" replace />} />
+      <Route path="/student/*" element={<Navigate to="/internship/student/dashboard" replace />} />
+      <Route path="/admin/*" element={<Navigate to="/internship/admin/dashboard" replace />} />
 
       {/* 4. Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

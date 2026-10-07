@@ -65,6 +65,8 @@ export function Login() {
   );
 }
 export function Register() {
+  const location = useLocation();
+  const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
   const [values, setValues] = useState({ candidate_type: "COLLEGE_INTERN" }),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
