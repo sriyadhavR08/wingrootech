@@ -159,8 +159,8 @@
 }
 
 .highlight-border {
-  border-color: rgba(79, 70, 229, 0.35);
-  box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.1);
+  border-color: rgba(2, 132, 199, 0.35);
+  box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
 }
 
 .intern-card-badge {
@@ -686,10 +686,10 @@
 }
 
 .schedule-tab-btn.active {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  border-color: #4338ca;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
 }
 
 .schedule-scroll-body {

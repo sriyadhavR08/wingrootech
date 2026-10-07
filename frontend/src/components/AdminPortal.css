@@ -201,13 +201,13 @@
 
 .admin-passcode-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
 }
 
 .admin-login-btn {
   width: 100%;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -223,7 +223,8 @@
 
 .admin-login-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  background: linear-gradient(135deg, #0369a1 0%, #f17d47 100%);
+  box-shadow: 0 4px 14px rgba(241, 125, 71, 0.4);
 }
 
 .admin-hint-text {
@@ -799,7 +800,7 @@
 .admin-select:focus,
 .admin-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.16);
 }
 
 .admin-textarea {
@@ -812,7 +813,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -826,7 +827,7 @@
 
 .admin-submit-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
 }
 
 .admin-post-success-msg {
