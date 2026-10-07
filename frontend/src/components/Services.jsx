@@ -203,7 +203,7 @@ export default function Services() {
           </p>
         </div>
 
-        {/* Clubbed Navigation Hub: Development, Internship & Our Portfolio */}
+        {/* Clubbed Navigation Hub: Development, Our Portfolio & Internship */}
         <div className="services-hub-switcher">
           <button 
             type="button" 
@@ -219,22 +219,22 @@ export default function Services() {
           <button 
             type="button" 
             className="hub-nav-btn"
-            onClick={() => scrollToSection('#internship')}
-            title="Go to College & Live Project Internship Section"
+            onClick={() => scrollToSection('#portfolio')}
+            title="Go to Our Portfolio & Client Case Studies"
           >
-            <GraduationCap size={16} />
-            <span>Internship</span>
+            <Briefcase size={16} />
+            <span>Our Portfolio</span>
             <ArrowRight size={14} className="hub-arrow" />
           </button>
 
           <button 
             type="button" 
             className="hub-nav-btn"
-            onClick={() => scrollToSection('#portfolio')}
-            title="Go to Our Portfolio & Client Case Studies"
+            onClick={() => scrollToSection('#internship')}
+            title="Go to College & Live Project Internship Section"
           >
-            <Briefcase size={16} />
-            <span>Our Portfolio</span>
+            <GraduationCap size={16} />
+            <span>Internship</span>
             <ArrowRight size={14} className="hub-arrow" />
           </button>
         </div>
