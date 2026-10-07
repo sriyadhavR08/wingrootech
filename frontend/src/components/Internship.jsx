@@ -748,35 +748,61 @@ export default function Internship({ onOpenStudentPortal }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '20px'
+          gap: '20px',
+          boxShadow: '0 8px 24px -4px rgba(2, 132, 199, 0.08)'
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0284c7', fontWeight: 700, fontSize: '0.86rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               <Sparkles size={16} />
-              <span>Dedicated Internship & Certificate Management System</span>
+              <span>Official Digital Credential & Verification Authority</span>
             </div>
             <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '6px 0 4px' }}>
-              Official Digital Credential & Verification Portal
+              Internship Certificate & Verification System
             </h3>
             <p style={{ margin: 0, color: '#475569', fontSize: '0.92rem', maxWidth: '640px' }}>
-              Register for internships, track your progress, access watermarked certificate drafts, download tamper-proof ReportLab PDFs with sequential serial numbers, and verify authenticity via QR code scanner.
+              Scan and verify any official Wingroo credential instantly, access candidate status progression, preview watermarked drafts, and download tamper-proof PDF certificates with sequential serial IDs.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
             <a 
-              href="/internship" 
-              className="btn btn-primary"
-              style={{ background: '#0284c7', color: '#fff', padding: '10px 22px', borderRadius: '8px', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              href="/internship/verify" 
+              style={{
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                color: '#fff',
+                padding: '11px 22px',
+                borderRadius: '10px',
+                fontWeight: 700,
+                fontSize: '0.92rem',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
             >
-              <span>Open Dedicated Internship Portal</span>
+              <span>Verify Certificate (Scan QR)</span>
               <ArrowRight size={16} />
             </a>
             <a 
-              href="/internship/verify" 
-              className="btn btn-outline-primary"
-              style={{ border: '1.5px solid #0284c7', color: '#0284c7', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff' }}
+              href="/internship" 
+              style={{
+                background: '#ffffff',
+                border: '1.5px solid #0284c7',
+                color: '#0284c7',
+                padding: '11px 20px',
+                borderRadius: '10px',
+                fontWeight: 700,
+                fontSize: '0.92rem',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                transition: 'all 0.2s ease'
+              }}
             >
-              <span>Verify Certificate</span>
+              <span>Internship Portal</span>
             </a>
           </div>
         </div>
@@ -800,7 +826,10 @@ export default function Internship({ onOpenStudentPortal }) {
             <ul className="intern-card-perks">
               <li><CheckCircle2 size={16} className="perk-check" /> Structured 15 – 20 Days curriculum aligned with semester goals</li>
               <li><CheckCircle2 size={16} className="perk-check" /> Guidance from seasoned software engineers</li>
-              <li><CheckCircle2 size={16} className="perk-check" /> Official internship certificate & performance evaluation</li>
+              <li>
+                <CheckCircle2 size={16} className="perk-check" /> Official internship certificate & performance evaluation
+                <a href="/internship/verify" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#0284c7', fontWeight: 700, textDecoration: 'none' }}>[Verify Certificate →]</a>
+              </li>
               <li style={{ color: '#0284c7', fontWeight: 600 }}>
                 <Sparkles size={16} className="perk-check" style={{ color: '#0284c7' }} />
                 <span><strong>Up to 100% Scholarship</strong> based on assessment scores</span>
