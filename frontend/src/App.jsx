@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -18,9 +19,9 @@ import StudentPortal from './components/StudentPortal'
 import AIChatbot from './components/AIChatbot'
 import SocialSidebar from './components/SocialSidebar'
 import ScrollNavigator from './components/ScrollNavigator'
-import { ShieldCheck, GraduationCap } from 'lucide-react'
+import InternshipApp from './internship-portal/App'
 
-export default function App() {
+function LandingPage() {
   const [activePortal, setActivePortal] = useState(null); // null | 'student' | 'admin'
   const [studentLookupQuery, setStudentLookupQuery] = useState('');
   const [dataVersion, setDataVersion] = useState(0);
@@ -134,5 +135,28 @@ export default function App() {
         />
       )}
     </div>
-  )
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* 1. Main Wingroo Landing Page */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* 2. Dedicated Dynamic Internship & Certificate System */}
+      <Route path="/internship/*" element={<InternshipApp />} />
+
+      {/* 3. Direct Route Shortcuts & QR Code Verification Links */}
+      <Route path="/verify" element={<InternshipApp />} />
+      <Route path="/verify/:token" element={<InternshipApp />} />
+      <Route path="/student/*" element={<InternshipApp />} />
+      <Route path="/admin/*" element={<InternshipApp />} />
+      <Route path="/login" element={<InternshipApp />} />
+      <Route path="/register" element={<InternshipApp />} />
+
+      {/* 4. Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }

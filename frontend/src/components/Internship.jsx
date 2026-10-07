@@ -737,6 +737,50 @@ export default function Internship({ onOpenStudentPortal }) {
           </div>
         </div>
 
+        {/* Dedicated Internship & Certificate Portal Launch Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(241, 125, 71, 0.08) 100%)',
+          border: '1.5px solid rgba(2, 132, 199, 0.25)',
+          borderRadius: '16px',
+          padding: '24px 28px',
+          margin: '32px 0 40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0284c7', fontWeight: 700, fontSize: '0.86rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <Sparkles size={16} />
+              <span>Dedicated Internship & Certificate Management System</span>
+            </div>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '6px 0 4px' }}>
+              Official Digital Credential & Verification Portal
+            </h3>
+            <p style={{ margin: 0, color: '#475569', fontSize: '0.92rem', maxWidth: '640px' }}>
+              Register for internships, track your progress, access watermarked certificate drafts, download tamper-proof ReportLab PDFs with sequential serial numbers, and verify authenticity via QR code scanner.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <a 
+              href="/internship" 
+              className="btn btn-primary"
+              style={{ background: '#0284c7', color: '#fff', padding: '10px 22px', borderRadius: '8px', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              <span>Open Dedicated Internship Portal</span>
+              <ArrowRight size={16} />
+            </a>
+            <a 
+              href="/internship/verify" 
+              className="btn btn-outline-primary"
+              style={{ border: '1.5px solid #0284c7', color: '#0284c7', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff' }}
+            >
+              <span>Verify Certificate</span>
+            </a>
+          </div>
+        </div>
+
         {/* Two Large Cards */}
         <div className="internship-cards-grid">
           {/* Card 1: College Internship */}

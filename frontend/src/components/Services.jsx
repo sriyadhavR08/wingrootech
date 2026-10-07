@@ -227,16 +227,15 @@ export default function Services() {
             <ArrowRight size={14} className="hub-arrow" />
           </button>
 
-          <button 
-            type="button" 
+          <a 
+            href="/internship" 
             className="hub-nav-btn"
-            onClick={() => scrollToSection('#internship')}
-            title="Go to College & Live Project Internship Section"
+            title="Go to Dedicated Internship & Certificate Portal"
           >
             <GraduationCap size={16} />
             <span>Internship</span>
             <ArrowRight size={14} className="hub-arrow" />
-          </button>
+          </a>
         </div>
 
         {/* User-Controlled Services Slider (No Auto-Slide) */}
