@@ -13,7 +13,10 @@ import {
   Workflow,
   Zap,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Code2,
+  GraduationCap,
+  Briefcase
 } from 'lucide-react';
 import './Services.css';
 
@@ -130,6 +133,11 @@ export default function Services() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToSection = (id) => {
+    const el = document.querySelector(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // User-Controlled Services Slider State (No Auto-Slide)
   const servicesSliderRef = useRef(null);
   const [activeServiceIndex, setActiveServiceIndex] = useState(0);
@@ -193,6 +201,42 @@ export default function Services() {
             we understand your requirements, identify the right approach and build digital solutions 
             that are designed around your goals.
           </p>
+        </div>
+
+        {/* Clubbed Navigation Hub: Development, Internship & Our Portfolio */}
+        <div className="services-hub-switcher">
+          <button 
+            type="button" 
+            className="hub-nav-btn active"
+            onClick={() => scrollToSection('#services')}
+            title="Software, Web & Mobile Development Services"
+          >
+            <Code2 size={16} />
+            <span>Development</span>
+            <span className="hub-active-dot" />
+          </button>
+
+          <button 
+            type="button" 
+            className="hub-nav-btn"
+            onClick={() => scrollToSection('#internship')}
+            title="Go to College & Live Project Internship Section"
+          >
+            <GraduationCap size={16} />
+            <span>Internship</span>
+            <ArrowRight size={14} className="hub-arrow" />
+          </button>
+
+          <button 
+            type="button" 
+            className="hub-nav-btn"
+            onClick={() => scrollToSection('#portfolio')}
+            title="Go to Our Portfolio & Client Case Studies"
+          >
+            <Briefcase size={16} />
+            <span>Our Portfolio</span>
+            <ArrowRight size={14} className="hub-arrow" />
+          </button>
         </div>
 
         {/* User-Controlled Services Slider (No Auto-Slide) */}

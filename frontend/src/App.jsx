@@ -21,23 +21,26 @@ import ScrollNavigator from './components/ScrollNavigator'
 import { ShieldCheck, GraduationCap } from 'lucide-react'
 
 export default function App() {
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isStudentOpen, setIsStudentOpen] = useState(false);
+  const [activePortal, setActivePortal] = useState(null); // null | 'student' | 'admin'
   const [studentLookupQuery, setStudentLookupQuery] = useState('');
   const [dataVersion, setDataVersion] = useState(0);
 
   const handleOpenStudent = (query = '') => {
     setStudentLookupQuery(query || '');
-    setIsStudentOpen(true);
+    setActivePortal('student');
+  };
+
+  const handleOpenLogin = (role = 'student') => {
+    setActivePortal(role);
   };
 
   useEffect(() => {
-    // Check URL hashes for #admin or #student
+    // Check URL hashes for #admin, #student, or #login
     const handleHashChange = () => {
       if (window.location.hash === '#admin') {
-        setIsAdminOpen(true);
-      } else if (window.location.hash === '#student' || window.location.hash === '#student-portal') {
-        setIsStudentOpen(true);
+        setActivePortal('admin');
+      } else if (window.location.hash === '#student' || window.location.hash === '#student-portal' || window.location.hash === '#login') {
+        setActivePortal('student');
       }
     };
 
@@ -49,12 +52,12 @@ export default function App() {
       // Ctrl + Shift + A -> Admin
       if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        setIsAdminOpen(prev => !prev);
+        setActivePortal(prev => prev === 'admin' ? null : 'admin');
       }
       // Ctrl + Shift + S -> Student
       if (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
         e.preventDefault();
-        setIsStudentOpen(prev => !prev);
+        setActivePortal(prev => prev === 'student' ? null : 'student');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -68,7 +71,8 @@ export default function App() {
   return (
     <div className="wingroo-landing-page">
       <Navbar 
-        onOpenAdmin={() => setIsAdminOpen(true)} 
+        onOpenLogin={handleOpenLogin}
+        onOpenAdmin={() => handleOpenLogin('admin')} 
         onOpenStudentPortal={handleOpenStudent}
       />
       <main>
@@ -76,18 +80,19 @@ export default function App() {
         <About />
         <Services />
         <Internship onOpenStudentPortal={handleOpenStudent} />
-        <Careers />
         <Events key={`events-${dataVersion}`} />
         <Portfolio key={`portfolio-${dataVersion}`} />
         <WhyWingroo />
         <Reviews />
         <AEOKnowledgeHub />
+        <Careers />
         <CTA />
         <Contact />
       </main>
       <Footer 
-        onOpenAdmin={() => setIsAdminOpen(true)} 
+        onOpenAdmin={() => handleOpenLogin('admin')} 
         onOpenStudentPortal={handleOpenStudent}
+        onOpenLogin={handleOpenLogin}
       />
 
       {/* Interactive AI Chatbot Widget */}
@@ -99,52 +104,35 @@ export default function App() {
       {/* Floating Right-Side Scroll Navigator & Section Spy */}
       <ScrollNavigator />
 
-      {/* Floating Triggers Container */}
-      <div className="portal-floating-triggers">
-        {/* Floating Student Portal Button */}
-        <button 
-          className="portal-fab student-fab" 
-          onClick={() => handleOpenStudent()}
-          title="Student Portal (Track Application • Ctrl+Shift+S)"
-        >
-          <GraduationCap size={16} />
-          <span>Student Portal</span>
-        </button>
+      {/* Unified Login Portal: Student / Candidate View */}
+      {activePortal === 'student' && (
+        <StudentPortal 
+          isOpen={true}
+          initialQuery={studentLookupQuery}
+          onSwitchRole={() => setActivePortal('admin')}
+          onClose={() => {
+            setActivePortal(null);
+            if (window.location.hash.includes('student') || window.location.hash.includes('login')) {
+              window.history.replaceState(null, '', ' ');
+            }
+          }}
+        />
+      )}
 
-        {/* Floating Admin Trigger Button */}
-        <button 
-          className="portal-fab admin-fab" 
-          onClick={() => setIsAdminOpen(true)}
-          title="Admin Portal (Ctrl+Shift+A)"
-        >
-          <ShieldCheck size={16} />
-          <span>Admin Portal</span>
-        </button>
-      </div>
-
-      {/* Admin Portal Modal */}
-      <AdminPortal 
-        isOpen={isAdminOpen} 
-        onDataChanged={() => setDataVersion(v => v + 1)}
-        onClose={() => {
-          setIsAdminOpen(false);
-          if (window.location.hash === '#admin') {
-            window.history.replaceState(null, '', ' ');
-          }
-        }} 
-      />
-
-      {/* Student Portal Modal */}
-      <StudentPortal 
-        isOpen={isStudentOpen}
-        initialQuery={studentLookupQuery}
-        onClose={() => {
-          setIsStudentOpen(false);
-          if (window.location.hash.includes('student')) {
-            window.history.replaceState(null, '', ' ');
-          }
-        }}
-      />
+      {/* Unified Login Portal: Admin & Staff View */}
+      {activePortal === 'admin' && (
+        <AdminPortal 
+          isOpen={true} 
+          onDataChanged={() => setDataVersion(v => v + 1)}
+          onSwitchRole={() => setActivePortal('student')}
+          onClose={() => {
+            setActivePortal(null);
+            if (window.location.hash === '#admin' || window.location.hash.includes('login')) {
+              window.history.replaceState(null, '', ' ');
+            }
+          }} 
+        />
+      )}
     </div>
   )
 }

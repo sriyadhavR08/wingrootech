@@ -28,7 +28,7 @@ import './AdminPortal.css';
 
 const API_BASE = API_BASE_URL || '';
 
-export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
+export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRole }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('wingroo_admin_auth') === 'true';
   });
@@ -760,6 +760,23 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged }) {
                 Manage inquiries, student applications, portfolio projects & public events
               </p>
             </div>
+          </div>
+
+          {/* Unified Role Switcher */}
+          <div className="portal-role-switch-tabs">
+            <button 
+              type="button" 
+              className="portal-role-btn" 
+              onClick={() => typeof onSwitchRole === 'function' && onSwitchRole('student')}
+              title="Switch to Student / Candidate Portal"
+            >
+              <GraduationCap size={15} />
+              <span>Student Portal</span>
+            </button>
+            <button type="button" className="portal-role-btn active" title="Current: Admin & Staff Portal">
+              <ShieldCheck size={15} />
+              <span>Admin Login</span>
+            </button>
           </div>
 
           <div className="admin-header-actions">

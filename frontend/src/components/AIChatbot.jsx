@@ -24,6 +24,22 @@ import './AIChatbot.css';
 
 const QUICK_PROMPTS = [
   { 
+    id: 'all_services', 
+    label: '💼 What are all the services provided by Wingroo?', 
+    icon: <Briefcase size={14} />,
+    reply: '💼 **End-to-End Services Provided by Wingroo Technologies:**\n\n1. 🌐 **Custom Web & SaaS Development:**\n• High-performance web applications built with React 19, Next.js, Node.js, and Python.\n• Robust full-stack architecture, REST/GraphQL APIs, and responsive UI.\n\n2. 📱 **Mobile App Development (Android & iOS):**\n• Cross-platform apps engineered with Flutter & React Native.\n• End-to-end publishing & guaranteed approval on both **Google Play Store** and **Apple App Store**.\n\n3. ⚡ **72-Hour Rapid MVP Delivery:**\n• Rapid interactive prototypes in hours and production-grade MVPs in 72 hours via Vibe Coding.\n\n4. 🤖 **Agentic AI & Custom AI Agents:**\n• Autonomous multi-step agents, LLM tool execution, autonomous Gmail & CRM auto-responders.\n\n5. 🛒 **E-Commerce & Digital Commerce:**\n• Custom storefronts with seamless Razorpay, Stripe & UPI payment gateways.\n\n6. ☁️ **DevOps & Cloud Infrastructure:**\n• Automated CI/CD pipelines, Docker containers, and AWS / Render cloud hosting.\n\n7. 🎓 **Industry Internships & Talent Acceleration:**\n• Hands-on 15–20 days cohorts with live projects, up to 100% scholarships, and ISO certifications.\n\n👇 *Need a quote or free architecture plan for your project? Share your details below!*',
+    isDev: true,
+    defaultType: 'Custom Web & Mobile Application'
+  },
+  { 
+    id: 'join_team', 
+    label: '🤝 How to join your team?', 
+    icon: <Sparkles size={14} />,
+    reply: '🤝 **How to Join the Wingroo Technologies Team:**\n\nWe are always looking for passionate builders, designers, and AI engineers!\n\n• 💼 **Explore Current Openings:**\nCheck our **Careers** section on this website for active roles in Full-Stack Web Development, Mobile Apps (Flutter/React Native), UI/UX, and AI Agents.\n\n• 🎓 **Students & Freshers:**\nJoin our **College Internship or Live Project Internship** program. Outstanding performers receive direct Pre-Placement Offers (PPOs) and full-time hiring opportunities.\n\n• 📩 **Direct Application:**\nApply directly via the Careers form on this page or send your Resume, GitHub link, and portfolio to:\n📧 **careers@wingrootechnologies.com**\n📞 WhatsApp: **+91 81247 79111**\n\n• ⚡ **Our Culture:**\nWe value **Proof of Work** (live deployed apps, GitHub commits, problem solving) over degrees.\n\n👇 *Interested in joining or collaborating? Drop your details below!*',
+    isDev: false,
+    defaultType: 'Careers / Team Joining Inquiry'
+  },
+  { 
     id: 'start_project', 
     label: '🚀 Start a Web or Mobile Project', 
     icon: <Rocket size={14} />,
@@ -54,20 +70,6 @@ const QUICK_PROMPTS = [
     reply: '🎓 **College Internship Program (15–20 Days):**\n• Structured daily timetable (Theory & Hands-on Lab).\n• **Up to 100% Merit Scholarships** based on our 20-min online screening assessment.\n• Recognized ISO 9001:2015, MSME & Startup India certification with real GitHub repos.\n• Apply right on our site or track your status in the Student Portal!',
     isDev: false,
     defaultType: 'College Internship / Student Inquiry'
-  },
-  { 
-    id: 'ai_replace', 
-    label: '🤖 Will AI replace software developers?', 
-    icon: <Sparkles size={14} />,
-    reply: '🤖 **Will AI replace software developers?**\nNo! AI will not replace software developers, but developers who master AI workflows (Cursor, Claude 3.5 Sonnet, v0) will replace those who do not.\n\nModern developers act as architectural orchestrators—guiding AI code generators, verifying system security, and building scalable production software.',
-    isDev: false
-  },
-  { 
-    id: 'location', 
-    label: '📍 Coimbatore Hub & WhatsApp', 
-    icon: <Phone size={14} />,
-    reply: '📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012 (near Gandhipuram).\n📞 Phone / WhatsApp: +91 81247 79111.',
-    isDev: false
   }
 ];
 
@@ -165,7 +167,11 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
 
     const isDevQuery = lower.includes('dev') || lower.includes('app') || lower.includes('play store') || lower.includes('app store') || lower.includes('web') || lower.includes('software') || lower.includes('build') || lower.includes('project') || lower.includes('mvp') || lower.includes('cost') || lower.includes('quote') || lower.includes('price') || lower.includes('hire') || lower.includes('client') || lower.includes('android') || lower.includes('ios');
 
-    if (bestMatch && highestScore >= 6) {
+    if (lower.includes('service') || lower.includes('what services') || lower.includes('what do you do') || lower.includes('offerings')) {
+      botReplyText = "💼 **Comprehensive Services Provided by Wingroo Technologies:**\n\n1. 🌐 **Custom Web & SaaS Development:** Next.js & React 19 apps, Python/Node.js backends, scalable REST/GraphQL APIs.\n2. 📱 **Mobile App Development (Android & iOS):** Flutter & React Native apps published directly to Google Play Store & Apple App Store with guaranteed approval.\n3. ⚡ **72-Hour Rapid MVP Sprints:** Vibe Coding workflows to launch production software in record 72 hours.\n4. 🤖 **Agentic AI & Custom AI Agents:** Autonomous task workflows, LLM tools, CRM/email auto-responders.\n5. 🛒 **E-Commerce Solutions:** Custom storefronts, inventory tracking & payment gateways (Razorpay/Stripe).\n6. ☁️ **DevOps & Cloud Infrastructure:** Automated CI/CD, Docker containers, AWS/Render deployments.\n7. 🎓 **Industry Internships:** 15–20 days practical cohorts with up to 100% scholarships & ISO certificates.\n\n👇 *Need a quote or free architecture plan? Drop your details below!*";
+    } else if (lower.includes('join') || lower.includes('join team') || lower.includes('join your team') || lower.includes('how to join') || lower.includes('hiring') || lower.includes('work with you')) {
+      botReplyText = "🤝 **How to Join the Wingroo Technologies Team:**\n\nWe are actively hiring developers, designers, and AI enthusiasts!\n\n• 💼 **Check Open Roles:** Visit the **Careers** section on this site for active openings.\n• 🎓 **Students & Freshers:** Join our **College Internship or Live Project Internship** program — top candidates receive direct Pre-Placement Offers (PPOs)!\n• 📩 **Direct Application:** Submit your Resume, GitHub, and portfolio to **careers@wingrootechnologies.com** or apply via the Careers form below.\n• ⚡ **Hiring Focus:** We value **Proof of Work** (live deployed apps, GitHub commits) over degrees.\n\n👇 *Drop your details below if you want to collaborate or join!*";
+    } else if (bestMatch && highestScore >= 6) {
       botReplyText = `💡 **${bestMatch.q}**\n\n${bestMatch.a}\n\n👉 *Need a custom architecture plan or cost estimate for your project? Share your contact details below to get a free 30-min consultation!*`;
     } else if (lower.includes('play store') || lower.includes('app store') || (lower.includes('mobile') && lower.includes('app'))) {
       botReplyText = "📱 **Mobile App Development (Google Play Store & Apple App Store):**\nYes! We build high-performance mobile apps with Flutter & React Native and manage the entire publishing pipeline for both Google Play Store (Android) and Apple App Store (iOS)—including Apple Developer and Google Play Console setup, app signing, store guidelines compliance, and guaranteed live approval.\n\n👇 Please share your contact details below to discuss your app idea!";

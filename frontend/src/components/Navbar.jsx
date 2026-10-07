@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
+import { Menu, X, ArrowRight, Sparkles, LogIn } from 'lucide-react';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -7,14 +7,14 @@ const NAV_LINKS = [
   { label: 'About', href: '#about' },
   { label: 'Services', href: '#services' },
   { label: 'Internship', href: '#internship' },
-  { label: 'Careers', href: '#careers' },
   { label: 'Events', href: '#events' },
   { label: 'Portfolio', href: '#portfolio' },
   { label: 'FAQs', href: '#faq-knowledge-hub' },
+  { label: 'Careers', href: '#careers' },
   { label: 'Contact', href: '#contact' }
 ];
 
-export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
+export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -90,14 +90,15 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
 
         {/* Action Buttons */}
         <div className="navbar-actions">
-          <a
-            href="#contact"
-            onClick={(e) => handleLinkClick(e, '#contact')}
-            className="btn btn-primary nav-cta-btn"
+          <button
+            type="button"
+            onClick={() => typeof onOpenLogin === 'function' ? onOpenLogin('student') : (onOpenStudentPortal && onOpenStudentPortal())}
+            className="btn btn-primary nav-login-btn"
+            title="Access Student & Admin Login Portal"
           >
-            <span>Let's Talk</span>
-            <ArrowRight size={16} />
-          </a>
+            <LogIn size={16} />
+            <span>Login</span>
+          </button>
 
           {/* Mobile Hamburger Button */}
           <button
@@ -130,14 +131,18 @@ export default function Navbar({ onOpenAdmin, onOpenStudentPortal }) {
             );
           })}
           <div className="mobile-cta-wrapper">
-            <a
-              href="#contact"
-              onClick={(e) => handleLinkClick(e, '#contact')}
-              className="btn btn-primary btn-block"
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (typeof onOpenLogin === 'function') onOpenLogin('student');
+                else if (onOpenStudentPortal) onOpenStudentPortal();
+              }}
+              className="btn btn-primary btn-block mobile-login-btn"
             >
-              <span>Let's Talk</span>
-              <ArrowRight size={16} />
-            </a>
+              <LogIn size={16} />
+              <span>Login Portal</span>
+            </button>
           </div>
         </div>
       </div>

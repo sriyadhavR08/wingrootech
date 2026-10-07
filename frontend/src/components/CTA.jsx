@@ -37,7 +37,7 @@ export default function CTA() {
                 onClick={() => scrollTo('#contact')} 
                 className="btn btn-primary cta-btn-main"
               >
-                <span>Let's Talk</span>
+                <span>Start Your Project</span>
                 <ArrowRight size={18} />
               </button>
 

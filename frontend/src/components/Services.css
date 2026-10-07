@@ -5,6 +5,65 @@
   background: var(--bg-primary);
 }
 
+/* Clubbed Navigation Hub Buttons */
+.services-hub-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 36px auto;
+  flex-wrap: wrap;
+}
+
+.hub-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-light);
+  color: var(--text-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+}
+
+.hub-nav-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.hub-nav-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.hub-active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.hub-arrow {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.hub-nav-btn:hover .hub-arrow {
+  transform: translateX(3px);
+  color: var(--primary);
+}
+
 /* User-Controlled Services Slider */
 .services-slider-wrapper {
   position: relative;

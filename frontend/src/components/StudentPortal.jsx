@@ -23,7 +23,7 @@ import {
 import { API_BASE_URL } from '../config/api';
 import './StudentPortal.css';
 
-export default function StudentPortal({ isOpen, onClose, initialQuery = '' }) {
+export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSwitchRole }) {
   const [searchQuery, setSearchQuery] = useState(() => {
     return initialQuery || sessionStorage.getItem('wingroo_student_lookup') || '';
   });
@@ -132,6 +132,23 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '' }) {
               <div className="student-portal-tag">Candidate Services</div>
               <h3 className="student-portal-heading">Wingroo Student Portal</h3>
             </div>
+          </div>
+
+          {/* Unified Role Switcher */}
+          <div className="portal-role-switch-tabs">
+            <button type="button" className="portal-role-btn active" title="Current: Student / Candidate Portal">
+              <GraduationCap size={15} />
+              <span>Student Portal</span>
+            </button>
+            <button 
+              type="button" 
+              className="portal-role-btn" 
+              onClick={() => typeof onSwitchRole === 'function' && onSwitchRole('admin')}
+              title="Switch to Admin & Staff Login"
+            >
+              <ShieldCheck size={15} />
+              <span>Admin Login</span>
+            </button>
           </div>
 
           <div className="student-header-actions">
