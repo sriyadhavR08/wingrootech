@@ -12,10 +12,22 @@ from routes.events import events_bp
 from routes.admin import admin_bp
 from routes.upload import upload_bp
 from routes.careers import careers_bp
+from routes.auth import auth_bp
+from routes.student import student_bp
+from routes.cert_admin import cert_admin_bp
+from routes.public import public_bp
+from models import db, User
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Initialize SQLAlchemy database
+    db.init_app(app)
+
+    # Ensure uploads and media folders exist
+    os.makedirs(app.config.get("MEDIA_FOLDER", "uploads"), exist_ok=True)
+    os.makedirs(app.config.get("ASSETS_FOLDER", "assets"), exist_ok=True)
 
     # Enable CORS for frontend development and production
     cors_origins = app.config.get('CORS_ORIGINS', '*')
@@ -24,8 +36,9 @@ def create_app():
 
     CORS(app, resources={
         r"/api/*": {"origins": cors_origins},
-        r"/uploads/*": {"origins": cors_origins}
-    }, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+        r"/uploads/*": {"origins": cors_origins},
+        r"/media/*": {"origins": cors_origins}
+    }, methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
 
     # Register Blueprints
     app.register_blueprint(contact_bp)
@@ -35,6 +48,10 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(upload_bp)
     app.register_blueprint(careers_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(student_bp)
+    app.register_blueprint(cert_admin_bp)
+    app.register_blueprint(public_bp)
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
@@ -44,22 +61,30 @@ def create_app():
             'version': '1.0.0'
         })
 
-    # Initialize tables and print banner on startup once (in active worker)
-    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.config.get('DEBUG', True):
-        with app.app_context():
+    # Initialize tables and seed default admin
+    with app.app_context():
+        try:
             init_mysql_tables_if_needed()
-        
-        port = int(os.getenv("PORT", 5000))
-        print(f"=====================================================")
-        print(f" Wingroo Technologies Flask API Server Started")
-        print(f" URL: http://localhost:{port}")
-        print(f" Endpoints:")
-        print(f"   - POST http://localhost:{port}/api/contact")
-        print(f"   - POST http://localhost:{port}/api/internship")
-        print(f"   - GET  http://localhost:{port}/api/projects")
-        print(f"   - GET  http://localhost:{port}/api/events")
-        print(f"   - GET  http://localhost:{port}/api/health")
-        print(f"=====================================================")
+        except Exception as e:
+            print(f"[Database warning] init_mysql_tables_if_needed: {e}")
+        try:
+            db.create_all()
+            # Ensure default administrator exists
+            admin_user = User.query.filter_by(role='ADMIN').first()
+            if not admin_user:
+                default_admin = User(
+                    email='admin@wingroo.com',
+                    full_name='Wingroo Administrator',
+                    role='ADMIN',
+                    is_staff=True,
+                    is_superuser=True
+                )
+                default_admin.set_password('Admin@12345')
+                db.session.add(default_admin)
+                db.session.commit()
+                print("Default admin initialized: admin@wingroo.com / Admin@12345")
+        except Exception as e:
+            print(f"[SQLAlchemy error] create_all/seed: {e}")
 
     return app
 

@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "wingroo-technologies-secret-key-2026")
@@ -11,9 +14,27 @@ class Config:
     MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
     MYSQL_USER = os.getenv("MYSQL_USER", "root")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
-    
-    # Standalone root database for this project (shows at root level in phpMyAdmin like django_react_db, foodexpress_db)
     MYSQL_DB = os.getenv("MYSQL_DB", "wingrootech_db")
+    
+    # SQLAlchemy database connection
+    # If MYSQL_PASSWORD is set or DB_USER configured, use MySQL; otherwise local SQLite fallback
+    if MYSQL_PASSWORD:
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+    elif os.getenv("DATABASE_URL"):
+        SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    else:
+        instance_dir = BASE_DIR / "instance"
+        instance_dir.mkdir(parents=True, exist_ok=True)
+        SQLALCHEMY_DATABASE_URI = f"sqlite:///{instance_dir / 'certificate.db'}"
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Media folder for uploads & generated certificate PDFs
+    MEDIA_FOLDER = os.getenv("MEDIA_FOLDER") or str(BASE_DIR / "uploads")
+    ASSETS_FOLDER = os.getenv("ASSETS_FOLDER") or str(BASE_DIR / "assets")
+
+    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+    JWT_EXPIRATION_HOURS = 24
     
     # Frontend Origin for CORS
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")

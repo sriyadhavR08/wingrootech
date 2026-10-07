@@ -21,7 +21,14 @@ import {
   Globe, 
   Upload, 
   Image as ImageIcon, 
-  Video 
+  Video,
+  User,
+  Award,
+  Check,
+  AlertTriangle,
+  FileCheck,
+  Clock,
+  Sparkles 
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import './AdminPortal.css';
@@ -49,6 +56,13 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   const [eventRegistrations, setEventRegistrations] = useState([]);
   const [projects, setProjects] = useState([]);
   const [events, setEvents] = useState([]);
+  const [studentsList, setStudentsList] = useState([]);
+  const [certificatesList, setCertificatesList] = useState([]);
+  const [certPreviewBlobUrl, setCertPreviewBlobUrl] = useState(null);
+  const [studentDocModal, setStudentDocModal] = useState(null);
+  const [endDateModal, setEndDateModal] = useState(null);
+  const [newEndDate, setNewEndDate] = useState('');
+  const [certActionLoading, setCertActionLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -215,10 +229,171 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
           setCollegeInternships(ciData.internships || []);
         }
       }
+
+      // 7. Registered Certificate Students
+      try {
+        const studentsRes = await fetch(`${API_BASE}/api/admin/students/`, {
+          headers: { 'Authorization': 'Bearer wingroo-admin-session-token' }
+        });
+        if (studentsRes.ok) {
+          const studentsData = await studentsRes.json();
+          setStudentsList(studentsData.results || []);
+        }
+      } catch (stErr) {
+        console.warn('Error loading students:', stErr);
+      }
+
+      // 8. Issued Certificates
+      try {
+        const certsRes = await fetch(`${API_BASE}/api/admin/certificates/`, {
+          headers: { 'Authorization': 'Bearer wingroo-admin-session-token' }
+        });
+        if (certsRes.ok) {
+          const certsData = await certsRes.json();
+          setCertificatesList(certsData.results || []);
+        }
+      } catch (ctErr) {
+        console.warn('Error loading certificates:', ctErr);
+      }
     } catch (err) {
       console.error('Error loading admin data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // --- CERTIFICATE ACTIONS ---
+  const handleUpdateStudentStatus = async (internshipId, newStatus) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/internships/${internshipId}/status/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        alert(`Internship status updated to ${newStatus}`);
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to update status');
+      }
+    } catch (err) {
+      alert('Error updating status: ' + err.message);
+    }
+  };
+
+  const handleSaveEndDate = async (internshipId, endDate) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/internships/${internshipId}/end-date/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        },
+        body: JSON.stringify({ end_date: endDate })
+      });
+      if (res.ok) {
+        alert('End date updated successfully!');
+        setEndDateModal(null);
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.end_date || err.detail || 'Failed to set end date');
+      }
+    } catch (err) {
+      alert('Error setting end date: ' + err.message);
+    }
+  };
+
+  const handlePreviewCertificate = async (internshipId) => {
+    setCertActionLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/certificates/preview/${internshipId}/`, {
+        headers: { 'Authorization': 'Bearer wingroo-admin-session-token' }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to generate preview PDF.');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setCertPreviewBlobUrl(url);
+    } catch (err) {
+      alert('Preview Error: ' + err.message);
+    } finally {
+      setCertActionLoading(false);
+    }
+  };
+
+  const handleGenerateCertificate = async (internshipId, studentName) => {
+    if (!window.confirm(`Generate and issue official Wingroo Certificate for "${studentName}"? This creates a sequential ID and ReportLab PDF with verification QR code.`)) {
+      return;
+    }
+    setCertActionLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/certificates/generate/${internshipId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Certificate ${data.certificate_id} generated and issued successfully!`);
+        loadAllData();
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.detail || 'Certificate generation failed.');
+      }
+    } catch (err) {
+      alert('Error generating certificate: ' + err.message);
+    } finally {
+      setCertActionLoading(false);
+    }
+  };
+
+  const handleRevokeCertificate = async (certId, certSerial) => {
+    if (!window.confirm(`Are you sure you want to REVOKE certificate "${certSerial}"? This will immediately invalidate public verification.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/certificates/${certId}/revoke/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Bearer wingroo-admin-session-token' }
+      });
+      if (res.ok) {
+        alert(`Certificate ${certSerial} has been revoked.`);
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to revoke certificate.');
+      }
+    } catch (err) {
+      alert('Error revoking certificate: ' + err.message);
+    }
+  };
+
+  const handleDownloadIssuedPdf = async (certId, certSerial) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/certificates/${certId}/download/`, {
+        headers: { 'Authorization': 'Bearer wingroo-admin-session-token' }
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${certSerial}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) {
+      alert('Download error: ' + err.message);
     }
   };
 
@@ -925,6 +1100,22 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                   <span className="admin-tab-count">{internships.length}</span>
                 </button>
                 <button 
+                  className={`admin-tab-btn ${activeTab === 'students' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('students')}
+                >
+                  <User size={16} />
+                  <span>Student Accounts</span>
+                  <span className="admin-tab-count">{studentsList.length}</span>
+                </button>
+                <button 
+                  className={`admin-tab-btn ${activeTab === 'certificates' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('certificates')}
+                >
+                  <Award size={16} />
+                  <span>Certificates Registry</span>
+                  <span className="admin-tab-count">{certificatesList.length}</span>
+                </button>
+                <button 
                   className={`admin-tab-btn ${activeTab === 'college_internships' ? 'active' : ''}`}
                   onClick={() => setActiveTab('college_internships')}
                 >
@@ -1182,6 +1373,318 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                               <GraduationCap className="admin-empty-icon" />
                               <p>No internship applications found.</p>
                             </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: REGISTERED STUDENT ACCOUNTS & INTERN PROFILES */}
+            {activeTab === 'students' && (
+              <div className="admin-table-card">
+                <div className="admin-table-header-row" style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+                    Registered Student Interns ({studentsList.length})
+                  </h4>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Profiles with identity verification, assigned projects, and certificate milestones
+                  </span>
+                </div>
+
+                <div className="admin-table-responsive">
+                  <table className="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Student Name & Role</th>
+                        <th>Institution & Reg No</th>
+                        <th>Project & Dates</th>
+                        <th>Proof & Selfie</th>
+                        <th>Workflow Status</th>
+                        <th>Certificate Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentsList.length > 0 ? (
+                        studentsList
+                          .filter((st) => {
+                            if (!searchQuery) return true;
+                            const q = searchQuery.toLowerCase();
+                            return (
+                              st.full_name?.toLowerCase().includes(q) ||
+                              st.email?.toLowerCase().includes(q) ||
+                              st.register_number?.toLowerCase().includes(q) ||
+                              st.college_name?.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((st) => {
+                            const isCertIssued = st.status === 'CERTIFICATE_ISSUED' || !!st.certificate;
+                            const isCompleted = st.status === 'COMPLETED';
+
+                            return (
+                              <tr key={st.id}>
+                                <td><strong>#{st.id}</strong></td>
+                                <td>
+                                  <div className="candidate-name-cell">{st.full_name}</div>
+                                  <div className="candidate-contact-sub">{st.email} • {st.mobile_number}</div>
+                                  <div style={{ marginTop: '4px' }}>
+                                    <span className="admin-badge badge-tech" style={{ fontSize: '0.68rem' }}>
+                                      {st.candidate_type_display || 'College Intern'}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{st.college_name}</div>
+                                  <div className="candidate-contact-sub">{st.department} ({st.course})</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#0284c7', fontFamily: 'monospace', marginTop: '2px' }}>
+                                    Reg: {st.register_number}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>{st.project_name}</div>
+                                  <div className="candidate-contact-sub">
+                                    {st.start_date} to {st.end_date || 'Ongoing'}
+                                  </div>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => {
+                                      setEndDateModal({ internshipId: st.internship_id, studentName: st.full_name });
+                                      setNewEndDate(st.end_date || new Date().toISOString().slice(0, 10));
+                                    }}
+                                    style={{
+                                      marginTop: '4px',
+                                      padding: '2px 8px',
+                                      fontSize: '0.7rem',
+                                      background: '#f1f5f9',
+                                      border: '1px solid #cbd5e1',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      color: '#475569'
+                                    }}
+                                  >
+                                    📅 {st.end_date ? 'Edit End Date' : 'Set End Date'}
+                                  </button>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {st.college_id_card ? (
+                                      <button 
+                                        type="button" 
+                                        onClick={() => setStudentDocModal({ type: 'ID Card Proof', url: st.college_id_card })}
+                                        className="action-pill-btn action-view"
+                                        style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      >
+                                        <Eye size={11} />
+                                        <span>View ID Card</span>
+                                      </button>
+                                    ) : (
+                                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>No ID uploaded</span>
+                                    )}
+
+                                    {st.selfie_photo ? (
+                                      <button 
+                                        type="button" 
+                                        onClick={() => setStudentDocModal({ type: 'Selfie Photo', url: st.selfie_photo })}
+                                        className="action-pill-btn action-view"
+                                        style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      >
+                                        <Eye size={11} />
+                                        <span>View Selfie</span>
+                                      </button>
+                                    ) : (
+                                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>No Selfie</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td>
+                                  <select 
+                                    value={st.status || 'REGISTERED'}
+                                    disabled={isCertIssued}
+                                    onChange={(e) => handleUpdateStudentStatus(st.internship_id, e.target.value)}
+                                    style={{
+                                      padding: '4px 8px',
+                                      borderRadius: '6px',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700,
+                                      border: '1px solid #cbd5e1',
+                                      background: isCertIssued ? '#dcfce7' : isCompleted ? '#e0f2fe' : '#fef9c3',
+                                      color: isCertIssued ? '#15803d' : isCompleted ? '#0369a1' : '#a16207',
+                                      cursor: isCertIssued ? 'not-allowed' : 'pointer'
+                                    }}
+                                  >
+                                    <option value="REGISTERED">Registered</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="COMPLETED">Completed</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  {isCertIssued ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                      <span className="admin-badge badge-selected" style={{ fontSize: '0.7rem' }}>
+                                        {st.certificate?.certificate_id || 'Issued'}
+                                      </span>
+                                      {st.certificate && (
+                                        <button 
+                                          type="button" 
+                                          onClick={() => handleDownloadIssuedPdf(st.certificate.id, st.certificate.certificate_id)}
+                                          className="action-pill-btn action-email"
+                                          style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                        >
+                                          <Download size={11} />
+                                          <span>PDF</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  ) : isCompleted ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handlePreviewCertificate(st.internship_id)}
+                                        className="action-pill-btn action-view"
+                                        style={{ fontSize: '0.72rem', padding: '4px 8px' }}
+                                        disabled={certActionLoading}
+                                      >
+                                        <Eye size={11} />
+                                        <span>Preview PDF</span>
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleGenerateCertificate(st.internship_id, st.full_name)}
+                                        className="action-pill-btn"
+                                        style={{ background: '#0284c7', color: '#fff', border: 'none', fontSize: '0.72rem', padding: '4px 8px', fontWeight: 700 }}
+                                        disabled={certActionLoading}
+                                      >
+                                        <Award size={11} />
+                                        <span>Issue Certificate</span>
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Complete internship first</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                            No registered student interns found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CERTIFICATES REGISTRY */}
+            {activeTab === 'certificates' && (
+              <div className="admin-table-card">
+                <div className="admin-table-header-row" style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+                    Official Certificate Registry ({certificatesList.length})
+                  </h4>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Digitally generated and QR-verifiable internship certificates with sequential IDs
+                  </span>
+                </div>
+
+                <div className="admin-table-responsive">
+                  <table className="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Certificate Serial</th>
+                        <th>Student Name</th>
+                        <th>Project Title</th>
+                        <th>Official Issue Date</th>
+                        <th>Registry Status</th>
+                        <th>Verification Link</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {certificatesList.length > 0 ? (
+                        certificatesList
+                          .filter((c) => {
+                            if (!searchQuery) return true;
+                            const q = searchQuery.toLowerCase();
+                            return (
+                              c.certificate_id?.toLowerCase().includes(q) ||
+                              c.student_name?.toLowerCase().includes(q) ||
+                              c.project_name?.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((cert) => {
+                            const isValid = cert.status === 'VALID';
+
+                            return (
+                              <tr key={cert.id}>
+                                <td>
+                                  <strong style={{ color: '#0284c7', fontFamily: 'monospace', fontSize: '0.88rem' }}>
+                                    {cert.certificate_id}
+                                  </strong>
+                                </td>
+                                <td>
+                                  <div className="candidate-name-cell">{cert.student_name}</div>
+                                </td>
+                                <td>
+                                  <div style={{ fontSize: '0.82rem', color: '#334155' }}>{cert.project_name}</div>
+                                </td>
+                                <td>
+                                  <div style={{ fontSize: '0.82rem', color: '#64748b' }}>{cert.issue_date}</div>
+                                </td>
+                                <td>
+                                  <span className={`admin-badge ${isValid ? 'badge-selected' : 'badge-rejected'}`}>
+                                    {isValid ? 'VERIFIED VALID' : 'REVOKED'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <a 
+                                    href={`#${cert.verification_url}`} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="action-pill-btn action-view"
+                                    style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                  >
+                                    <ExternalLink size={11} />
+                                    <span>Verify URL</span>
+                                  </a>
+                                </td>
+                                <td>
+                                  <div className="table-actions-cell">
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleDownloadIssuedPdf(cert.id, cert.certificate_id)}
+                                      className="action-pill-btn action-email"
+                                      title="Download PDF"
+                                    >
+                                      <Download size={13} />
+                                      <span>PDF</span>
+                                    </button>
+                                    {isValid && (
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleRevokeCertificate(cert.id, cert.certificate_id)}
+                                        className="action-pill-btn action-delete"
+                                        title="Revoke Certificate"
+                                      >
+                                        <Trash2 size={13} />
+                                        <span>Revoke</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                            No certificates issued yet. Complete an intern's workflow to generate one!
                           </td>
                         </tr>
                       )}
@@ -2225,6 +2728,136 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                   <Mail size={15} />
                   <span>Send Direct Email</span>
                 </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: CERTIFICATE PDF PREVIEW */}
+        {certPreviewBlobUrl && (
+          <div className="modal-overlay" onClick={() => setCertPreviewBlobUrl(null)}>
+            <div className="modal-content" style={{ maxWidth: '900px', width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column', padding: '16px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                  Official Certificate PDF Preview (Draft / Watermarked)
+                </h3>
+                <button 
+                  type="button" 
+                  onClick={() => setCertPreviewBlobUrl(null)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#64748b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <iframe 
+                  src={certPreviewBlobUrl} 
+                  title="Certificate Preview" 
+                  style={{ width: '100%', height: '100%', border: '1px solid #cbd5e1', borderRadius: '8px' }} 
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: STUDENT VERIFICATION DOCUMENTS */}
+        {studentDocModal && (
+          <div className="modal-overlay" onClick={() => setStudentDocModal(null)}>
+            <div className="modal-content" style={{ maxWidth: '650px', width: '95vw', padding: '24px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                    Verification Documents — {studentDocModal.full_name}
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Category: {studentDocModal.category} • College/School: {studentDocModal.institution_name}
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setStudentDocModal(null)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#64748b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#f8fafc' }}>
+                  <strong style={{ fontSize: '0.85rem', display: 'block', marginBottom: '8px', color: '#334155' }}>
+                    ID Card Document
+                  </strong>
+                  {studentDocModal.id_card_url ? (
+                    <img 
+                      src={studentDocModal.id_card_url} 
+                      alt="ID Card Proof" 
+                      style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '6px', background: '#fff', border: '1px solid #e2e8f0' }} 
+                    />
+                  ) : (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No ID card uploaded</div>
+                  )}
+                </div>
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#f8fafc' }}>
+                  <strong style={{ fontSize: '0.85rem', display: 'block', marginBottom: '8px', color: '#334155' }}>
+                    Live Selfie / Photo
+                  </strong>
+                  {studentDocModal.photo_url ? (
+                    <img 
+                      src={studentDocModal.photo_url} 
+                      alt="Student Selfie" 
+                      style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '6px', background: '#fff', border: '1px solid #e2e8f0' }} 
+                    />
+                  ) : (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No photo uploaded</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: INTERNSHIP END DATE SETTING */}
+        {endDateModal && (
+          <div className="modal-overlay" onClick={() => setEndDateModal(null)}>
+            <div className="modal-content" style={{ maxWidth: '420px', width: '90vw', padding: '24px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#1e293b' }}>
+                  Set Internship End Date
+                </h3>
+                <button 
+                  type="button" 
+                  onClick={() => setEndDateModal(null)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 0, marginBottom: '14px' }}>
+                Specify the completion date for <strong>{endDateModal.student_name}</strong>'s internship track.
+              </p>
+              <input 
+                type="date" 
+                value={newEndDate} 
+                onChange={(e) => setNewEndDate(e.target.value)} 
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', marginBottom: '16px', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setEndDateModal(null)} 
+                  className="admin-login-submit" 
+                  style={{ background: '#f1f5f9', color: '#475569', padding: '8px 16px', fontSize: '0.85rem' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleSaveEndDate} 
+                  disabled={certActionLoading || !newEndDate} 
+                  className="admin-login-submit" 
+                  style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                >
+                  {certActionLoading ? 'Saving...' : 'Save End Date'}
+                </button>
               </div>
             </div>
           </div>

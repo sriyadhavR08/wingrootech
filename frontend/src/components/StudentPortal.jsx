@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   GraduationCap, 
   Search, 
@@ -18,45 +18,428 @@ import {
   AlertCircle,
   ShieldCheck,
   Award,
-  BookOpen
+  BookOpen,
+  Lock,
+  User,
+  Camera,
+  Download,
+  Check,
+  QrCode,
+  LogIn,
+  UserPlus,
+  ShieldAlert,
+  ArrowLeft
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
+import { 
+  getAuthTokens, 
+  saveAuthTokens, 
+  clearStudentSession, 
+  getCurrentStudentUser, 
+  saveCurrentStudentUser, 
+  certFetch, 
+  downloadCertificatePdf 
+} from '../utils/certApi';
+import Scanner from './Scanner';
 import './StudentPortal.css';
 
+const API_BASE = API_BASE_URL || '';
+
+// Client-side image resize helper
+function resizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file) return resolve(null);
+    if (file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width || 480;
+        canvas.height = height || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objectUrl);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      } catch {
+        URL.revokeObjectURL(objectUrl);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    };
+    img.src = objectUrl;
+  });
+}
+
 export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSwitchRole }) {
+  // Top Active Mode: 'verify' | 'login' | 'register' | 'workspace' | 'track'
+  const [activeMode, setActiveMode] = useState(() => {
+    if (window.location.hash.startsWith('#verify')) return 'verify';
+    if (getCurrentStudentUser()) return 'workspace';
+    return 'verify';
+  });
+
+  // ==========================================
+  // 1. VERIFICATION STATE (Public QR / ID)
+  // ==========================================
+  const [verifyQuery, setVerifyQuery] = useState(() => {
+    if (window.location.hash.startsWith('#verify/')) {
+      return window.location.hash.replace('#verify/', '').trim();
+    }
+    return '';
+  });
+  const [verifyType, setVerifyType] = useState('id'); // 'id' | 'token'
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [captchaData, setCaptchaData] = useState(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifyError, setVerifyError] = useState('');
+
+  // ==========================================
+  // 2. AUTHENTICATION (Login & Register)
+  // ==========================================
+  const [currentUser, setCurrentUser] = useState(() => getCurrentStudentUser());
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  const [regForm, setRegForm] = useState({
+    candidate_type: 'COLLEGE_INTERN',
+    full_name: '',
+    email: '',
+    password: '',
+    confirm_password: '',
+    mobile_number: '',
+    gender: 'MALE',
+    college_name: '',
+    department: '',
+    course: '',
+    register_number: '',
+    start_date: new Date().toISOString().slice(0, 10),
+    end_date: '',
+    project_name: 'Full Stack Web Platform',
+    college_id_card: null,
+    selfie_photo: null
+  });
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+
+  // Camera snap for selfie
+  const [selfieCameraActive, setSelfieCameraActive] = useState(false);
+  const selfieVideoRef = useRef(null);
+  const selfieStreamRef = useRef(null);
+
+  // ==========================================
+  // 3. STUDENT WORKSPACE / DASHBOARD
+  // ==========================================
+  const [studentProfile, setStudentProfile] = useState(null);
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
+  const [downloadingCert, setDownloadingCert] = useState(false);
+  const [certActionMsg, setCertActionMsg] = useState('');
+
+  // ==========================================
+  // 4. LEGACY APPLICATION TRACKING
+  // ==========================================
   const [searchQuery, setSearchQuery] = useState(() => {
     return initialQuery || sessionStorage.getItem('wingroo_student_lookup') || '';
   });
   const [applications, setApplications] = useState([]);
   const [eventRegistrations, setEventRegistrations] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [trackLoading, setTrackLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [activeSlip, setActiveSlip] = useState(null); // For printable slip modal view
-  const [activePass, setActivePass] = useState(null); // For printable event pass
-  const [activeSubTab, setActiveSubTab] = useState('all'); // 'all' | 'internships' | 'events'
+  const [trackErrorMsg, setTrackErrorMsg] = useState('');
+  const [activeSlip, setActiveSlip] = useState(null);
+  const [activePass, setActivePass] = useState(null);
+  const [activeSubTab, setActiveSubTab] = useState('all');
+
+  // Load CAPTCHA challenge
+  const loadCaptcha = async () => {
+    setCaptchaLoading(true);
+    setCaptchaAnswer('');
+    try {
+      const res = await fetch(`${API_BASE}/api/public/captcha/`);
+      const data = await res.json();
+      setCaptchaData(data);
+    } catch {
+      const rand = Math.floor(100000 + Math.random() * 900000).toString();
+      setCaptchaData({ question: rand, otp: rand, code: rand, token: 'offline' });
+    } finally {
+      setCaptchaLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
-      const stored = initialQuery || sessionStorage.getItem('wingroo_student_lookup') || '';
-      if (stored) {
-        setSearchQuery(stored);
-        fetchStudentApplications(stored);
+      loadCaptcha();
+      if (currentUser) {
+        fetchStudentWorkspace();
+      }
+      if (initialQuery) {
+        setSearchQuery(initialQuery);
+        fetchStudentApplications(initialQuery);
       }
     }
-  }, [isOpen, initialQuery]);
+  }, [isOpen]);
 
-  const fetchStudentApplications = async (queryToSearch) => {
-    const q = (queryToSearch !== undefined ? queryToSearch : searchQuery).trim();
+  // Handle hash changes like #verify/<token>
+  useEffect(() => {
+    const checkHash = () => {
+      if (window.location.hash.startsWith('#verify')) {
+        const token = window.location.hash.replace('#verify/', '').replace('#verify', '').trim();
+        if (token) {
+          setVerifyQuery(token);
+          setVerifyType('token');
+        }
+        setActiveMode('verify');
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
+
+  // Fetch Student Workspace details
+  const fetchStudentWorkspace = async () => {
+    setWorkspaceLoading(true);
+    setCertActionMsg('');
+    try {
+      const res = await certFetch('/api/student/profile/');
+      if (res.ok) {
+        const data = await res.json();
+        setStudentProfile(data);
+        saveCurrentStudentUser(data);
+      } else if (res.status === 401) {
+        handleLogout();
+      }
+    } catch (err) {
+      console.warn('Workspace fetch error:', err);
+    } finally {
+      setWorkspaceLoading(false);
+    }
+  };
+
+  // Perform Certificate Verification
+  const handleVerifySubmit = async (e) => {
+    if (e) e.preventDefault();
+    setVerifyError('');
+    setVerifyResult(null);
+
+    const q = verifyQuery.trim();
     if (!q) {
-      setErrorMsg('Please enter your email, phone number, or application / registration number.');
+      setVerifyError('Please enter a Certificate ID (e.g. INT-2026-00001) or Scan QR Code.');
       return;
     }
 
-    setLoading(true);
-    setErrorMsg('');
+    if (!captchaAnswer || captchaAnswer.trim().length < 6) {
+      setVerifyError('Please enter the complete 6-digit Security OTP verification code.');
+      return;
+    }
+
+    setVerifyLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/student/applications?query=${encodeURIComponent(q)}`);
+      const isToken = verifyType === 'token' || (!q.toUpperCase().startsWith('INT-') && q.length > 20);
+      const endpoint = isToken 
+        ? `/api/public/verify/token/${encodeURIComponent(q)}/`
+        : `/api/public/verify/id/${encodeURIComponent(q.toUpperCase())}/`;
+
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          captcha_token: captchaData?.token || '',
+          captcha_answer: captchaAnswer.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setVerifyResult(data);
+      } else {
+        setVerifyError(data.detail || data.captcha || 'Certificate not found or verification failed.');
+        loadCaptcha(); // refresh captcha on failure
+      }
+    } catch {
+      setVerifyError('Failed to communicate with verification server. Please check your connection.');
+      loadCaptcha();
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  // Student Login
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm)
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        saveAuthTokens({ access: data.access, refresh: data.refresh });
+        saveCurrentStudentUser(data.user);
+        setCurrentUser(data.user);
+        setActiveMode('workspace');
+        fetchStudentWorkspace();
+      } else {
+        setLoginError(data.detail || 'Invalid email or password.');
+      }
+    } catch {
+      setLoginError('Unable to sign in. Please check connection and try again.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // Student Registration
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegError('');
+    setRegSuccess('');
+
+    if (regForm.password !== regForm.confirm_password) {
+      setRegError('Passwords do not match.');
+      return;
+    }
+    if (regForm.password.length < 8) {
+      setRegError('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!regForm.college_id_card) {
+      setRegError('Please upload your Student ID Card or Institutional Document proof.');
+      return;
+    }
+    if (!regForm.selfie_photo) {
+      setRegError('Please provide a live Selfie Photo (via camera snap or upload).');
+      return;
+    }
+
+    setRegLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRegSuccess('Registration successful! You can now login with your email and password.');
+        setLoginForm({ email: regForm.email, password: regForm.password });
+        setTimeout(() => {
+          setActiveMode('login');
+          setRegSuccess('');
+        }, 2200);
+      } else {
+        const errorMsg = data.email?.[0] || data.register_number?.[0] || data.detail || 'Registration failed. Please check form values.';
+        setRegError(errorMsg);
+      }
+    } catch {
+      setRegError('Server connection error. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  // Camera handling for selfie snap
+  const startSelfieCamera = async () => {
+    try {
+      setSelfieCameraActive(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480, height: 480 } });
+      selfieStreamRef.current = stream;
+      if (selfieVideoRef.current) {
+        selfieVideoRef.current.srcObject = stream;
+      }
+    } catch {
+      alert('Camera access denied or webcam unavailable. You can use standard file upload.');
+      setSelfieCameraActive(false);
+    }
+  };
+
+  const captureSelfiePhoto = () => {
+    if (!selfieVideoRef.current) return;
+    const video = selfieVideoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 400, 400);
+    const dataUri = canvas.toDataURL('image/jpeg', 0.85);
+    setRegForm(prev => ({ ...prev, selfie_photo: dataUri }));
+    stopSelfieCamera();
+  };
+
+  const stopSelfieCamera = () => {
+    if (selfieStreamRef.current) {
+      selfieStreamRef.current.getTracks().forEach(t => t.stop());
+      selfieStreamRef.current = null;
+    }
+    setSelfieCameraActive(false);
+  };
+
+  const handleLogout = () => {
+    clearStudentSession();
+    setCurrentUser(null);
+    setStudentProfile(null);
+    setActiveMode('login');
+  };
+
+  // Download Certificate PDF
+  const handleDownloadCertificate = async (certId) => {
+    setDownloadingCert(true);
+    setCertActionMsg('');
+    try {
+      await downloadCertificatePdf(certId, `Wingroo-Certificate-${studentProfile?.certificate?.certificate_id || 'Issued'}.pdf`);
+      setCertActionMsg('Certificate downloaded successfully!');
+    } catch (err) {
+      setCertActionMsg(err.message || 'Error downloading certificate.');
+    } finally {
+      setDownloadingCert(false);
+    }
+  };
+
+  // Track Application Lookup
+  const fetchStudentApplications = async (queryToSearch) => {
+    const q = (queryToSearch !== undefined ? queryToSearch : searchQuery).trim();
+    if (!q) {
+      setTrackErrorMsg('Please enter your email, phone number, or application / registration number.');
+      return;
+    }
+
+    setTrackLoading(true);
+    setTrackErrorMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/api/student/applications?query=${encodeURIComponent(q)}`);
       const data = await res.json();
       setSearched(true);
       if (data.success) {
@@ -64,51 +447,24 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         const evRegs = Array.isArray(data.event_registrations) ? data.event_registrations : [];
         setApplications(apps);
         setEventRegistrations(evRegs);
-
         if (apps.length > 0 || evRegs.length > 0) {
           sessionStorage.setItem('wingroo_student_lookup', q);
         } else {
-          setErrorMsg(data.message || 'No applications or event registrations found.');
+          setTrackErrorMsg(data.message || 'No applications or event registrations found.');
         }
       } else {
         setApplications([]);
         setEventRegistrations([]);
-        setErrorMsg(data.message || 'No applications or event registrations found.');
+        setTrackErrorMsg(data.message || 'No applications or event registrations found.');
       }
-    } catch (err) {
+    } catch {
       setSearched(true);
-      setErrorMsg('Failed to connect to candidate server. Please check connection.');
+      setTrackErrorMsg('Failed to connect to candidate server. Please check connection.');
       setApplications([]);
       setEventRegistrations([]);
     } finally {
-      setLoading(false);
+      setTrackLoading(false);
     }
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchStudentApplications(searchQuery);
-  };
-
-  const getStatusStage = (status) => {
-    const s = (status || '').toLowerCase();
-    if (s.includes('select') || s.includes('admit') || s.includes('offer')) return 4;
-    if (s.includes('interview') || s.includes('assessment')) return 3;
-    if (s.includes('shortlist')) return 2;
-    return 1; // Under Review
-  };
-
-  const getStatusBadgeClass = (status) => {
-    const s = (status || '').toLowerCase();
-    if (s.includes('select') || s.includes('admit') || s.includes('offer')) return 'badge-selected';
-    if (s.includes('interview') || s.includes('assessment')) return 'badge-interview';
-    if (s.includes('shortlist')) return 'badge-shortlist';
-    if (s.includes('reject')) return 'badge-rejected';
-    return 'badge-review';
-  };
-
-  const handlePrintSlip = () => {
-    window.print();
   };
 
   if (!isOpen) return null;
@@ -116,20 +472,20 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   return (
     <div className="student-portal-overlay" onClick={onClose}>
       <div className="student-portal-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Modal Header */}
+        {/* Modal Top Header */}
         <div className="student-portal-header">
           <div className="student-brand-title">
             <img 
               src="/logo.png" 
               alt="Wingroo Technologies" 
               className="portal-brand-logo" 
-              style={{ height: '38px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
             />
             <div className="student-icon-badge">
               <GraduationCap size={20} />
             </div>
             <div>
-              <div className="student-portal-tag">Candidate Services</div>
+              <div className="student-portal-tag">Candidate & Certificate Services</div>
               <h3 className="student-portal-heading">Wingroo Student Portal</h3>
             </div>
           </div>
@@ -138,7 +494,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           <div className="portal-role-switch-tabs">
             <button type="button" className="portal-role-btn active" title="Current: Student / Candidate Portal">
               <GraduationCap size={15} />
-              <span>Student Portal</span>
+              <span>Student</span>
             </button>
             <button 
               type="button" 
@@ -152,191 +508,765 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           </div>
 
           <div className="student-header-actions">
-            {searched && (
-              <button 
-                onClick={() => fetchStudentApplications(searchQuery)} 
-                className="student-icon-btn" 
-                title="Refresh Status"
-              >
-                <RefreshCw size={16} className={loading ? 'spin-anim' : ''} />
-              </button>
-            )}
             <button onClick={onClose} className="student-icon-btn student-close-btn" title="Close">
               <X size={18} />
             </button>
           </div>
         </div>
 
-        {/* Modal Body */}
-        <div className="student-portal-body">
-          {/* Search Box */}
-          <div className="student-search-card">
-            <div className="search-caption">
-              <Sparkles size={16} style={{ color: '#0ea5e9' }} />
-              <span>Track Your Internship Application & Real-Time Status</span>
-            </div>
-            <form onSubmit={handleSearchSubmit} className="student-search-form">
-              <div className="search-input-wrap">
-                <Search size={18} className="search-field-icon" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Enter Registered Email, Phone, or Application # (e.g. WINGROO-INT-0001)"
-                  className="student-search-input"
-                  required
-                />
-              </div>
-              <button type="submit" disabled={loading} className="student-search-btn">
-                <span>{loading ? 'Searching...' : 'Track Application'}</span>
-                <ArrowRight size={16} />
+        {/* Feature Navigation Bar: Verify, Login, Register, Workspace, Track */}
+        <div className="student-nav-tabs-bar">
+          <button 
+            type="button"
+            className={`student-nav-tab ${activeMode === 'verify' ? 'active' : ''}`}
+            onClick={() => setActiveMode('verify')}
+          >
+            <ShieldCheck size={16} />
+            <span>Verify Certificate</span>
+          </button>
+
+          {currentUser ? (
+            <button 
+              type="button"
+              className={`student-nav-tab ${activeMode === 'workspace' ? 'active' : ''}`}
+              onClick={() => { setActiveMode('workspace'); fetchStudentWorkspace(); }}
+            >
+              <Award size={16} />
+              <span>My Workspace</span>
+              <span className="live-pill">Active</span>
+            </button>
+          ) : (
+            <>
+              <button 
+                type="button"
+                className={`student-nav-tab ${activeMode === 'login' ? 'active' : ''}`}
+                onClick={() => setActiveMode('login')}
+              >
+                <LogIn size={16} />
+                <span>Student Login</span>
               </button>
-            </form>
-            {errorMsg && (
-              <div className="student-search-error">
-                <AlertCircle size={15} />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-          </div>
+              <button 
+                type="button"
+                className={`student-nav-tab ${activeMode === 'register' ? 'active' : ''}`}
+                onClick={() => setActiveMode('register')}
+              >
+                <UserPlus size={16} />
+                <span>Register Account</span>
+              </button>
+            </>
+          )}
 
-          {/* Results View */}
-          {loading ? (
-            <div className="student-loading-state">
-              <RefreshCw size={28} className="spin-anim" />
-              <p>Fetching your application profile and status...</p>
-            </div>
-          ) : searched && (applications.length > 0 || eventRegistrations.length > 0) ? (
-            <div className="student-results-wrap">
-              {/* Profile Overview Bar */}
-              {(() => {
-                const primaryRecord = applications[0] || eventRegistrations[0];
-                return (
-                  <div className="student-profile-strip">
-                    <div className="student-avatar-big">
-                      {primaryRecord.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="student-profile-info">
-                      <div className="student-full-name">{primaryRecord.name}</div>
-                      <div className="student-sub-detail">
-                        <span>{primaryRecord.college}</span> {primaryRecord.year ? `• ${primaryRecord.year}` : ''}
-                      </div>
-                      <div className="student-contact-chips">
-                        <span className="contact-chip"><Mail size={12} /> {primaryRecord.email}</span>
-                        <span className="contact-chip"><Phone size={12} /> {primaryRecord.phone}</span>
-                      </div>
-                    </div>
-                    <div className="student-apps-count">
-                      <span className="count-num">{applications.length + eventRegistrations.length}</span>
-                      <span className="count-text">Total Records</span>
-                    </div>
-                  </div>
-                );
-              })()}
+          <button 
+            type="button"
+            className={`student-nav-tab ${activeMode === 'track' ? 'active' : ''}`}
+            onClick={() => setActiveMode('track')}
+          >
+            <Search size={16} />
+            <span>Track Application</span>
+          </button>
+        </div>
 
-              {/* Sub-Tabs Selector */}
-              <div className="student-portal-tabs" style={{ display: 'flex', gap: '8px', margin: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '10px' }}>
-                <button 
-                  onClick={() => setActiveSubTab('all')} 
-                  className={`portal-filter-tab ${activeSubTab === 'all' ? 'active' : ''}`}
-                  style={{ background: activeSubTab === 'all' ? 'rgba(14, 165, 233, 0.2)' : 'transparent', border: activeSubTab === 'all' ? '1px solid #0ea5e9' : '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem' }}
-                >
-                  All ({applications.length + eventRegistrations.length})
-                </button>
-                {applications.length > 0 && (
-                  <button 
-                    onClick={() => setActiveSubTab('internships')} 
-                    className={`portal-filter-tab ${activeSubTab === 'internships' ? 'active' : ''}`}
-                    style={{ background: activeSubTab === 'internships' ? 'rgba(14, 165, 233, 0.2)' : 'transparent', border: activeSubTab === 'internships' ? '1px solid #0ea5e9' : '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem' }}
-                  >
-                    🎓 Internships ({applications.length})
-                  </button>
-                )}
-                {eventRegistrations.length > 0 && (
-                  <button 
-                    onClick={() => setActiveSubTab('events')} 
-                    className={`portal-filter-tab ${activeSubTab === 'events' ? 'active' : ''}`}
-                    style={{ background: activeSubTab === 'events' ? 'rgba(14, 165, 233, 0.2)' : 'transparent', border: activeSubTab === 'events' ? '1px solid #0ea5e9' : '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem' }}
-                  >
-                    🎟️ Event Passes ({eventRegistrations.length})
-                  </button>
-                )}
+        {/* Modal Scrollable Body */}
+        <div className="student-portal-body">
+          
+          {/* ========================================================= */}
+          {/* 1. PUBLIC CERTIFICATE VERIFICATION & QR CODE SCANNER     */}
+          {/* ========================================================= */}
+          {activeMode === 'verify' && (
+            <div className="verify-workspace-wrap">
+              <div className="verify-banner-hero">
+                <div className="verify-badge">
+                  <ShieldCheck size={16} />
+                  <span>Tamper-Proof Digital Verification</span>
+                </div>
+                <h3>Official Internship Certificate Verification</h3>
+                <p>
+                  Validate genuine Wingroo Technologies internship completion certificates by Certificate ID or QR code token.
+                </p>
               </div>
 
-              {/* EVENT REGISTRATIONS LIST */}
-              {(activeSubTab === 'all' || activeSubTab === 'events') && eventRegistrations.length > 0 && (
-                <div className="student-events-section" style={{ marginBottom: '24px' }}>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#38bdf8', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={16} />
-                    <span>Registered Events & Sessions ({eventRegistrations.length})</span>
+              {/* Camera Scanner Toggle Card */}
+              {isScannerOpen ? (
+                <Scanner 
+                  onScanSuccess={(token) => {
+                    setVerifyQuery(token);
+                    setVerifyType('token');
+                    setIsScannerOpen(false);
+                  }}
+                  onClose={() => setIsScannerOpen(false)}
+                />
+              ) : (
+                <div className="scanner-prompt-bar">
+                  <div className="prompt-left">
+                    <QrCode size={22} style={{ color: '#0284c7' }} />
+                    <div>
+                      <strong>Have a physical or printed certificate?</strong>
+                      <p>Scan the QR code printed on the document with your camera.</p>
+                    </div>
                   </div>
-                  <div className="student-apps-list">
-                    {eventRegistrations.map((evReg) => (
-                      <div key={evReg.id} className="student-app-card" style={{ borderLeft: '4px solid #38bdf8' }}>
-                        <div className="app-card-top">
-                          <div className="app-id-pill" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
-                            <FileText size={14} />
-                            <span>{evReg.registration_no}</span>
-                          </div>
-                          <div className="app-date-meta">
-                            <Calendar size={13} />
-                            <span>Registered: {evReg.created_at || 'Recently'}</span>
-                          </div>
-                          <span className="status-pill badge-selected">
-                            {evReg.status || 'Confirmed'}
-                          </span>
-                        </div>
+                  <button 
+                    type="button" 
+                    className="scanner-open-btn"
+                    onClick={() => setIsScannerOpen(true)}
+                  >
+                    <Camera size={15} />
+                    <span>Open Camera Scanner</span>
+                  </button>
+                </div>
+              )}
 
-                        <div className="app-program-row">
-                          <div>
-                            <div className="program-title" style={{ color: '#f8fafc', fontSize: '1.1rem' }}>{evReg.event_title}</div>
-                            <div className="program-type" style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                              Attendee: {evReg.name} • {evReg.college} {evReg.year ? `(${evReg.year})` : ''}
-                            </div>
-                          </div>
-                          <button 
-                            onClick={() => setActivePass(evReg)} 
-                            className="btn-print-slip"
-                            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#fff' }}
-                            title="View Official Event Entry Pass"
-                          >
-                            <Award size={14} />
-                            <span>View Entry Pass</span>
-                          </button>
-                        </div>
+              {/* Search Form */}
+              <form onSubmit={handleVerifySubmit} className="verify-search-form">
+                <div className="form-group-flex">
+                  <div className="verify-input-wrap">
+                    <Search size={18} className="field-icon" />
+                    <input 
+                      type="text"
+                      value={verifyQuery}
+                      onChange={(e) => setVerifyQuery(e.target.value)}
+                      placeholder="Enter Certificate ID (e.g. INT-2026-00001) or QR Token"
+                      className="verify-text-input"
+                      required
+                    />
+                  </div>
+                </div>
 
-                        <div className="app-guidance-box" style={{ background: 'rgba(14, 165, 233, 0.05)', border: '1px solid rgba(14, 165, 233, 0.15)' }}>
-                          <div className="guidance-header">
-                            <CheckCircle size={15} style={{ color: '#10b981' }} />
-                            <span className="guidance-title">Official Event Confirmation:</span>
-                          </div>
-                          <p className="guidance-desc" style={{ color: '#cbd5e1' }}>
-                            {evReg.notes ? evReg.notes : `Your registration for "${evReg.event_title}" is confirmed! Please present your Event Pass or show Registration ID #${evReg.registration_no} during session check-in.`}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                {/* 6-Digit Security OTP Challenge */}
+                <div className="captcha-challenge-box">
+                  <div className="captcha-header">
+                    <div className="captcha-label">
+                      <Lock size={14} style={{ color: '#f17d47' }} />
+                      <span>Security Verification OTP (Anti-Automated Check):</span>
+                    </div>
+                    <div className="captcha-code-pill" onClick={() => setCaptchaAnswer(captchaData?.otp || '')} title="Click to Auto-Fill">
+                      <code>{captchaData?.otp || '......'}</code>
+                      <span className="auto-fill-hint">Click to Autofill</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={loadCaptcha} 
+                      className="captcha-refresh-btn" 
+                      title="Generate new OTP"
+                    >
+                      <RefreshCw size={13} className={captchaLoading ? 'spin-anim' : ''} />
+                    </button>
+                  </div>
+                  <div className="captcha-input-row">
+                    <input 
+                      type="text" 
+                      value={captchaAnswer}
+                      onChange={(e) => setCaptchaAnswer(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="Enter the 6-digit code shown above"
+                      className="captcha-answer-input"
+                      maxLength={6}
+                      required
+                    />
+                    <button type="submit" disabled={verifyLoading} className="verify-submit-btn">
+                      {verifyLoading ? (
+                        <>
+                          <RefreshCw size={15} className="spin-anim" />
+                          <span>Verifying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Verify Certificate</span>
+                          <ArrowRight size={15} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {/* Error Notice */}
+              {verifyError && (
+                <div className="verify-error-notice">
+                  <ShieldAlert size={18} />
+                  <div>
+                    <strong>Verification Failed</strong>
+                    <p>{verifyError}</p>
                   </div>
                 </div>
               )}
 
-              {/* INTERNSHIP APPLICATIONS LIST */}
-              {(activeSubTab === 'all' || activeSubTab === 'internships') && applications.length > 0 && (
-                <div className="student-internships-section">
-                  {eventRegistrations.length > 0 && (
-                    <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#818cf8', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <GraduationCap size={16} />
-                      <span>Internship Applications ({applications.length})</span>
+              {/* Verified Result Card */}
+              {verifyResult && (
+                <div className={`verified-card-result ${verifyResult.status === 'VALID' ? 'status-valid' : 'status-revoked'}`}>
+                  <div className="verified-header-strip">
+                    <div className="verified-status-chip">
+                      {verifyResult.status === 'VALID' ? (
+                        <>
+                          <CheckCircle size={18} />
+                          <span>AUTHENTIC CERTIFICATE VERIFIED</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldAlert size={18} />
+                          <span>CERTIFICATE REVOKED</span>
+                        </>
+                      )}
                     </div>
-                  )}
-                  <div className="student-apps-list">
-                    {applications.map((app) => {
-                      const stage = getStatusStage(app.status);
-                      const isSelected = stage === 4;
+                    <div className="verified-id-pill">
+                      <span>ID: {verifyResult.certificate_id}</span>
+                    </div>
+                  </div>
 
-                      return (
+                  <div className="verified-details-grid">
+                    <div className="detail-item">
+                      <label>Candidate Name</label>
+                      <div className="val highlight">{verifyResult.student_name}</div>
+                    </div>
+                    <div className="detail-item">
+                      <label>Internship Category</label>
+                      <div className="val">{verifyResult.candidate_type_label || 'College Intern'}</div>
+                    </div>
+                    <div className="detail-item">
+                      <label>Institution / College</label>
+                      <div className="val">{verifyResult.college_name || 'Wingroo Academic Partner'}</div>
+                    </div>
+                    <div className="detail-item">
+                      <label>Department / Course</label>
+                      <div className="val">{verifyResult.department} {verifyResult.course ? `(${verifyResult.course})` : ''}</div>
+                    </div>
+                    <div className="detail-item">
+                      <label>Register / Roll Number</label>
+                      <div className="val">{verifyResult.register_number || 'N/A'}</div>
+                    </div>
+                    <div className="detail-item">
+                      <label>Assigned Project</label>
+                      <div className="val">{verifyResult.project_name || 'Full Stack Development'}</div>
+                    </div>
+                    {verifyResult.start_date && (
+                      <div className="detail-item">
+                        <label>Internship Period</label>
+                        <div className="val">{verifyResult.start_date} to {verifyResult.end_date || 'Present'}</div>
+                      </div>
+                    )}
+                    <div className="detail-item">
+                      <label>Official Issue Date</label>
+                      <div className="val">{verifyResult.issue_date || 'N/A'}</div>
+                    </div>
+                  </div>
+
+                  <div className="verified-footer-note">
+                    <ShieldCheck size={14} style={{ color: '#10b981' }} />
+                    <span>Verified on {verifyResult.verified_at} • Direct digital verification powered by Wingroo Technologies Certificate Registry.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 2. STUDENT LOGIN                                          */}
+          {/* ========================================================= */}
+          {activeMode === 'login' && !currentUser && (
+            <div className="auth-form-container">
+              <div className="auth-header-card">
+                <div className="auth-icon-circle">
+                  <LogIn size={24} />
+                </div>
+                <h3>Candidate Login</h3>
+                <p>Sign in to access your internship workspace, track milestones, and download issued certificates.</p>
+              </div>
+
+              {loginError && (
+                <div className="auth-error-banner">
+                  <AlertCircle size={16} />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit} className="auth-form">
+                <div className="form-row">
+                  <label>Registered Email Address</label>
+                  <div className="form-input-wrap">
+                    <Mail size={16} />
+                    <input 
+                      type="email" 
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                      placeholder="student@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <label>Password</label>
+                  <div className="form-input-wrap">
+                    <Lock size={16} />
+                    <input 
+                      type="password" 
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" disabled={loginLoading} className="auth-submit-btn">
+                  {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
+                  <span>{loginLoading ? 'Signing In...' : 'Sign In to Workspace'}</span>
+                </button>
+              </form>
+
+              <div className="auth-switch-prompt">
+                <span>New intern at Wingroo?</span>
+                <button type="button" onClick={() => setActiveMode('register')} className="switch-link">
+                  Create Student Account
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 3. STUDENT REGISTRATION                                   */}
+          {/* ========================================================= */}
+          {activeMode === 'register' && !currentUser && (
+            <div className="auth-form-container register-large">
+              <div className="auth-header-card">
+                <div className="auth-icon-circle">
+                  <UserPlus size={24} />
+                </div>
+                <h3>Internship Student Registration</h3>
+                <p>Register your student profile for official certificate tracking, identity validation, and project assignment.</p>
+              </div>
+
+              {regError && (
+                <div className="auth-error-banner">
+                  <AlertCircle size={16} />
+                  <span>{regError}</span>
+                </div>
+              )}
+
+              {regSuccess && (
+                <div className="auth-success-banner">
+                  <CheckCircle size={16} />
+                  <span>{regSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleRegisterSubmit} className="register-grid-form">
+                {/* Candidate Type */}
+                <div className="form-col-full">
+                  <label>Candidate Category *</label>
+                  <select 
+                    value={regForm.candidate_type}
+                    onChange={(e) => setRegForm({ ...regForm, candidate_type: e.target.value })}
+                    className="styled-select"
+                  >
+                    <option value="COLLEGE_INTERN">College Student Intern</option>
+                    <option value="SCHOOL_STUDENT">School Student Intern</option>
+                    <option value="COLLEGE_COMPLETED">College Completed Graduate Intern</option>
+                  </select>
+                </div>
+
+                {/* Full Name & Gender */}
+                <div className="form-col">
+                  <label>Full Name (As on Certificate) *</label>
+                  <input 
+                    type="text" 
+                    value={regForm.full_name}
+                    onChange={(e) => setRegForm({ ...regForm, full_name: e.target.value })}
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>Gender Title *</label>
+                  <select 
+                    value={regForm.gender}
+                    onChange={(e) => setRegForm({ ...regForm, gender: e.target.value })}
+                    className="styled-select"
+                  >
+                    <option value="MALE">Male (Mr.)</option>
+                    <option value="FEMALE">Female (Ms.)</option>
+                  </select>
+                </div>
+
+                {/* Email & Mobile */}
+                <div className="form-col">
+                  <label>Email Address *</label>
+                  <input 
+                    type="email" 
+                    value={regForm.email}
+                    onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                    placeholder="student@example.com"
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>Mobile Number *</label>
+                  <input 
+                    type="tel" 
+                    value={regForm.mobile_number}
+                    onChange={(e) => setRegForm({ ...regForm, mobile_number: e.target.value })}
+                    placeholder="+91 9876543210"
+                    required
+                  />
+                </div>
+
+                {/* Password & Confirm Password */}
+                <div className="form-col">
+                  <label>Password (Min 8 chars) *</label>
+                  <input 
+                    type="password" 
+                    value={regForm.password}
+                    onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
+                    placeholder="Create secure password"
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>Confirm Password *</label>
+                  <input 
+                    type="password" 
+                    value={regForm.confirm_password}
+                    onChange={(e) => setRegForm({ ...regForm, confirm_password: e.target.value })}
+                    placeholder="Re-enter password"
+                    required
+                  />
+                </div>
+
+                {/* College / Institution */}
+                <div className="form-col-full">
+                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'School Name *' : 'College / Institution Name *'}</label>
+                  <input 
+                    type="text" 
+                    value={regForm.college_name}
+                    onChange={(e) => setRegForm({ ...regForm, college_name: e.target.value })}
+                    placeholder="e.g. Coimbatore Institute of Technology"
+                    required
+                  />
+                </div>
+
+                {/* Department, Course, Register Number */}
+                <div className="form-col">
+                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Stream / Board' : 'Department *'}</label>
+                  <input 
+                    type="text" 
+                    value={regForm.department}
+                    onChange={(e) => setRegForm({ ...regForm, department: e.target.value })}
+                    placeholder="e.g. Computer Science & Engineering"
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Class' : 'Degree / Course *'}</label>
+                  <input 
+                    type="text" 
+                    value={regForm.course}
+                    onChange={(e) => setRegForm({ ...regForm, course: e.target.value })}
+                    placeholder="e.g. B.E. / B.Tech / MCA"
+                    required
+                  />
+                </div>
+                <div className="form-col-full">
+                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Roll Number *' : 'College Register / Roll Number *'}</label>
+                  <input 
+                    type="text" 
+                    value={regForm.register_number}
+                    onChange={(e) => setRegForm({ ...regForm, register_number: e.target.value })}
+                    placeholder="e.g. 717721CSR099"
+                    required
+                  />
+                </div>
+
+                {/* Project & Dates */}
+                <div className="form-col-full">
+                  <label>Internship Project Title *</label>
+                  <input 
+                    type="text" 
+                    value={regForm.project_name}
+                    onChange={(e) => setRegForm({ ...regForm, project_name: e.target.value })}
+                    placeholder="e.g. Full Stack Web & Mobile Development"
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>Internship Start Date *</label>
+                  <input 
+                    type="date" 
+                    value={regForm.start_date}
+                    onChange={(e) => setRegForm({ ...regForm, start_date: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-col">
+                  <label>Internship End Date (Optional)</label>
+                  <input 
+                    type="date" 
+                    value={regForm.end_date}
+                    onChange={(e) => setRegForm({ ...regForm, end_date: e.target.value })}
+                  />
+                </div>
+
+                {/* Identity Documents: ID Card & Selfie */}
+                <div className="form-col">
+                  <label>College ID Card Proof *</label>
+                  <div className="doc-upload-box">
+                    <input 
+                      type="file" 
+                      accept="image/*,application/pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const dataUri = await resizeImage(file, 1000);
+                          setRegForm(prev => ({ ...prev, college_id_card: dataUri }));
+                        }
+                      }}
+                    />
+                    {regForm.college_id_card ? (
+                      <div className="upload-preview-chip">
+                        <CheckCircle size={14} style={{ color: '#10b981' }} />
+                        <span>ID Document Attached</span>
+                      </div>
+                    ) : (
+                      <span className="upload-hint">Upload JPG, PNG or PDF</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-col">
+                  <label>Live Selfie Photo *</label>
+                  <div className="doc-upload-box">
+                    {selfieCameraActive ? (
+                      <div className="selfie-camera-live">
+                        <video ref={selfieVideoRef} autoPlay playsInline style={{ width: '100%', height: '140px', borderRadius: '8px', objectFit: 'cover' }} />
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                          <button type="button" onClick={captureSelfiePhoto} className="btn-snap">Capture</button>
+                          <button type="button" onClick={stopSelfieCamera} className="btn-cancel-cam">Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="selfie-options">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const dataUri = await resizeImage(file, 640);
+                              setRegForm(prev => ({ ...prev, selfie_photo: dataUri }));
+                            }
+                          }}
+                        />
+                        <button type="button" onClick={startSelfieCamera} className="btn-open-selfie-cam">
+                          <Camera size={13} />
+                          <span>Snap Photo</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {regForm.selfie_photo && !selfieCameraActive && (
+                      <div className="upload-preview-chip">
+                        <CheckCircle size={14} style={{ color: '#10b981' }} />
+                        <span>Selfie Photo Attached</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-col-full">
+                  <button type="submit" disabled={regLoading} className="auth-submit-btn">
+                    {regLoading ? <RefreshCw size={16} className="spin-anim" /> : <UserPlus size={16} />}
+                    <span>{regLoading ? 'Registering...' : 'Complete Registration'}</span>
+                  </button>
+                </div>
+              </form>
+
+              <div className="auth-switch-prompt">
+                <span>Already have an account?</span>
+                <button type="button" onClick={() => setActiveMode('login')} className="switch-link">
+                  Sign in here
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 4. STUDENT WORKSPACE / DASHBOARD                          */}
+          {/* ========================================================= */}
+          {activeMode === 'workspace' && currentUser && (
+            <div className="student-workspace-view">
+              <div className="workspace-hero-strip">
+                <div className="user-avatar-hex">
+                  {currentUser.full_name?.slice(0, 2).toUpperCase() || 'ST'}
+                </div>
+                <div className="user-headline">
+                  <div className="eyebrow">INTERN WORKSPACE</div>
+                  <h4>Welcome, {studentProfile?.full_name || currentUser.full_name}</h4>
+                  <p>{studentProfile?.college_name || 'Wingroo Internship Cohort'} • {studentProfile?.candidate_type_display || 'College Intern'}</p>
+                </div>
+                <button type="button" onClick={handleLogout} className="workspace-logout-btn">
+                  <span>Sign Out</span>
+                </button>
+              </div>
+
+              {certActionMsg && (
+                <div className="cert-action-alert">
+                  <Sparkles size={16} />
+                  <span>{certActionMsg}</span>
+                </div>
+              )}
+
+              {/* Progress Milestones Tracker */}
+              <div className="internship-tracker-card">
+                <div className="tracker-header">
+                  <div className="tracker-title">
+                    <Clock size={16} />
+                    <span>Internship Milestones & Status</span>
+                  </div>
+                  <div className={`status-tag status-${(studentProfile?.status || 'REGISTERED').toLowerCase()}`}>
+                    {studentProfile?.status || 'REGISTERED'}
+                  </div>
+                </div>
+
+                <div className="tracker-steps-line">
+                  {[
+                    { key: 'REGISTERED', label: 'Registered' },
+                    { key: 'IN_PROGRESS', label: 'In Progress' },
+                    { key: 'COMPLETED', label: 'Completed' },
+                    { key: 'CERTIFICATE_ISSUED', label: 'Certificate Issued' }
+                  ].map((st, idx) => {
+                    const statusOrder = ['REGISTERED', 'IN_PROGRESS', 'COMPLETED', 'CERTIFICATE_ISSUED'];
+                    const currentIdx = statusOrder.indexOf(studentProfile?.status || 'REGISTERED');
+                    const isDone = currentIdx >= idx;
+                    const isCurrent = currentIdx === idx;
+
+                    return (
+                      <div key={st.key} className={`tracker-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
+                        <div className="step-bullet">{isDone ? <Check size={12} /> : idx + 1}</div>
+                        <div className="step-label">{st.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Certificate Download / Preview Action Box */}
+              {studentProfile?.certificate ? (
+                <div className="certificate-ready-card">
+                  <div className="cert-ribbon">
+                    <Award size={20} />
+                    <span>Official Certificate Issued</span>
+                  </div>
+                  <h3>Your Certificate is Ready!</h3>
+                  <p>Certificate Serial: <strong>{studentProfile.certificate.certificate_id}</strong> • Issued on {studentProfile.certificate.issue_date}</p>
+                  
+                  <div className="cert-buttons-row">
+                    <button 
+                      type="button" 
+                      onClick={() => handleDownloadCertificate(studentProfile.certificate.id)}
+                      disabled={downloadingCert}
+                      className="btn-cert-download"
+                    >
+                      <Download size={16} />
+                      <span>{downloadingCert ? 'Downloading...' : 'Download Official PDF'}</span>
+                    </button>
+
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setVerifyQuery(studentProfile.certificate.certificate_id);
+                        setActiveMode('verify');
+                      }}
+                      className="btn-cert-verify"
+                    >
+                      <ShieldCheck size={16} />
+                      <span>Verify Online</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="certificate-pending-card">
+                  <Award size={22} style={{ color: '#0284c7' }} />
+                  <div>
+                    <strong>Certificate Issuance in Progress</strong>
+                    <p>Once your project evaluation is completed and verified by the Wingroo administration, your verifiable digital certificate will appear here.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Candidate Info Grid */}
+              <div className="workspace-profile-grid">
+                <div className="info-box">
+                  <label>Department / Stream</label>
+                  <div>{studentProfile?.department || 'N/A'}</div>
+                </div>
+                <div className="info-box">
+                  <label>Degree / Course</label>
+                  <div>{studentProfile?.course || 'N/A'}</div>
+                </div>
+                <div className="info-box">
+                  <label>Register / Roll Number</label>
+                  <div>{studentProfile?.register_number || 'N/A'}</div>
+                </div>
+                <div className="info-box">
+                  <label>Project Title</label>
+                  <div>{studentProfile?.project_name || 'Web Development'}</div>
+                </div>
+                <div className="info-box">
+                  <label>Start Date</label>
+                  <div>{studentProfile?.start_date || 'N/A'}</div>
+                </div>
+                <div className="info-box">
+                  <label>End Date</label>
+                  <div>{studentProfile?.end_date || 'Pending completion'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 5. TRACK APPLICATIONS & EVENT PASSES (LEGACY)             */}
+          {/* ========================================================= */}
+          {activeMode === 'track' && (
+            <div className="track-legacy-wrap">
+              <div className="student-search-card">
+                <div className="search-caption">
+                  <Sparkles size={16} style={{ color: '#0284c7' }} />
+                  <span>Lookup Direct Applications & Event Passes</span>
+                </div>
+                <form onSubmit={(e) => { e.preventDefault(); fetchStudentApplications(searchQuery); }} className="student-search-form">
+                  <div className="search-input-wrap">
+                    <Search size={18} className="search-field-icon" />
+                    <input 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Enter Email, Phone, or Application # (e.g. WINGROO-INT-0001)"
+                      className="student-search-input"
+                      required
+                    />
+                  </div>
+                  <button type="submit" disabled={trackLoading} className="student-search-btn">
+                    <span>{trackLoading ? 'Searching...' : 'Track Application'}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+                {trackErrorMsg && (
+                  <div className="student-search-error">
+                    <AlertCircle size={15} />
+                    <span>{trackErrorMsg}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Results View */}
+              {trackLoading ? (
+                <div className="student-loading-state">
+                  <RefreshCw size={28} className="spin-anim" />
+                  <p>Fetching your application profile and status...</p>
+                </div>
+              ) : searched && (applications.length > 0 || eventRegistrations.length > 0) ? (
+                <div className="student-results-wrap">
+                  {applications.length > 0 && (
+                    <div className="student-apps-list" style={{ marginTop: '16px' }}>
+                      {applications.map((app) => (
                         <div key={app.id} className="student-app-card">
-                          {/* Top Meta Bar */}
                           <div className="app-card-top">
                             <div className="app-id-pill">
                               <FileText size={14} />
@@ -346,351 +1276,133 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               <Calendar size={13} />
                               <span>Applied on {app.created_at || 'Recently'}</span>
                             </div>
-                            <span className={`status-pill ${getStatusBadgeClass(app.status)}`}>
+                            <span className="status-pill badge-selected">
                               {app.status || 'Under Review'}
                             </span>
                           </div>
 
-                          {/* Domain and Track */}
                           <div className="app-program-row">
                             <div>
-                              <div className="program-title">{app.technology} Track</div>
-                              <div className="program-type">{app.internship_type}</div>
+                              <div className="program-title">{app.technology || 'Full Stack Development'}</div>
+                              <div className="program-type">{app.internship_type} • {app.college}</div>
                             </div>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                              {app.resume_url && (
-                                <a 
-                                  href={app.resume_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="btn-print-slip"
-                                  style={{ background: '#f8fafc', color: '#4f46e5', borderColor: '#c7d2fe' }}
-                                  title="View Attached Resume / CV"
-                                >
-                                  <FileText size={14} />
-                                  <span>Resume</span>
-                                </a>
-                              )}
-                              <button 
-                                onClick={() => setActiveSlip(app)} 
-                                className="btn-print-slip"
-                                title="View Official Admission / Application Slip"
-                              >
-                                <Printer size={14} />
-                                <span>View Admission Slip</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* 4-Stage Progress Stepper */}
-                          <div className="app-stepper-wrap">
-                            <div className="stepper-title">Application Review Workflow:</div>
-                            <div className="app-stepper">
-                              <div className={`step-node ${stage >= 1 ? 'step-done' : ''}`}>
-                                <div className="step-circle">
-                                  {stage >= 1 ? <CheckCircle size={14} /> : '1'}
-                                </div>
-                                <span className="step-label">Submitted</span>
-                              </div>
-                              <div className={`step-line ${stage >= 2 ? 'line-done' : ''}`} />
-
-                              <div className={`step-node ${stage >= 2 ? 'step-done' : stage === 1 ? 'step-active' : ''}`}>
-                                <div className="step-circle">
-                                  {stage >= 2 ? <CheckCircle size={14} /> : '2'}
-                                </div>
-                                <span className="step-label">Profile Review</span>
-                              </div>
-                              <div className={`step-line ${stage >= 3 ? 'line-done' : ''}`} />
-
-                              <div className={`step-node ${stage >= 3 ? 'step-done' : stage === 2 ? 'step-active' : ''}`}>
-                                <div className="step-circle">
-                                  {stage >= 3 ? <CheckCircle size={14} /> : '3'}
-                                </div>
-                                <span className="step-label">Interview & Task</span>
-                              </div>
-                              <div className={`step-line ${stage >= 4 ? 'line-done' : ''}`} />
-
-                              <div className={`step-node ${stage >= 4 ? 'step-done' : stage === 3 ? 'step-active' : ''}`}>
-                                <div className="step-circle">
-                                  {stage >= 4 ? <Award size={14} /> : '4'}
-                                </div>
-                                <span className="step-label">Official Offer</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Next Steps & Guidance Banner */}
-                          <div className="app-guidance-box">
-                            <div className="guidance-header">
-                              <Clock size={15} style={{ color: '#0ea5e9' }} />
-                              <span className="guidance-title">Current Status Notes:</span>
-                            </div>
-                            <p className="guidance-desc">
-                              {app.notes ? (
-                                app.notes
-                              ) : isSelected ? (
-                                "🎉 Congratulations! Your selection is confirmed. Welcome to Wingroo Technologies Internship Cohort. Check your WhatsApp & Email for onboarding materials and GitHub Classroom access."
-                              ) : stage === 3 ? (
-                                "Your profile has been shortlisted! Technical assessment details or meeting coordinates have been prepared. Please keep your email and phone active."
-                              ) : stage === 2 ? (
-                                "Your academic credentials and portfolio are being reviewed by our engineering mentors. Shortlist notifications are dispatched on a rolling basis."
-                              ) : (
-                                "Your application has been logged into the Wingroo Academic Pipeline. The evaluation panel will review your submissions within 24-48 business hours."
-                              )}
-                            </p>
-                          </div>
-
-                          {/* Helpdesk Action Row */}
-                          <div className="app-footer-row">
-                            <div className="mentor-support-hint">
-                              Need priority assistance or schedule change?
-                            </div>
-                            <a 
-                              href={`https://wa.me/918124779111?text=Hi%20Wingroo%20Technologies,%20I%20am%20${encodeURIComponent(app.name)}%20inquiring%20about%20my%20Internship%20Application%20${encodeURIComponent(app.application_no)}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="btn-whatsapp-query"
+                            <button 
+                              onClick={() => setActiveSlip(app)} 
+                              className="btn-print-slip"
+                              title="Print Official Slip"
                             >
-                              <Phone size={13} />
-                              <span>Academic Desk (WhatsApp)</span>
-                            </a>
+                              <Printer size={14} />
+                              <span>Print Slip</span>
+                            </button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {eventRegistrations.length > 0 && (
+                    <div className="student-apps-list" style={{ marginTop: '16px' }}>
+                      {eventRegistrations.map((ev) => (
+                        <div key={ev.id} className="student-app-card" style={{ borderLeft: '4px solid #38bdf8' }}>
+                          <div className="app-card-top">
+                            <div className="app-id-pill" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
+                              <FileText size={14} />
+                              <span>{ev.registration_no}</span>
+                            </div>
+                            <span className="status-pill badge-selected">{ev.status || 'Confirmed'}</span>
+                          </div>
+                          <div className="app-program-row">
+                            <div>
+                              <div className="program-title">{ev.event_title}</div>
+                              <div className="program-type">Attendee: {ev.name} • {ev.college}</div>
+                            </div>
+                            <button 
+                              onClick={() => setActivePass(ev)} 
+                              className="btn-print-slip"
+                              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#fff' }}
+                            >
+                              <Award size={14} />
+                              <span>View Pass</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ) : searched && applications.length === 0 && eventRegistrations.length === 0 ? (
-            <div className="student-not-found-card">
-              <GraduationCap size={44} style={{ color: '#64748b', opacity: 0.6, marginBottom: '14px' }} />
-              <h4>No Record Found Matching "{searchQuery}"</h4>
-              <p>
-                Please verify that you entered the exact Email Address, Phone Number, or Application / Event Registration Number used during registration.
-              </p>
-              <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                <a href="#internship" onClick={onClose} className="btn btn-primary">
-                  <span>Apply for Internship</span>
-                  <ArrowRight size={15} />
-                </a>
-                <a href="#events" onClick={onClose} className="btn btn-secondary">
-                  <span>View Events</span>
-                </a>
-              </div>
-            </div>
-          ) : (
-            /* Default Welcome State */
-            <div className="student-welcome-card">
-              <div className="welcome-illustration">
-                <BookOpen size={36} style={{ color: '#0ea5e9' }} />
-              </div>
-              <h4>Welcome to Wingroo Student & Candidate Portal</h4>
-              <p>
-                Track your internship selection lifecycle, review academic verification status, access mentor evaluation feedback, and download your official admission acknowledgment slip anytime.
-              </p>
-              <div className="welcome-perks-grid">
-                <div className="perk-box">
-                  <CheckCircle size={16} className="perk-check" />
-                  <span>Real-Time Status Tracking</span>
-                </div>
-                <div className="perk-box">
-                  <CheckCircle size={16} className="perk-check" />
-                  <span>Official Admission Slip</span>
-                </div>
-                <div className="perk-box">
-                  <CheckCircle size={16} className="perk-check" />
-                  <span>Direct Academic Mentorship</span>
-                </div>
-                <div className="perk-box">
-                  <CheckCircle size={16} className="perk-check" />
-                  <span>GitHub & LMS Integration</span>
-                </div>
-              </div>
+              ) : null}
             </div>
           )}
+
         </div>
-
-        {/* Printable Admission Slip Modal View */}
-        {activeSlip && (
-          <div className="slip-modal-overlay" onClick={() => setActiveSlip(null)}>
-            <div className="slip-modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="slip-modal-header no-print">
-                <span>Official Candidate Acknowledgment Slip</span>
-                <button onClick={() => setActiveSlip(null)} className="slip-close-btn">
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Printable Document Area */}
-              <div className="slip-document-sheet">
-                <div className="slip-doc-header">
-                  <div className="doc-logo-area">
-                    <div className="doc-brand">WINGROO TECHNOLOGIES</div>
-                    <div className="doc-sub">Practical Innovation & Engineering Excellence</div>
-                  </div>
-                  <div className="doc-app-stamp">
-                    <div className="doc-stamp-title">CANDIDATE SLIP</div>
-                    <div className="doc-stamp-no">{activeSlip.application_no}</div>
-                  </div>
-                </div>
-
-                <div className="doc-divider" />
-
-                <div className="doc-grid-info">
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Candidate Full Name:</span>
-                    <span className="doc-info-val">{activeSlip.name}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Current Status:</span>
-                    <span className="doc-info-val status-highlight">{activeSlip.status}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">College / Institution:</span>
-                    <span className="doc-info-val">{activeSlip.college}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Degree & Year:</span>
-                    <span className="doc-info-val">{activeSlip.course} • {activeSlip.year}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Selected Track:</span>
-                    <span className="doc-info-val">{activeSlip.technology}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Program Type:</span>
-                    <span className="doc-info-val">{activeSlip.internship_type}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Email ID:</span>
-                    <span className="doc-info-val">{activeSlip.email}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Phone Contact:</span>
-                    <span className="doc-info-val">{activeSlip.phone}</span>
-                  </div>
-                </div>
-
-                <div className="doc-verification-seal-row">
-                  <div className="doc-seal-box">
-                    <ShieldCheck size={28} style={{ color: '#0ea5e9' }} />
-                    <div>
-                      <div className="seal-title">VERIFIED CANDIDATE RECORD</div>
-                      <div className="seal-sub">Digitally registered in Wingroo Tech Academic System</div>
-                    </div>
-                  </div>
-                  <div className="doc-sign-area">
-                    <div className="sign-line" />
-                    <div className="sign-title">Academic Directorate</div>
-                    <div className="sign-sub">Wingroo Technologies</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="slip-modal-actions no-print">
-                <button onClick={handlePrintSlip} className="btn btn-primary">
-                  <Printer size={16} />
-                  <span>Print / Save PDF Slip</span>
-                </button>
-                <button onClick={() => setActiveSlip(null)} className="btn btn-secondary">
-                  <span>Close Preview</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Printable Event Entry Pass Modal View */}
-        {activePass && (
-          <div className="slip-modal-overlay" onClick={() => setActivePass(null)}>
-            <div className="slip-modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="slip-modal-header no-print">
-                <span>Official Event Entry Pass</span>
-                <button onClick={() => setActivePass(null)} className="slip-close-btn">
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Printable Document Sheet */}
-              <div className="slip-document-sheet" style={{ borderColor: 'rgba(14, 165, 233, 0.4)' }}>
-                <div className="slip-doc-header">
-                  <div className="doc-logo-area">
-                    <div className="doc-brand" style={{ color: '#0ea5e9' }}>WINGROO TECHNOLOGIES</div>
-                    <div className="doc-sub">Official Community & Event Entry Pass</div>
-                  </div>
-                  <div className="doc-app-stamp" style={{ borderColor: '#0ea5e9', background: 'rgba(14, 165, 233, 0.08)' }}>
-                    <div className="doc-stamp-title" style={{ color: '#0ea5e9' }}>EVENT ENTRY PASS</div>
-                    <div className="doc-stamp-no">{activePass.registration_no}</div>
-                  </div>
-                </div>
-
-                <div className="doc-divider" />
-
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase' }}>Registered Event / Session:</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>{activePass.event_title}</div>
-                </div>
-
-                <div className="doc-grid-info">
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Attendee Name:</span>
-                    <span className="doc-info-val">{activePass.name}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Pass Status:</span>
-                    <span className="doc-info-val status-highlight" style={{ color: '#10b981' }}>{activePass.status || 'Confirmed'}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Institution / Organization:</span>
-                    <span className="doc-info-val">{activePass.college}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Year / Role:</span>
-                    <span className="doc-info-val">{activePass.year || 'Participant'}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Email ID:</span>
-                    <span className="doc-info-val">{activePass.email}</span>
-                  </div>
-                  <div className="doc-info-item">
-                    <span className="doc-info-label">Phone Contact:</span>
-                    <span className="doc-info-val">{activePass.phone}</span>
-                  </div>
-                </div>
-
-                <div className="doc-verification-seal-row">
-                  <div className="doc-seal-box">
-                    <ShieldCheck size={28} style={{ color: '#10b981' }} />
-                    <div>
-                      <div className="seal-title">OFFICIALLY REGISTERED PARTICIPANT</div>
-                      <div className="seal-sub">Valid for entry at Wingroo Tech Hub & Partner Venues</div>
-                    </div>
-                  </div>
-                  <div className="doc-sign-area">
-                    <div className="sign-line" />
-                    <div className="sign-title">Event Operations Desk</div>
-                    <div className="sign-sub">Wingroo Technologies</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="slip-modal-actions no-print">
-                <button onClick={handlePrintSlip} className="btn btn-primary">
-                  <Printer size={16} />
-                  <span>Print / Save Event Pass</span>
-                </button>
-                <button onClick={() => setActivePass(null)} className="btn btn-secondary">
-                  <span>Close Preview</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Printable Slip Popup Modal */}
+      {activeSlip && (
+        <div className="slip-modal-overlay" onClick={() => setActiveSlip(null)}>
+          <div className="slip-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="slip-modal-actions no-print">
+              <button onClick={() => window.print()} className="slip-action-btn print">
+                <Printer size={16} />
+                <span>Print Confirmation Slip</span>
+              </button>
+              <button onClick={() => setActiveSlip(null)} className="slip-action-btn close">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="printable-slip-sheet" id="printable-slip">
+              <div className="slip-header-brand">
+                <img src="/logo.png" alt="Wingroo" className="slip-logo" />
+                <div className="slip-brand-text">
+                  <h3>WINGROO TECHNOLOGIES</h3>
+                  <p>Software & Web Development • Digital Innovation Center</p>
+                  <span>Coimbatore, Tamil Nadu, India</span>
+                </div>
+              </div>
+
+              <div className="slip-title-band">
+                <span>OFFICIAL INTERNSHIP APPLICATION RECEIPT</span>
+              </div>
+
+              <div className="slip-details-grid">
+                <div className="slip-detail-row">
+                  <span className="slip-label">Application Number:</span>
+                  <span className="slip-value highlight">{activeSlip.application_no}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Candidate Name:</span>
+                  <span className="slip-value">{activeSlip.name}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Email Address:</span>
+                  <span className="slip-value">{activeSlip.email}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Phone Number:</span>
+                  <span className="slip-value">{activeSlip.phone}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">College / Institute:</span>
+                  <span className="slip-value">{activeSlip.college}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Course & Year:</span>
+                  <span className="slip-value">{activeSlip.course} ({activeSlip.year})</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Domain Applied:</span>
+                  <span className="slip-value">{activeSlip.technology}</span>
+                </div>
+                <div className="slip-detail-row">
+                  <span className="slip-label">Current Status:</span>
+                  <span className="slip-value highlight">{activeSlip.status}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
