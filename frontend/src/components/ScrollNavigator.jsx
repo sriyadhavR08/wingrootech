@@ -5,12 +5,12 @@ const SECTIONS = [
   { id: 'home', label: 'Home' },
   { id: 'about', label: 'About' },
   { id: 'services', label: 'Services' },
-  { id: 'internship', label: 'Internship' },
-  { id: 'careers', label: 'Careers' },
-  { id: 'events', label: 'Events' },
   { id: 'portfolio', label: 'Portfolio' },
+  { id: 'internship', label: 'Internship' },
+  { id: 'events', label: 'Events' },
   { id: 'reviews', label: 'Reviews' },
   { id: 'faq-knowledge-hub', label: 'FAQs' },
+  { id: 'careers', label: 'Careers' },
   { id: 'contact', label: 'Contact' }
 ];
 

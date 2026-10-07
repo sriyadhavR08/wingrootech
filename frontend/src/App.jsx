@@ -79,9 +79,9 @@ export default function App() {
         <Hero />
         <About />
         <Services />
+        <Portfolio key={`portfolio-${dataVersion}`} />
         <Internship onOpenStudentPortal={handleOpenStudent} />
         <Events key={`events-${dataVersion}`} />
-        <Portfolio key={`portfolio-${dataVersion}`} />
         <WhyWingroo />
         <Reviews />
         <AEOKnowledgeHub />
