@@ -68,7 +68,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
         </a>
 
         {/* Desktop Navigation Links */}
-        <nav className="navbar-nav desktop-nav">
+        <nav className="desktop-nav">
           {NAV_LINKS.map((link) => {
             const id = link.href.substring(1);
             const isActive = activeSection === id;
@@ -77,7 +77,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleLinkClick(e, link.href)}
-                className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
+                className={`nav-link-item ${isActive ? 'nav-link-item-active' : ''}`}
               >
                 {link.label}
                 {isActive && <span className="nav-indicator" />}
@@ -91,7 +91,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
           <button
             type="button"
             onClick={() => typeof onOpenLogin === 'function' ? onOpenLogin('student') : (onOpenStudentPortal && onOpenStudentPortal())}
-            className="btn btn-primary nav-login-btn"
+            className="nav-login-btn"
             title="Access Student & Admin Login Portal"
           >
             <LogIn size={16} />
@@ -136,7 +136,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                 if (typeof onOpenLogin === 'function') onOpenLogin('student');
                 else if (onOpenStudentPortal) onOpenStudentPortal();
               }}
-              className="btn btn-primary btn-block mobile-login-btn"
+              className="mobile-login-btn"
             >
               <LogIn size={16} />
               <span>Login Portal</span>

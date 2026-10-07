@@ -477,7 +477,7 @@ h3 {
   box-shadow: 0 15px 60px #18274144;
 }
 .mobile-toggle {
-  display: none;
+  display: none !important;
 }
 .scanner-section {
   overflow: hidden;

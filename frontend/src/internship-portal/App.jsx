@@ -1,6 +1,6 @@
-import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./styles.css";
+import { useEffect } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth, AuthProvider } from "./context/Auth";
 import { Loading } from "./components/Common";
@@ -46,6 +46,21 @@ function PublicOnly() {
 }
 
 export default function InternshipApp() {
+  useEffect(() => {
+    const linkId = 'wingroo-bootstrap-styles';
+    let link = document.getElementById(linkId);
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+      document.head.appendChild(link);
+    }
+    return () => {
+      const el = document.getElementById(linkId);
+      if (el) el.remove();
+    };
+  }, []);
   return (
     <AuthProvider>
       <Routes>
