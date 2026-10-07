@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, Sparkles, LogIn } from 'lucide-react';
+import { Menu, X, ArrowRight, Sparkles, LogIn, ShieldCheck } from 'lucide-react';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -88,6 +88,15 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
 
         {/* Action Buttons */}
         <div className="navbar-actions">
+          <a
+            href="/internship/verify"
+            className="nav-verify-btn"
+            title="Certificate & Verification Portal"
+          >
+            <ShieldCheck size={16} />
+            <span>Certificate & Verification</span>
+          </a>
+
           <button
             type="button"
             onClick={() => typeof onOpenLogin === 'function' ? onOpenLogin('student') : (onOpenStudentPortal && onOpenStudentPortal())}
@@ -129,6 +138,14 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
             );
           })}
           <div className="mobile-cta-wrapper">
+            <a
+              href="/internship/verify"
+              className="mobile-verify-btn"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ShieldCheck size={16} />
+              <span>Certificate & Verification</span>
+            </a>
             <button
               type="button"
               onClick={() => {
