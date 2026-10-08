@@ -272,11 +272,11 @@ export function Register() {
             account
           />
           <Notice message={error} />
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <span>
-              Already registered? <Link to={`${prefix}/login`}>Login</Link>
+          <div className="registration-bottom-bar">
+            <span className="login-redirect-text">
+              Already registered? <Link to={`${prefix}/login`} className="fw-semibold text-primary">Login here</Link>
             </span>
-            <button className="btn btn-primary" disabled={busy}>
+            <button className="btn btn-primary px-4 py-2" disabled={busy}>
               {busy ? "Creating account…" : "Create account"}
             </button>
           </div>

@@ -258,6 +258,21 @@ h3 {
   padding: 32px;
   margin-top: 28px;
 }
+.registration-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+.login-redirect-text {
+  font-size: 0.95rem;
+  color: #475569;
+}
 .form-section {
   padding-bottom: 28px;
   margin-bottom: 28px;

@@ -356,7 +356,7 @@ export default function StudentFields({ values, onChange, account = false }) {
         <p className="form-text text-secondary mb-3">
           Upload your {currentConfig.idDocLabel} and a selfie photo for certificate verification and authenticity.
         </p>
-        <div className="row g-4">
+        <div className="row g-3">
           {/* ID Card / Document Upload */}
           <div className="col-md-6">
             <label className="form-label fw-semibold" htmlFor="field-college-id">
@@ -411,23 +411,24 @@ export default function StudentFields({ values, onChange, account = false }) {
             <label className="form-label fw-semibold" htmlFor="field-selfie-file">
               Selfie Photo {account && <span className="text-danger">*</span>}
             </label>
-            
-            {/* Action buttons */}
-            <div className="d-flex flex-wrap gap-2 mb-2">
-              <label
-                htmlFor="field-selfie-file"
-                className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 m-0"
-                style={{ cursor: "pointer" }}
-              >
-                <i className="bi bi-upload"></i> Upload Image File
-              </label>
-              
+            <input
+              id="field-selfie-file"
+              type="file"
+              accept="image/*"
+              className="form-control"
+              onChange={(e) => handleFileUpload("selfie_photo", e)}
+            />
+            <div className="d-flex justify-content-between align-items-center mt-1 flex-wrap gap-2">
+              <small className="form-text text-muted">
+                Upload clear image file (JPG, PNG) or take live selfie.
+              </small>
               {!cameraActive ? (
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
                   onClick={startCamera}
                   disabled={cameraLoading}
+                  style={{ fontSize: "0.82rem", padding: "2px 10px" }}
                 >
                   <i className="bi bi-camera-fill"></i>
                   {cameraLoading ? "Starting Camera…" : "Take Live Selfie"}
@@ -437,34 +438,26 @@ export default function StudentFields({ values, onChange, account = false }) {
                   type="button"
                   className="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
                   onClick={stopCamera}
+                  style={{ fontSize: "0.82rem", padding: "2px 10px" }}
                 >
                   <i className="bi bi-x-circle"></i> Close Camera
                 </button>
               )}
             </div>
 
-            {/* Hidden/Styled file input */}
-            <input
-              id="field-selfie-file"
-              type="file"
-              accept="image/*"
-              className="form-control mb-2"
-              onChange={(e) => handleFileUpload("selfie_photo", e)}
-            />
-
             {cameraError && (
-              <div className="alert alert-warning py-2 px-3 small mb-2 d-flex align-items-start gap-2">
+              <div className="alert alert-warning py-2 px-3 small my-2 d-flex align-items-start gap-2">
                 <i className="bi bi-exclamation-triangle-fill mt-1 text-warning"></i>
                 <div>
                   <strong>Camera notice:</strong> {cameraError}
-                  <div className="mt-1 text-muted">You can click &apos;Choose File&apos; above to upload your photo directly.</div>
+                  <div className="mt-1 text-muted">You can choose an image file from your device directly above.</div>
                 </div>
               </div>
             )}
 
             {/* Live Camera View */}
             {cameraActive && (
-              <div className="p-3 border rounded bg-dark text-center mb-2 shadow-sm position-relative">
+              <div className="p-3 border rounded bg-dark text-center my-2 shadow-sm position-relative">
                 <video
                   ref={handleVideoRef}
                   autoPlay
@@ -490,13 +483,13 @@ export default function StudentFields({ values, onChange, account = false }) {
 
             {/* Attached Photo Preview */}
             {values.selfie_photo && (
-              <div className="p-2 border rounded bg-light d-flex align-items-center gap-3">
+              <div className="mt-2 p-2 border rounded bg-light d-flex align-items-center gap-3">
                 <img
                   src={resolveMediaUrl(values.selfie_photo)}
                   alt="Selfie Preview"
                   style={{
-                    width: "68px",
-                    height: "68px",
+                    width: "60px",
+                    height: "60px",
                     objectFit: "cover",
                     borderRadius: "50%",
                     border: "3px solid #198754",
@@ -540,7 +533,7 @@ export default function StudentFields({ values, onChange, account = false }) {
       {account && (
         <section className="form-section">
           <h2 className="h5">
-            <span className="section-number">05</span>Account security
+            <span className="section-number">06</span>Account security
           </h2>
           <div className="row g-3">
             <Field
