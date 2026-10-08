@@ -1762,8 +1762,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                                   <div className="candidate-name-cell">{st.full_name}</div>
                                   <div className="candidate-contact-sub">{st.email} • {st.mobile_number}</div>
                                   <div style={{ marginTop: '4px' }}>
-                                    <span className="admin-badge badge-tech" style={{ fontSize: '0.68rem' }}>
-                                      {st.candidate_type_display || 'College Intern'}
+                                    <span className={`admin-badge ${st.candidate_type === 'PROJECT_CLIENT' ? 'badge-warning' : 'badge-tech'}`} style={{ fontSize: '0.68rem' }}>
+                                      {st.candidate_type_display || (st.candidate_type === 'PROJECT_CLIENT' ? 'Project Client Candidate' : 'Internship & Event Candidate')}
                                     </span>
                                   </div>
                                 </td>

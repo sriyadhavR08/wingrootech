@@ -155,62 +155,57 @@ export default function StudentFields({ values, onChange, account = false }) {
     stopCamera();
   }
 
-  const candType = values.candidate_type || "COLLEGE_INTERN";
+  const candType = values.candidate_type || "INTERNSHIP_EVENT";
 
   const candidateCategories = [
     {
-      key: "COLLEGE_INTERN",
-      label: "College Intern",
-      subtext: "Degree / Diploma candidate undergoing internship",
+      key: "PROJECT_CLIENT",
+      label: "Project Client Candidate",
+      subtext: "Candidate engaged in live client projects, software development & client deliverables",
+      icon: "bi-laptop",
+    },
+    {
+      key: "INTERNSHIP_EVENT",
+      label: "Internship & Event Candidate",
+      subtext: "Candidate attending college internship programs, technical workshops & tech events",
       icon: "bi-mortarboard-fill",
-    },
-    {
-      key: "SCHOOL_STUDENT",
-      label: "School Candidate Intern",
-      subtext: "School candidate undergoing internship & foundation training",
-      icon: "bi-backpack2-fill",
-    },
-    {
-      key: "COLLEGE_COMPLETED",
-      label: "College Completed Candidate Intern",
-      subtext: "Graduate / alumni candidate undergoing internship & project training",
-      icon: "bi-briefcase-fill",
     },
   ];
 
   const configByType = {
-    SCHOOL_STUDENT: {
-      academicTitle: "School & Academic Information",
-      collegeLabel: "School Name",
-      collegePlaceholder: "Enter your school name",
-      deptLabel: "Board / Stream",
-      deptPlaceholder: "Enter your board / stream (e.g. CBSE / State Board)",
-      courseLabel: "Class / Standard",
-      coursePlaceholder: "Enter your class / standard (e.g. 11th / 12th)",
-      regLabel: "School Roll Number / Candidate ID",
-      regPlaceholder: "Enter your school roll number / candidate ID",
-      projectTitle: "Project Information",
-      projectLabel: "Project Name",
-      idDocLabel: "School ID Card / Student Proof",
-      idDocHelp: "Upload clear photo or scan (JPG, PNG, or PDF) of your School ID card or Bonafide letter.",
-      idDocBadge: "School ID / Student Proof Attached",
+    PROJECT_CLIENT: {
+      academicTitle: "Client Project & Professional Information",
+      collegeLabel: "Client / Organization / College",
+      collegePlaceholder: "Enter client company, organization or college name",
+      deptLabel: "Domain / Tech Stack",
+      deptPlaceholder: "Enter domain (e.g. Full Stack Web, Mobile App, AI/ML)",
+      courseLabel: "Project Role / Track",
+      coursePlaceholder: "Enter role (e.g. Client Project Intern, Associate)",
+      regLabel: "Client Project ID / Reference No",
+      regPlaceholder: "Enter client project ID, reference or roll number",
+      projectTitle: "Live Client Project Information",
+      projectLabel: "Project Title",
+      idDocLabel: "Client / Identity Document (Aadhaar, ID card, or Offer letter)",
+      idDocHelp: "Upload clear photo or document (JPG, PNG, PDF) of ID card, Aadhaar, or authorization letter.",
+      idDocBadge: "Identity Proof Attached",
     },
-    COLLEGE_COMPLETED: {
-      academicTitle: "Education & Degree Information",
-      collegeLabel: "Graduated College / University",
-      collegePlaceholder: "Enter your graduated college / university name",
-      deptLabel: "Department / Specialization",
-      deptPlaceholder: "Enter your department / specialization",
-      courseLabel: "Highest Qualification / Degree",
-      coursePlaceholder: "Enter your highest qualification / degree",
-      regLabel: "Degree Roll No / Registration ID",
-      regPlaceholder: "Enter your roll number / registration ID",
-      projectTitle: "Project Information",
-      projectLabel: "Project Name",
-      idDocLabel: "ID Proof (Aadhaar / Degree Certificate / Govt ID)",
-      idDocHelp: "Upload clear photo or scan (JPG, PNG, or PDF) of any valid ID proof (Aadhaar, College ID, Degree Certificate, Driving License, Govt ID, etc.).",
-      idDocBadge: "ID Document Attached",
+    INTERNSHIP_EVENT: {
+      academicTitle: "College & Academic Information",
+      collegeLabel: "College / University Name",
+      collegePlaceholder: "Enter your college or university name",
+      deptLabel: "Department / Stream",
+      deptPlaceholder: "Enter your department (e.g. Computer Science, IT, ECE)",
+      courseLabel: "Course / Degree",
+      coursePlaceholder: "Enter your course / degree (e.g. B.E, B.Tech, MCA)",
+      regLabel: "College Register / Roll Number",
+      regPlaceholder: "Enter your college register or roll number",
+      projectTitle: "Internship & Event Project Information",
+      projectLabel: "Assigned Project Name",
+      idDocLabel: "College ID Card Photo / Bonafide",
+      idDocHelp: "Upload clear photo or scan (JPG, PNG, or PDF) of your College ID card.",
+      idDocBadge: "College ID Card Attached",
     },
+    // Backward compatibility for existing records
     COLLEGE_INTERN: {
       academicTitle: "College & Academic Information",
       collegeLabel: "College Name",
@@ -227,9 +222,41 @@ export default function StudentFields({ values, onChange, account = false }) {
       idDocHelp: "Upload clear photo or scan (JPG, PNG, or PDF) of your College ID card.",
       idDocBadge: "College ID Card Attached",
     },
+    SCHOOL_STUDENT: {
+      academicTitle: "School & Academic Information",
+      collegeLabel: "School Name",
+      collegePlaceholder: "Enter your school name",
+      deptLabel: "Board / Stream",
+      deptPlaceholder: "Enter your board / stream (e.g. CBSE / State Board)",
+      courseLabel: "Class / Standard",
+      coursePlaceholder: "Enter your class / standard (e.g. 11th / 12th)",
+      regLabel: "School Roll Number / Candidate ID",
+      regPlaceholder: "Enter your school roll number / candidate ID",
+      projectTitle: "Project Information",
+      projectLabel: "Project Name",
+      idDocLabel: "School ID Card / Student Proof",
+      idDocHelp: "Upload clear photo or scan of your School ID card.",
+      idDocBadge: "School ID Proof Attached",
+    },
+    COLLEGE_COMPLETED: {
+      academicTitle: "Education & Degree Information",
+      collegeLabel: "Graduated College / University",
+      collegePlaceholder: "Enter your graduated college / university name",
+      deptLabel: "Department / Specialization",
+      deptPlaceholder: "Enter your department / specialization",
+      courseLabel: "Highest Qualification / Degree",
+      coursePlaceholder: "Enter your highest qualification / degree",
+      regLabel: "Degree Roll No / Registration ID",
+      regPlaceholder: "Enter your roll number / registration ID",
+      projectTitle: "Project Information",
+      projectLabel: "Project Name",
+      idDocLabel: "ID Proof (Aadhaar / Degree Certificate / Govt ID)",
+      idDocHelp: "Upload clear photo or scan of ID proof.",
+      idDocBadge: "ID Document Attached",
+    },
   };
 
-  const currentConfig = configByType[candType] || configByType.COLLEGE_INTERN;
+  const currentConfig = configByType[candType] || configByType.INTERNSHIP_EVENT || configByType.COLLEGE_INTERN;
 
   const sections = [
     {

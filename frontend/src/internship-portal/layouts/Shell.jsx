@@ -5,9 +5,13 @@ import logo from "../assets/WINGROO.jpeg";
 
 export function Brand({ prefix = "/internship" }) {
   return (
-    <Link className="brand" to={prefix || "/internship"} aria-label="Wingroo home">
-      <img src={logo} alt="Wingroo" />
-      <span>INTERNSHIP PORTAL</span>
+    <Link className="shell-brand" to={prefix || "/internship"} aria-label="Wingroo Internship Portal">
+      <img src="/logo.png" alt="Wingroo Technologies" className="shell-brand-logo" />
+      <div className="brand-text">
+        <span className="brand-title">WINGROO</span>
+        <span className="brand-subtitle">TECHNOLOGIES</span>
+      </div>
+      <span className="shell-brand-tag">PORTAL</span>
     </Link>
   );
 }
@@ -41,6 +45,8 @@ export default function Shell() {
     [`${prefix}/verify`, "qr-code-scan", "Verify certificate"],
   ];
 
+  const userInitial = (user?.full_name || user?.email || 'U')[0]?.toUpperCase();
+
   return (
     <div className={`app-shell ${admin ? "admin-shell" : ""}`}>
       {/* Mobile Drawer Backdrop */}
@@ -68,29 +74,34 @@ export default function Shell() {
 
         {/* Desktop Top Links (Hidden on Mobile) */}
         <nav className="desktop-toplinks" aria-label="Desktop navigation">
-          <a href="/" className="btn btn-outline-secondary btn-sm me-1" title="Back to Main Website">
+          <a href="/" className="shell-link-btn" title="Back to Main Website">
             <i className="bi bi-arrow-left me-1"></i> Main Site
           </a>
           {!user ? (
             <>
-              <NavLink to={prefix || "/internship"}>Home</NavLink>
-              <NavLink to={`${prefix}/login`} className="btn btn-primary btn-sm px-3 py-1 text-white">
+              <NavLink to={prefix || "/internship"} className="shell-nav-link">Home</NavLink>
+              <NavLink to={`${prefix}/verify`} className="shell-nav-link">Verify certificate</NavLink>
+              <NavLink to={`${prefix}/login`} className="shell-login-btn">
                 <i className="bi bi-box-arrow-in-right me-1"></i> Login
               </NavLink>
-              <NavLink to={`${prefix}/verify`}>Verify certificate</NavLink>
             </>
           ) : (
             <div className="d-flex align-items-center gap-3">
-              <span className="badge text-bg-light border px-2 py-1 text-secondary">
-                <i className={`bi bi-${admin ? "shield-lock" : "person"} me-1`}></i>
-                {user.full_name} ({user.role})
-              </span>
-              <NavLink to={admin ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`}>
+              <div className="shell-user-pill">
+                <div className={`shell-user-avatar ${admin ? 'avatar-admin' : 'avatar-student'}`}>
+                  {userInitial}
+                </div>
+                <div className="shell-user-info">
+                  <span className="shell-user-name">{user.full_name?.split(' ')[0] || user.full_name}</span>
+                  <span className="shell-user-role">{admin ? 'Admin' : 'Candidate'}</span>
+                </div>
+              </div>
+              <NavLink to={admin ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`} className="shell-nav-link">
                 Dashboard
               </NavLink>
-              <NavLink to={`${prefix}/verify`}>Verify certificate</NavLink>
+              <NavLink to={`${prefix}/verify`} className="shell-nav-link">Verify certificate</NavLink>
               <button
-                className="btn btn-outline-secondary btn-sm"
+                className="btn btn-outline-danger btn-sm rounded-pill px-3"
                 onClick={leave}
               >
                 Logout

@@ -227,8 +227,10 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
     duration = (i.end_date - i.start_date).days + 1 if (i and i.end_date and i.start_date) else None
     cand_type = getattr(p, "candidate_type", "COLLEGE_INTERN") if p else "COLLEGE_INTERN"
     cand_label_map = {
+        "PROJECT_CLIENT": "Project Client Candidate",
+        "INTERNSHIP_EVENT": "Internship & Event Candidate",
+        "COLLEGE_INTERN": "Internship & Event Candidate",
         "SCHOOL_STUDENT": "School Student Intern",
-        "COLLEGE_INTERN": "College Intern",
         "COLLEGE_COMPLETED": "College Completed Student Intern",
     }
 

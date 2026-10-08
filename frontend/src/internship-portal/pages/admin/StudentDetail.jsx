@@ -125,19 +125,13 @@ export default function StudentDetail() {
         <div>
           <div className="d-flex align-items-center gap-2 flex-wrap">
             <h1 className="mb-0">{data.full_name}</h1>
-            {data.candidate_type === "SCHOOL_STUDENT" && (
-              <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 px-2">
-                <i className="bi bi-backpack2 me-1"></i> School Candidate Intern
+            {data.candidate_type === "PROJECT_CLIENT" ? (
+              <span className="badge border py-1 px-2" style={{ background: "#f3e8ff", color: "#7c3aed", borderColor: "#d8b4fe" }}>
+                <i className="bi bi-laptop me-1"></i> Project Client Candidate
               </span>
-            )}
-            {data.candidate_type === "COLLEGE_COMPLETED" && (
-              <span className="badge bg-info-subtle text-info-emphasis border border-info-subtle py-1 px-2">
-                <i className="bi bi-briefcase me-1"></i> College Completed Candidate Intern
-              </span>
-            )}
-            {(!data.candidate_type || data.candidate_type === "COLLEGE_INTERN") && (
+            ) : (
               <span className="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2">
-                <i className="bi bi-mortarboard me-1"></i> College Intern
+                <i className="bi bi-mortarboard me-1"></i> Internship & Event Candidate
               </span>
             )}
           </div>
@@ -301,35 +295,29 @@ export default function StudentDetail() {
           <>
             <dl className="details-grid mt-4">
               {[
-                ["Category / Role", data.candidate_type_display || "College Intern"],
+                ["Category / Track", data.candidate_type === "PROJECT_CLIENT" ? "Project Client Candidate" : (data.candidate_type_display || "Internship & Event Candidate")],
                 [
-                  data.candidate_type === "SCHOOL_STUDENT"
-                    ? "School Name"
-                    : data.candidate_type === "COLLEGE_COMPLETED"
-                    ? "Graduated College"
-                    : "College Name",
+                  data.candidate_type === "PROJECT_CLIENT"
+                    ? "Client / Organization"
+                    : "College / University",
                   data.college_name,
                 ],
                 [
-                  data.candidate_type === "SCHOOL_STUDENT"
-                    ? "Board / Stream"
-                    : "Department",
+                  data.candidate_type === "PROJECT_CLIENT"
+                    ? "Domain / Tech Stack"
+                    : "Department / Stream",
                   data.department,
                 ],
                 [
-                  data.candidate_type === "SCHOOL_STUDENT"
-                    ? "Class / Standard"
-                    : data.candidate_type === "COLLEGE_COMPLETED"
-                    ? "Qualification / Degree"
+                  data.candidate_type === "PROJECT_CLIENT"
+                    ? "Role / Track"
                     : "Course / Degree",
                   data.course,
                 ],
                 [
-                  data.candidate_type === "SCHOOL_STUDENT"
-                    ? "School Roll Number"
-                    : data.candidate_type === "COLLEGE_COMPLETED"
-                    ? "Member / Reg ID"
-                    : "Register Number",
+                  data.candidate_type === "PROJECT_CLIENT"
+                    ? "Client Project ID / Reg No"
+                    : "Register / Roll Number",
                   data.register_number,
                 ],
                 ["Gender", data.gender],

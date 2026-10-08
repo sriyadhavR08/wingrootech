@@ -102,6 +102,23 @@ export default function Students() {
               ))}
             </select>
           </div>
+          <div className="col-lg-4">
+            <label className="form-label" htmlFor="candidate_type">
+              Candidate Type
+            </label>
+            <select
+              id="candidate_type"
+              className="form-select"
+              value={filters.candidate_type || ""}
+              onChange={(e) =>
+                setFilters({ ...filters, candidate_type: e.target.value })
+              }
+            >
+              <option value="">All Candidate Types</option>
+              <option value="PROJECT_CLIENT">Project Client Candidate</option>
+              <option value="INTERNSHIP_EVENT">Internship & Event Candidate</option>
+            </select>
+          </div>
           {["start_date", "end_date"].map((key) => (
             <div className="col-md-4" key={key}>
               <label className="form-label" htmlFor={key}>
@@ -162,19 +179,13 @@ export default function Students() {
                         <td>
                           <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
                             <strong>{s.full_name}</strong>
-                            {s.candidate_type === "SCHOOL_STUDENT" && (
-                              <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 px-2" style={{ fontSize: "0.72rem" }}>
-                                <i className="bi bi-backpack2 me-1"></i> School Intern
+                            {s.candidate_type === "PROJECT_CLIENT" ? (
+                              <span className="badge border py-1 px-2" style={{ fontSize: "0.72rem", background: "#f3e8ff", color: "#7c3aed", borderColor: "#d8b4fe" }}>
+                                <i className="bi bi-laptop me-1"></i> Project Client
                               </span>
-                            )}
-                            {s.candidate_type === "COLLEGE_COMPLETED" && (
-                              <span className="badge bg-info-subtle text-info-emphasis border border-info-subtle py-1 px-2" style={{ fontSize: "0.72rem" }}>
-                                <i className="bi bi-briefcase me-1"></i> Completed Intern
-                              </span>
-                            )}
-                            {(!s.candidate_type || s.candidate_type === "COLLEGE_INTERN") && (
+                            ) : (
                               <span className="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style={{ fontSize: "0.72rem" }}>
-                                <i className="bi bi-mortarboard me-1"></i> College Intern
+                                <i className="bi bi-mortarboard me-1"></i> Internship & Event
                               </span>
                             )}
                           </div>

@@ -13,13 +13,12 @@ export default function Home() {
             <br />
             <span>Achievement verified.</span>
           </h1>
-          <p className="lead mt-4">Digital Internship Certificate Portal</p>
+          <p className="lead mt-4 fw-semibold text-dark">Wingroo Project & Internship Credential Portal</p>
           <p className="text-secondary hero-copy">
-            Register your internship, access your digital certificate after
-            completion and securely verify certificates using QR technology.
+            Portal for Project Client Candidates and Internship & Event Candidates. Complete project milestones, access official verified credentials, and authenticate certificates instantly.
           </p>
           <div className="d-flex flex-wrap gap-3 mt-4">
-            <Link to={`${prefix}/register`} className="btn btn-primary btn-lg">
+            <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
               Register now{" "}
               <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
             </Link>
@@ -29,35 +28,34 @@ export default function Home() {
           </div>
         </div>
         <div className="col-lg-5">
-          <div className="hero-panel">
+          <div className="hero-panel shadow-sm">
             <div className="hero-icon">
               <i aria-hidden="true" className="bi bi-patch-check" />
             </div>
-            <div className="eyebrow">WINGROO INTERNSHIPS</div>
+            <div className="eyebrow">WINGROO CREDENTIALS</div>
             <h2 className="h3 mt-3">A milestone worth keeping.</h2>
             <p className="text-secondary">
-              Your internship journey, from registration to a certificate you
-              can share with confidence.
+              Your professional journey across client delivery and internships, with verified digital credentials.
             </p>
             <div className="journey-step">
               <span>01</span>
               <div>
-                <strong>Register your internship</strong>
-                <small>One account. All your details.</small>
+                <strong>Register your candidate track</strong>
+                <small>Choose Project Client or Internship & Event track.</small>
               </div>
             </div>
             <div className="journey-step">
               <span>02</span>
               <div>
-                <strong>Complete & get approved</strong>
-                <small>Reviewed by the Wingroo team.</small>
+                <strong>Complete & get evaluated</strong>
+                <small>Reviewed & approved by engineering leads.</small>
               </div>
             </div>
             <div className="journey-step">
               <span>03</span>
               <div>
                 <strong>Download & verify</strong>
-                <small>A secure PDF with QR verification.</small>
+                <small>QR-secured certificate & evaluation transcript.</small>
               </div>
             </div>
           </div>
