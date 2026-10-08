@@ -2329,10 +2329,78 @@
   color: #ffffff;
 }
 
-.portal-role-btn.active {
+/* Header Right Group */
+.student-header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Slip Header Actions */
+.slip-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slip-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slip-print-btn:hover {
+  background: #0369a1;
+}
+
+/* Redirect banner at bottom */
+.portal-redirect-banner {
+  padding: 16px 20px;
   background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.portal-redirect-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.portal-redirect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 8px;
+  color: #0284c7;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.portal-redirect-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
 }
 
 

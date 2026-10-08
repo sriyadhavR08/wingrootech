@@ -138,11 +138,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           </div>
 
           {/* Unified Role Switcher / Header Actions */}
-          <div className="d-flex align-items-center gap-2">
+          <div className="student-header-right-group">
             <div className="portal-role-switch-tabs">
               <button type="button" className="portal-role-btn active" title="Current: Candidate Portal">
                 <GraduationCap size={15} />
-                <span>Candidate</span>
+                <span>Candidate Portal</span>
               </button>
               <button 
                 type="button" 
@@ -155,9 +155,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               </button>
             </div>
 
-            <button onClick={onClose} className="student-icon-btn student-close-btn" title="Close">
-              <X size={18} />
-            </button>
+            <div className="student-header-actions">
+              <button onClick={onClose} className="student-icon-btn student-close-btn" title="Close">
+                <X size={18} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -453,9 +455,9 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           )}
 
           {/* Certificate & Verification Portal Redirect Banner */}
-          <div className="p-3 border rounded-3 bg-white d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2" style={{ borderColor: '#e2e8f0' }}>
-            <div className="d-flex align-items-center gap-2">
-              <ShieldCheck size={20} style={{ color: '#0284c7' }} />
+          <div className="portal-redirect-banner">
+            <div className="portal-redirect-left">
+              <ShieldCheck size={22} style={{ color: '#0284c7', flexShrink: 0 }} />
               <div>
                 <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>Looking for Certificate Verification or Candidate Account?</strong>
                 <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Certificate verification, candidate login & credential registration are hosted in the Certification Portal.</div>
@@ -463,8 +465,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
             </div>
             <a 
               href="/internship" 
-              className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
-              style={{ fontWeight: 600, fontSize: '0.82rem' }}
+              className="portal-redirect-btn"
             >
               <span>Go to Certificate & Verification Portal</span>
               <ExternalLink size={13} />
@@ -479,12 +480,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           <div className="slip-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="slip-modal-header no-print">
               <span>Official Internship Application Receipt</span>
-              <div className="d-flex align-items-center gap-2">
+              <div className="slip-header-actions">
                 <button 
                   type="button" 
                   onClick={() => window.print()} 
-                  className="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                  style={{ background: '#0284c7', borderColor: '#0284c7' }}
+                  className="slip-print-btn"
                 >
                   <Printer size={14} />
                   <span>Print Slip</span>
@@ -570,12 +570,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           <div className="slip-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="slip-modal-header no-print">
               <span>Official Event Entry Pass</span>
-              <div className="d-flex align-items-center gap-2">
+              <div className="slip-header-actions">
                 <button 
                   type="button" 
                   onClick={() => window.print()} 
-                  className="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                  style={{ background: '#0284c7', borderColor: '#0284c7' }}
+                  className="slip-print-btn"
                 >
                   <Printer size={14} />
                   <span>Print Pass</span>

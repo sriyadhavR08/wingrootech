@@ -944,10 +944,10 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
               type="button" 
               className="portal-role-btn" 
               onClick={() => typeof onSwitchRole === 'function' && onSwitchRole('student')}
-              title="Switch to Student / Candidate Portal"
+              title="Switch to Candidate Portal"
             >
               <GraduationCap size={15} />
-              <span>Student Portal</span>
+              <span>Candidate Portal</span>
             </button>
             <button type="button" className="portal-role-btn active" title="Current: Admin & Staff Portal">
               <ShieldCheck size={15} />
