@@ -111,7 +111,7 @@ export default function StudentDetail() {
   return (
     <>
       <Link to={`${prefix}/admin/students`} className="back-link">
-        ← All students
+        ← All candidates
       </Link>
       <div className="d-flex justify-content-between align-items-center my-3 gap-3 flex-wrap">
         <div>
@@ -119,12 +119,12 @@ export default function StudentDetail() {
             <h1 className="mb-0">{data.full_name}</h1>
             {data.candidate_type === "SCHOOL_STUDENT" && (
               <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 px-2">
-                <i className="bi bi-backpack2 me-1"></i> School Student Intern
+                <i className="bi bi-backpack2 me-1"></i> School Candidate Intern
               </span>
             )}
             {data.candidate_type === "COLLEGE_COMPLETED" && (
               <span className="badge bg-info-subtle text-info-emphasis border border-info-subtle py-1 px-2">
-                <i className="bi bi-briefcase me-1"></i> College Completed Student Intern
+                <i className="bi bi-briefcase me-1"></i> College Completed Candidate Intern
               </span>
             )}
             {(!data.candidate_type || data.candidate_type === "COLLEGE_INTERN") && (
@@ -152,7 +152,7 @@ export default function StudentDetail() {
                 <i className="bi bi-calendar-check me-2"></i>Fix Internship End Date (Admin Control)
               </h2>
               <p className="text-secondary small mb-0">
-                Student registered with Start date: <strong>{data.start_date || "Not set"}</strong>.
+                Candidate registered with Start date: <strong>{data.start_date || "Not set"}</strong>.
                 {data.end_date ? (
                   <> Fixed End date: <strong className="text-success">{data.end_date}</strong> ({data.duration_days} days)</>
                 ) : (
@@ -202,7 +202,7 @@ export default function StudentDetail() {
                 setPreview("");
               }}
             >
-              {editing ? "Cancel editing" : "Edit student details"}
+              {editing ? "Cancel editing" : "Edit candidate details"}
             </button>
           )}
 
@@ -272,7 +272,7 @@ export default function StudentDetail() {
               perform(async () => {
                 await api.put(`/admin/students/${id}/`, values);
                 setEditing(false);
-              }, "Student updated.");
+              }, "Candidate updated.");
             }}
           >
             <StudentFields
@@ -593,7 +593,7 @@ export default function StudentDetail() {
             <Status value={data.certificate.status} />
           </div>
           <p className="text-secondary">
-            Certificate is active and published. The student can now download and view this certificate.
+            Certificate is active and published. The candidate can now download and view this certificate.
           </p>
           <CertificateActions cert={data.certificate} />
         </section>
@@ -625,7 +625,7 @@ export default function StudentDetail() {
             The certificate will be officially issued for candidate <strong>{data.full_name}</strong> from <strong>{data.start_date}</strong> to <strong>{endDateInput || data.end_date}</strong>.
           </p>
           <p className="text-secondary small mb-0">
-            Once generated, the student will immediately see the certificate download option in their dashboard, and the QR code will be publicly verifiable.
+            Once generated, the candidate will immediately see the certificate download option in their dashboard, and the QR code will be publicly verifiable.
           </p>
         </Confirm>
       )}

@@ -30,14 +30,14 @@ export default function AdminDashboard() {
                 className={`bi bi-${["people", "briefcase", "check-circle", "patch-check"][i]}`}
               />
               <strong>{count}</strong>
-              <span>{label}</span>
+              <span>{label.replace(/students/i, 'candidates')}</span>
             </section>
           </div>
         ))}
       </div>
       <section className="card p-4 mb-4">
         <div className="d-flex justify-content-between mb-3">
-          <h2 className="h5">Recent students</h2>
+          <h2 className="h5">Recent candidates</h2>
           <Link to={`${prefix}/admin/students`}>View all</Link>
         </div>
         {data.recent_students.length ? (

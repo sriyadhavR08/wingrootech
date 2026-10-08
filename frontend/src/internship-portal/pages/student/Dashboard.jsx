@@ -15,7 +15,7 @@ export default function StudentDashboard() {
   if (!data) return <Loading />;
   return (
     <>
-      <div className="eyebrow">STUDENT WORKSPACE</div>
+      <div className="eyebrow">CANDIDATE WORKSPACE</div>
       <h1 className="mt-2">Welcome, {data.full_name}</h1>
       <p className="text-secondary">
         Your internship journey, all in one place.

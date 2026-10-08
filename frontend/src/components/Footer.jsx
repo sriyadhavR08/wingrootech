@@ -274,7 +274,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                     <p>We collect information necessary to deliver high-quality technology solutions and educational services:</p>
                     <ul>
                       <li><strong>Client Enquiries:</strong> Business contact details, company name, scope of software requirements, and architectural preferences.</li>
-                      <li><strong>Student & Intern Applications:</strong> Name, college affiliation, academic degree, contact email, phone number, and domain interests for verification and certification.</li>
+                      <li><strong>Candidate & Intern Applications:</strong> Name, college affiliation, academic degree, contact email, phone number, and domain interests for verification and certification.</li>
                       <li><strong>Technical Usage:</strong> Aggregated anonymous web analytics to ensure optimal site performance, uptime, and accessibility.</li>
                     </ul>
                   </section>
@@ -289,7 +289,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                   <section className="legal-section">
                     <h4>3. Data Security & Storage</h4>
                     <p>
-                      We utilize enterprise-grade encryption (TLS/SSL in transit, encrypted storage at rest), strict role-based access controls, and audited cloud infrastructures. Internal databases containing student applications or customer enquiries are isolated and accessible only by authorized personnel.
+                      We utilize enterprise-grade encryption (TLS/SSL in transit, encrypted storage at rest), strict role-based access controls, and audited cloud infrastructures. Internal databases containing candidate applications or customer enquiries are isolated and accessible only by authorized personnel.
                     </p>
                   </section>
 

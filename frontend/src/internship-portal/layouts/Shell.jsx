@@ -35,7 +35,7 @@ export default function Shell() {
 
   const adminLinks = [
     [`${prefix}/admin/dashboard`, "grid", "Dashboard"],
-    [`${prefix}/admin/students`, "people", "Students"],
+    [`${prefix}/admin/students`, "people", "Candidates"],
     [`${prefix}/admin/internships`, "briefcase", "Internships"],
     [`${prefix}/admin/certificates`, "patch-check", "Certificates"],
     [`${prefix}/verify`, "qr-code-scan", "Verify certificate"],
@@ -135,7 +135,7 @@ export default function Shell() {
                   to={`${prefix}/register`}
                   onClick={() => setOpen(false)}
                 >
-                  <i className="bi bi-person-plus me-1"></i> Register Student
+                  <i className="bi bi-person-plus me-1"></i> Register Candidate
                 </Link>
               </div>
             ) : (
@@ -167,7 +167,7 @@ export default function Shell() {
                       className="mobile-nav-link"
                       onClick={() => setOpen(false)}
                     >
-                      <i className="bi bi-grid me-2"></i> Student Dashboard
+                      <i className="bi bi-grid me-2"></i> Candidate Dashboard
                     </NavLink>
                     <NavLink
                       to={`${prefix}/verify`}

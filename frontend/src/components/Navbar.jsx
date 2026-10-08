@@ -101,7 +101,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
             type="button"
             onClick={() => typeof onOpenLogin === 'function' ? onOpenLogin('student') : (onOpenStudentPortal && onOpenStudentPortal())}
             className="nav-login-btn"
-            title="Access Student & Admin Login Portal"
+            title="Access Candidate & Admin Login Portal"
           >
             <LogIn size={16} />
             <span>Login</span>

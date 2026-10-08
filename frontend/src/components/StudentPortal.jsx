@@ -337,7 +337,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       return;
     }
     if (!regForm.college_id_card) {
-      setRegError('Please upload your Student ID Card or Institutional Document proof.');
+      setRegError('Please upload your Candidate ID Card or Institutional Document proof.');
       return;
     }
     if (!regForm.selfie_photo) {
@@ -486,15 +486,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
             </div>
             <div>
               <div className="student-portal-tag">Candidate & Certificate Services</div>
-              <h3 className="student-portal-heading">Wingroo Student Portal</h3>
+              <h3 className="student-portal-heading">Wingroo Candidate Portal</h3>
             </div>
           </div>
 
           {/* Unified Role Switcher */}
           <div className="portal-role-switch-tabs">
-            <button type="button" className="portal-role-btn active" title="Current: Student / Candidate Portal">
+            <button type="button" className="portal-role-btn active" title="Current: Candidate Portal">
               <GraduationCap size={15} />
-              <span>Student</span>
+              <span>Candidate</span>
             </button>
             <button 
               type="button" 
@@ -543,7 +543,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 onClick={() => setActiveMode('login')}
               >
                 <LogIn size={16} />
-                <span>Student Login</span>
+                <span>Candidate Login</span>
               </button>
               <button 
                 type="button"
@@ -786,7 +786,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       type="email" 
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      placeholder="student@example.com"
+                      placeholder="candidate@example.com"
                       required
                     />
                   </div>
@@ -815,7 +815,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               <div className="auth-switch-prompt">
                 <span>New intern at Wingroo?</span>
                 <button type="button" onClick={() => setActiveMode('register')} className="switch-link">
-                  Create Student Account
+                  Create Candidate Account
                 </button>
               </div>
             </div>
@@ -830,8 +830,8 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 <div className="auth-icon-circle">
                   <UserPlus size={24} />
                 </div>
-                <h3>Internship Student Registration</h3>
-                <p>Register your student profile for official certificate tracking, identity validation, and project assignment.</p>
+                <h3>Internship Candidate Registration</h3>
+                <p>Register your candidate profile for official certificate tracking, identity validation, and project assignment.</p>
               </div>
 
               {regError && (
@@ -857,9 +857,9 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     onChange={(e) => setRegForm({ ...regForm, candidate_type: e.target.value })}
                     className="styled-select"
                   >
-                    <option value="COLLEGE_INTERN">College Student Intern</option>
-                    <option value="SCHOOL_STUDENT">School Student Intern</option>
-                    <option value="COLLEGE_COMPLETED">College Completed Graduate Intern</option>
+                    <option value="COLLEGE_INTERN">College Candidate Intern</option>
+                    <option value="SCHOOL_STUDENT">School Candidate Intern</option>
+                    <option value="COLLEGE_COMPLETED">College Completed Candidate Intern</option>
                   </select>
                 </div>
 
@@ -893,7 +893,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     type="email" 
                     value={regForm.email}
                     onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                    placeholder="student@example.com"
+                    placeholder="candidate@example.com"
                     required
                   />
                 </div>

@@ -476,9 +476,9 @@ export const AEO_GEO_FAQS = [
   {
     id: 63,
     category: 'placements',
-    q: 'What is the Wingroo Student Portal and how does it verify certificates?',
-    a: 'Wingroo provides an online Student Portal where students, colleges, and hiring recruiters can verify admission status, review academic evaluation marks, and authenticate official ISO-backed completion certificates.',
-    tags: ['student portal', 'certificate verification', 'wingroo portal']
+    q: 'What is the Wingroo Candidate Portal and how does it verify certificates?',
+    a: 'Wingroo provides an online Candidate Portal where candidates, colleges, and hiring recruiters can verify admission status, review academic evaluation marks, and authenticate official ISO-backed completion certificates.',
+    tags: ['candidate portal', 'certificate verification', 'wingroo portal']
   },
   {
     id: 64,
@@ -512,7 +512,7 @@ export const AEO_GEO_FAQS = [
     id: 68,
     category: 'placements',
     q: 'How does Wingroo verify daily attendance and project progress?',
-    a: 'Students log daily commits to dedicated GitHub repositories and track their milestone checkpoints through the Wingroo Student Portal acknowledgment system.',
+    a: 'Candidates log daily commits to dedicated GitHub repositories and track their milestone checkpoints through the Wingroo Candidate Portal acknowledgment system.',
     tags: ['daily attendance', 'github commits', 'progress tracking']
   },
   {

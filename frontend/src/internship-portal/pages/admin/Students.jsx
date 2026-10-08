@@ -37,7 +37,7 @@ export default function Students() {
     <>
       <div className="eyebrow">MANAGEMENT</div>
       <h1 className="mt-2">
-        {location.pathname.endsWith("internships") ? "Internships" : "Students"}
+        {location.pathname.endsWith("internships") ? "Internships" : "Candidates"}
       </h1>
       <p className="text-secondary">
         Review details and guide each internship through approval.
@@ -53,7 +53,7 @@ export default function Students() {
         >
           <div className="col-lg-4">
             <label className="form-label" htmlFor="search">
-              Search students
+              Search candidates
             </label>
             <input
               id="search"
@@ -210,7 +210,7 @@ export default function Students() {
                 </table>
                 {!data.results.length && (
                   <p className="text-center py-4 text-secondary">
-                    No students match these filters.
+                    No candidates match these filters.
                   </p>
                 )}
               </div>

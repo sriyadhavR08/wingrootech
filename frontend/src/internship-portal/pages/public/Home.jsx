@@ -74,7 +74,7 @@ export default function Home() {
         <div className="col-md-4">
           <i aria-hidden="true" className="bi bi-file-earmark-pdf" />
           <h3>Ready when you are</h3>
-          <p>Access your approved certificate from your student dashboard.</p>
+          <p>Access your approved certificate from your candidate dashboard.</p>
         </div>
         <div className="col-md-4">
           <i aria-hidden="true" className="bi bi-qr-code-scan" />

@@ -120,7 +120,7 @@ export default function Certificates() {
                 <thead>
                   <tr>
                     <th>Certificate</th>
-                    <th>Student / Project</th>
+                    <th>Candidate / Project</th>
                     <th>Issued</th>
                     <th>Status</th>
                     <th>Actions</th>

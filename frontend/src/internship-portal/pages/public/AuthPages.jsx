@@ -83,7 +83,7 @@ export function Register() {
     if (!values.college_id_card) {
       const docLabel =
         candType === "SCHOOL_STUDENT"
-          ? "School ID card / Student ID proof"
+          ? "School ID card / Candidate ID proof"
           : candType === "COLLEGE_COMPLETED"
           ? "ID proof (Aadhaar / College ID / Degree Certificate / Govt ID)"
           : "College ID card photo";
@@ -114,7 +114,7 @@ export function Register() {
       <div className="eyebrow">PORTAL ENROLLMENT & REGISTRATION</div>
       <h1 className="mt-2">Create Your Candidate Account</h1>
       <p className="text-secondary">
-        Register as a School Student Intern, College Intern, or College Completed Student Intern for your verified credential.
+        Register as a School Candidate Intern, College Candidate Intern, or College Completed Candidate Intern for your verified credential.
       </p>
       {done ? (
         <section className="card p-5">

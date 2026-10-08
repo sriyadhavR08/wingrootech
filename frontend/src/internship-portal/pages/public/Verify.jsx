@@ -428,7 +428,7 @@ export default function Verify() {
 
       <p className="text-secondary small text-center mt-3">
         <i aria-hidden="true" className="bi bi-shield-lock me-1" />
-        Official digital credential system with encrypted verification token. Student personal contact details remain protected.
+        Official digital credential system with encrypted verification token. Candidate personal contact details remain protected.
       </p>
     </div>
   );
