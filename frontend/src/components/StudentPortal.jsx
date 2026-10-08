@@ -96,6 +96,69 @@ function resizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.85) {
   });
 }
 
+const CANDIDATE_CATEGORIES = [
+  {
+    key: 'COLLEGE_INTERN',
+    label: 'College Candidate Intern',
+    badge: 'College Intern',
+    desc: 'Degree / Diploma candidate currently undergoing internship',
+    academicTitle: 'College & Academic Details',
+    institutionLabel: 'College / Institution Name *',
+    institutionPlaceholder: 'e.g. Coimbatore Institute of Technology',
+    departmentLabel: 'Department *',
+    departmentPlaceholder: 'e.g. Computer Science & Engineering',
+    courseLabel: 'Course / Degree *',
+    coursePlaceholder: 'e.g. B.E. / B.Tech / MCA',
+    regNoLabel: 'College Register / Roll Number *',
+    regNoPlaceholder: 'e.g. 717721CSR099',
+    projectPlaceholder: 'e.g. Full Stack Web & Mobile Development',
+    proofLabel: 'College ID Card Proof *',
+    proofHint: 'Upload clear photo or scan of your College ID card (JPG, PNG, PDF)',
+    proofBadge: 'College ID Card Attached',
+    missingProofMsg: 'Please attach your College ID Card photo or document.'
+  },
+  {
+    key: 'SCHOOL_STUDENT',
+    label: 'School Candidate Intern',
+    badge: 'School Candidate',
+    desc: 'School candidate undergoing foundational technology internship',
+    academicTitle: 'School & Academic Details',
+    institutionLabel: 'School Name *',
+    institutionPlaceholder: "e.g. Kendriya Vidyalaya / St. Joseph's Matriculation",
+    departmentLabel: 'Board / Stream *',
+    departmentPlaceholder: 'e.g. CBSE / State Board / Bio-Maths / Computer Science',
+    courseLabel: 'Class / Standard *',
+    coursePlaceholder: 'e.g. 11th Standard / 12th Standard',
+    regNoLabel: 'School Roll Number / Candidate ID *',
+    regNoPlaceholder: 'e.g. 12A-24 / SCH-2025',
+    projectPlaceholder: 'e.g. Python Foundation & Web Development',
+    proofLabel: 'School ID Card / Student Proof *',
+    proofHint: 'Upload clear photo or scan of School ID card or Bonafide letter (JPG, PNG, PDF)',
+    proofBadge: 'School ID / Student Proof Attached',
+    missingProofMsg: 'Please attach your School ID Card or Student Bonafide proof.'
+  },
+  {
+    key: 'COLLEGE_COMPLETED',
+    label: 'College Completed Candidate Intern',
+    badge: 'Graduate Intern',
+    desc: 'Degree completed graduate / alumni undergoing project training & internship',
+    academicTitle: 'Graduation & Degree Details',
+    institutionLabel: 'Graduated College / University *',
+    institutionPlaceholder: 'e.g. PSG College of Technology / Anna University',
+    departmentLabel: 'Department / Specialization *',
+    departmentPlaceholder: 'e.g. Computer Science / Data Analytics / Mechanical',
+    courseLabel: 'Highest Qualification / Degree *',
+    coursePlaceholder: 'e.g. B.Tech / M.Sc / MCA / B.E.',
+    regNoLabel: 'Degree Roll No / Registration ID *',
+    regNoPlaceholder: 'e.g. 19BCS104 / Grad-2024',
+    projectPlaceholder: 'e.g. Full Stack Cloud Application',
+    proofLabel: 'ID Proof (Aadhaar / Degree / Govt ID) *',
+    proofHint: 'Upload clear photo or scan of valid ID proof (Aadhaar, Degree Certificate, Govt ID)',
+    proofBadge: 'ID Document Attached',
+    missingProofMsg: 'Please attach your ID Proof (Aadhaar, Degree Certificate, or Govt ID).'
+  }
+];
+
 export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSwitchRole }) {
   // Top Active Mode: 'verify' | 'login' | 'register' | 'workspace' | 'track'
   const [activeMode, setActiveMode] = useState(() => {
@@ -151,6 +214,8 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
+
+  const activeCatConfig = CANDIDATE_CATEGORIES.find(c => c.key === regForm.candidate_type) || CANDIDATE_CATEGORIES[0];
 
   // Camera snap for selfie
   const [selfieCameraActive, setSelfieCameraActive] = useState(false);
@@ -337,7 +402,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       return;
     }
     if (!regForm.college_id_card) {
-      setRegError('Please upload your Candidate ID Card or Institutional Document proof.');
+      setRegError(activeCatConfig.missingProofMsg);
       return;
     }
     if (!regForm.selfie_photo) {
@@ -721,15 +786,33 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       <div className="val">{verifyResult.candidate_type_label || 'College Intern'}</div>
                     </div>
                     <div className="detail-item">
-                      <label>Institution / College</label>
+                      <label>
+                        {verifyResult.candidate_type === 'SCHOOL_STUDENT'
+                          ? 'School Name'
+                          : verifyResult.candidate_type === 'COLLEGE_COMPLETED'
+                          ? 'Graduated Institution'
+                          : 'Institution / College'}
+                      </label>
                       <div className="val">{verifyResult.college_name || 'Wingroo Academic Partner'}</div>
                     </div>
                     <div className="detail-item">
-                      <label>Department / Course</label>
+                      <label>
+                        {verifyResult.candidate_type === 'SCHOOL_STUDENT'
+                          ? 'Board & Class'
+                          : verifyResult.candidate_type === 'COLLEGE_COMPLETED'
+                          ? 'Specialization & Qualification'
+                          : 'Department / Course'}
+                      </label>
                       <div className="val">{verifyResult.department} {verifyResult.course ? `(${verifyResult.course})` : ''}</div>
                     </div>
                     <div className="detail-item">
-                      <label>Register / Roll Number</label>
+                      <label>
+                        {verifyResult.candidate_type === 'SCHOOL_STUDENT'
+                          ? 'School Roll Number'
+                          : verifyResult.candidate_type === 'COLLEGE_COMPLETED'
+                          ? 'Member / Reg ID'
+                          : 'Register / Roll Number'}
+                      </label>
                       <div className="val">{verifyResult.register_number || 'N/A'}</div>
                     </div>
                     <div className="detail-item">
@@ -849,18 +932,44 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               )}
 
               <form onSubmit={handleRegisterSubmit} className="register-grid-form">
-                {/* Candidate Type */}
+                {/* Candidate Type Selection */}
                 <div className="form-col-full">
-                  <label>Candidate Category *</label>
-                  <select 
-                    value={regForm.candidate_type}
-                    onChange={(e) => setRegForm({ ...regForm, candidate_type: e.target.value })}
-                    className="styled-select"
-                  >
-                    <option value="COLLEGE_INTERN">College Candidate Intern</option>
-                    <option value="SCHOOL_STUDENT">School Candidate Intern</option>
-                    <option value="COLLEGE_COMPLETED">College Completed Candidate Intern</option>
-                  </select>
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <label className="mb-0">Candidate Category *</label>
+                    <span className="badge text-bg-primary" style={{ fontSize: '0.72rem' }}>
+                      Selected: {activeCatConfig.badge}
+                    </span>
+                  </div>
+
+                  {/* Interactive Category Selector Cards */}
+                  <div className="portal-candidate-type-grid">
+                    {CANDIDATE_CATEGORIES.map((cat) => {
+                      const isSelected = regForm.candidate_type === cat.key;
+                      return (
+                        <div
+                          key={cat.key}
+                          className={`portal-cat-card ${isSelected ? 'active' : ''}`}
+                          onClick={() => setRegForm(prev => ({ ...prev, candidate_type: cat.key }))}
+                          role="button"
+                          tabIndex={0}
+                        >
+                          <div className="portal-cat-card-top">
+                            <span className="portal-cat-badge">{cat.badge}</span>
+                            {isSelected && <CheckCircle size={15} className="portal-cat-check" />}
+                          </div>
+                          <div className="portal-cat-title">{cat.label}</div>
+                          <div className="portal-cat-desc">{cat.desc}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="category-active-notice">
+                    <Sparkles size={14} style={{ flexShrink: 0 }} />
+                    <span>
+                      Form customized for <strong>{activeCatConfig.label}</strong>. Fields and required verification proof adapt automatically.
+                    </span>
+                  </div>
                 </div>
 
                 {/* Full Name & Gender */}
@@ -930,46 +1039,48 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   />
                 </div>
 
-                {/* College / Institution */}
+                {/* Adaptive Institution Name */}
                 <div className="form-col-full">
-                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'School Name *' : 'College / Institution Name *'}</label>
+                  <label>{activeCatConfig.institutionLabel}</label>
                   <input 
                     type="text" 
                     value={regForm.college_name}
                     onChange={(e) => setRegForm({ ...regForm, college_name: e.target.value })}
-                    placeholder="e.g. Coimbatore Institute of Technology"
+                    placeholder={activeCatConfig.institutionPlaceholder}
                     required
                   />
                 </div>
 
-                {/* Department, Course, Register Number */}
+                {/* Adaptive Department & Course */}
                 <div className="form-col">
-                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Stream / Board' : 'Department *'}</label>
+                  <label>{activeCatConfig.departmentLabel}</label>
                   <input 
                     type="text" 
                     value={regForm.department}
                     onChange={(e) => setRegForm({ ...regForm, department: e.target.value })}
-                    placeholder="e.g. Computer Science & Engineering"
+                    placeholder={activeCatConfig.departmentPlaceholder}
                     required
                   />
                 </div>
                 <div className="form-col">
-                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Class' : 'Degree / Course *'}</label>
+                  <label>{activeCatConfig.courseLabel}</label>
                   <input 
                     type="text" 
                     value={regForm.course}
                     onChange={(e) => setRegForm({ ...regForm, course: e.target.value })}
-                    placeholder="e.g. B.E. / B.Tech / MCA"
+                    placeholder={activeCatConfig.coursePlaceholder}
                     required
                   />
                 </div>
+
+                {/* Adaptive Register / Roll Number */}
                 <div className="form-col-full">
-                  <label>{regForm.candidate_type === 'SCHOOL_STUDENT' ? 'Roll Number *' : 'College Register / Roll Number *'}</label>
+                  <label>{activeCatConfig.regNoLabel}</label>
                   <input 
                     type="text" 
                     value={regForm.register_number}
                     onChange={(e) => setRegForm({ ...regForm, register_number: e.target.value })}
-                    placeholder="e.g. 717721CSR099"
+                    placeholder={activeCatConfig.regNoPlaceholder}
                     required
                   />
                 </div>
@@ -981,7 +1092,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     type="text" 
                     value={regForm.project_name}
                     onChange={(e) => setRegForm({ ...regForm, project_name: e.target.value })}
-                    placeholder="e.g. Full Stack Web & Mobile Development"
+                    placeholder={activeCatConfig.projectPlaceholder}
                     required
                   />
                 </div>
@@ -1003,9 +1114,9 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   />
                 </div>
 
-                {/* Identity Documents: ID Card & Selfie */}
+                {/* Adaptive Identity Document Proof & Selfie */}
                 <div className="form-col">
-                  <label>College ID Card Proof *</label>
+                  <label>{activeCatConfig.proofLabel}</label>
                   <div className="doc-upload-box">
                     <input 
                       type="file" 
@@ -1021,10 +1132,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     {regForm.college_id_card ? (
                       <div className="upload-preview-chip">
                         <CheckCircle size={14} style={{ color: '#10b981' }} />
-                        <span>ID Document Attached</span>
+                        <span>{activeCatConfig.proofBadge}</span>
                       </div>
                     ) : (
-                      <span className="upload-hint">Upload JPG, PNG or PDF</span>
+                      <span className="upload-hint">{activeCatConfig.proofHint}</span>
                     )}
                   </div>
                 </div>
@@ -1193,15 +1304,33 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               {/* Candidate Info Grid */}
               <div className="workspace-profile-grid">
                 <div className="info-box">
-                  <label>Department / Stream</label>
+                  <label>
+                    {studentProfile?.candidate_type === 'SCHOOL_STUDENT'
+                      ? 'Board / Stream'
+                      : studentProfile?.candidate_type === 'COLLEGE_COMPLETED'
+                      ? 'Specialization'
+                      : 'Department / Stream'}
+                  </label>
                   <div>{studentProfile?.department || 'N/A'}</div>
                 </div>
                 <div className="info-box">
-                  <label>Degree / Course</label>
+                  <label>
+                    {studentProfile?.candidate_type === 'SCHOOL_STUDENT'
+                      ? 'Class / Standard'
+                      : studentProfile?.candidate_type === 'COLLEGE_COMPLETED'
+                      ? 'Qualification'
+                      : 'Degree / Course'}
+                  </label>
                   <div>{studentProfile?.course || 'N/A'}</div>
                 </div>
                 <div className="info-box">
-                  <label>Register / Roll Number</label>
+                  <label>
+                    {studentProfile?.candidate_type === 'SCHOOL_STUDENT'
+                      ? 'School Roll Number'
+                      : studentProfile?.candidate_type === 'COLLEGE_COMPLETED'
+                      ? 'Member / Reg ID'
+                      : 'Register / Roll Number'}
+                  </label>
                   <div>{studentProfile?.register_number || 'N/A'}</div>
                 </div>
                 <div className="info-box">
