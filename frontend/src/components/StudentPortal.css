@@ -2403,4 +2403,257 @@
   border-color: #0284c7;
 }
 
+/* Candidate Login & Forgot Password Views */
+.candidate-login-container {
+  max-width: 480px;
+  margin: 16px auto;
+  width: 100%;
+}
+
+.candidate-login-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 32px 34px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.candidate-login-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.candidate-login-title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 6px 0;
+}
+
+.candidate-login-desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  text-align: center;
+  margin: 0 0 22px 0;
+  line-height: 1.5;
+}
+
+.candidate-form-group {
+  margin-bottom: 18px;
+}
+
+.candidate-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.candidate-form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+}
+
+.candidate-forgot-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0284c7;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.candidate-forgot-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+.candidate-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.candidate-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.candidate-input {
+  width: 100%;
+  padding: 11px 14px 11px 42px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  color: #0f172a;
+  font-size: 0.92rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.candidate-input:focus {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.candidate-auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  margin-top: 22px;
+}
+
+.candidate-auth-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.candidate-auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.candidate-auth-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.candidate-auth-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.candidate-auth-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.candidate-back-btn {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.candidate-back-btn:hover {
+  text-decoration: underline;
+}
+
+/* Logged-In User Bar in Body */
+.candidate-session-bar {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.candidate-session-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-session-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.candidate-session-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.candidate-session-email {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.candidate-signout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.candidate-signout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
 

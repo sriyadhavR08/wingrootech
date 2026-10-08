@@ -16,7 +16,12 @@ import {
   AlertCircle,
   ShieldCheck,
   Award,
-  Check
+  Check,
+  Lock,
+  LogIn,
+  LogOut,
+  User,
+  KeyRound
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -25,6 +30,32 @@ import './StudentPortal.css';
 const API_BASE = API_BASE_URL || '';
 
 export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSwitchRole }) {
+  // Authentication State: candidate must be logged in to view their applications & passes
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('wingroo_student_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Login form state
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  // Forgot Password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+  const [forgotConfirmPass, setForgotConfirmPass] = useState('');
+  const [forgotUserId, setForgotUserId] = useState(null);
+  const [forgotStep, setForgotStep] = useState('verify'); // 'verify' | 'reset'
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [forgotErr, setForgotErr] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+
   // Tabs: 'internship' (Internship Apply) | 'events' (Events Apply)
   const [activeTab, setActiveTab] = useState('internship');
 
@@ -39,12 +70,110 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [activeSlip, setActiveSlip] = useState(null);
   const [activePass, setActivePass] = useState(null);
 
+  // When modal opens or user logs in, automatically fetch records if user is logged in
   useEffect(() => {
-    if (isOpen && initialQuery) {
-      setSearchQuery(initialQuery);
-      fetchStudentApplications(initialQuery);
+    if (isOpen) {
+      if (currentUser?.email) {
+        fetchStudentApplications(currentUser.email);
+      } else if (initialQuery) {
+        setLoginForm(prev => ({ ...prev, email: initialQuery }));
+      }
     }
-  }, [isOpen, initialQuery]);
+  }, [isOpen, currentUser]);
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: loginForm.email.trim(),
+          password: loginForm.password
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        fetchStudentApplications(data.user.email);
+      } else {
+        setLoginError(data.detail || 'Invalid email or password. Please check your credentials.');
+      }
+    } catch {
+      setLoginError('Unable to connect to authentication server. Please check your connection.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleForgotVerify = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: forgotEmail.trim(), 
+          register_number: forgotEmail.trim() 
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Verification failed');
+      setForgotUserId(data.user_id);
+      setForgotMsg(data.message || `Account verified for ${data.full_name}. Please choose a new password.`);
+      setForgotStep('reset');
+    } catch (err) {
+      setForgotErr(err.message);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleForgotReset = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: forgotUserId,
+          email: forgotEmail.trim(),
+          new_password: forgotNewPass,
+          confirm_password: forgotConfirmPass
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Password reset failed');
+      setForgotMsg(data.message || 'Password successfully updated! You can now sign in.');
+      setTimeout(() => {
+        setShowForgot(false);
+        setForgotStep('verify');
+        setLoginForm(prev => ({ ...prev, email: forgotEmail, password: forgotNewPass }));
+      }, 1500);
+    } catch (err) {
+      setForgotErr(err.message);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem('wingroo_student_user');
+    setCurrentUser(null);
+    setApplications([]);
+    setEventRegistrations([]);
+    setSearched(false);
+    setLoginForm({ email: '', password: '' });
+  };
 
   const fetchStudentApplications = async (queryToSearch) => {
     const q = (queryToSearch !== undefined ? queryToSearch : searchQuery).trim();
@@ -66,14 +195,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         setEventRegistrations(evRegs);
         if (apps.length > 0 || evRegs.length > 0) {
           sessionStorage.setItem('wingroo_student_lookup', q);
-          // If no internships found but events found, auto-switch to events tab
           if (apps.length === 0 && evRegs.length > 0) {
             setActiveTab('events');
           } else if (apps.length > 0) {
             setActiveTab('internship');
           }
         } else {
-          setTrackErrorMsg(data.message || 'No applications or event registrations found for this query.');
+          setTrackErrorMsg(data.message || 'No applications or event registrations found for this account.');
         }
       } else {
         setApplications([]);
@@ -107,6 +235,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         phone: eventRegistrations[0].phone,
         college: eventRegistrations[0].college,
         course: `Year: ${eventRegistrations[0].year || 'N/A'}`
+      };
+    }
+    if (currentUser) {
+      return {
+        name: currentUser.full_name,
+        email: currentUser.email,
+        phone: '',
+        college: 'Registered Candidate',
+        course: ''
       };
     }
     return null;
@@ -163,293 +300,464 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           </div>
         </div>
 
-        {/* Feature Navigation Bar: Only Internship Apply & Events Apply */}
-        <div className="student-nav-tabs-bar">
-          <button 
-            type="button"
-            className={`student-nav-tab ${activeTab === 'internship' ? 'active' : ''}`}
-            onClick={() => setActiveTab('internship')}
-          >
-            <GraduationCap size={16} />
-            <span>Internship Apply</span>
-            {applications.length > 0 && (
-              <span className="live-pill" style={{ background: '#0284c7', color: '#fff' }}>
-                {applications.length}
-              </span>
-            )}
-          </button>
+        {/* Feature Navigation Bar: Only when candidate is logged in */}
+        {currentUser && (
+          <div className="student-nav-tabs-bar">
+            <button 
+              type="button"
+              className={`student-nav-tab ${activeTab === 'internship' ? 'active' : ''}`}
+              onClick={() => setActiveTab('internship')}
+            >
+              <GraduationCap size={16} />
+              <span>Internship Apply</span>
+              {applications.length > 0 && (
+                <span className="live-pill" style={{ background: '#0284c7', color: '#fff' }}>
+                  {applications.length}
+                </span>
+              )}
+            </button>
 
-          <button 
-            type="button"
-            className={`student-nav-tab ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveTab('events')}
-          >
-            <Calendar size={16} />
-            <span>Events Apply</span>
-            {eventRegistrations.length > 0 && (
-              <span className="live-pill" style={{ background: '#0ea5e9', color: '#fff' }}>
-                {eventRegistrations.length}
-              </span>
-            )}
-          </button>
-        </div>
+            <button 
+              type="button"
+              className={`student-nav-tab ${activeTab === 'events' ? 'active' : ''}`}
+              onClick={() => setActiveTab('events')}
+            >
+              <Calendar size={16} />
+              <span>Events Apply</span>
+              {eventRegistrations.length > 0 && (
+                <span className="live-pill" style={{ background: '#0ea5e9', color: '#fff' }}>
+                  {eventRegistrations.length}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Modal Scrollable Body */}
         <div className="student-portal-body">
-          {/* Lookup Search Bar */}
-          <div className="student-search-card">
-            <div className="search-caption">
-              <Sparkles size={16} style={{ color: '#0284c7' }} />
-              <span>
-                {activeTab === 'internship'
-                  ? 'Track Internship Application Status & Download Official Slip'
-                  : 'Track Event Registration Status & Download Verified Entry Pass'}
-              </span>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); fetchStudentApplications(searchQuery); }} className="student-search-form">
-              <div className="search-input-wrap">
-                <Search size={18} className="search-field-icon" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Enter Registered Email, Phone Number, or Application / Registration #"
-                  className="student-search-input"
-                  required
-                />
-              </div>
-              <button type="submit" disabled={trackLoading} className="student-search-btn">
-                <span>{trackLoading ? 'Searching…' : 'Track Status'}</span>
-                <ArrowRight size={16} />
-              </button>
-            </form>
-            {trackErrorMsg && (
-              <div className="student-search-error">
-                <AlertCircle size={15} />
-                <span>{trackErrorMsg}</span>
-              </div>
-            )}
-          </div>
+          {/* ========================================================= */}
+          {/* 1. NOT LOGGED IN: SHOW CANDIDATE LOGIN & FORGOT PASSWORD  */}
+          {/* ========================================================= */}
+          {!currentUser ? (
+            <div className="candidate-login-container">
+              {showForgot ? (
+                /* Forgot / Reset Password Card */
+                <div className="candidate-login-card">
+                  <div className="candidate-login-icon-wrap">
+                    <KeyRound size={26} />
+                  </div>
+                  <h3 className="candidate-login-title">Reset Candidate Password</h3>
+                  <p className="candidate-login-desc">
+                    {forgotStep === 'verify'
+                      ? 'Enter your registered email address to verify your candidate account and create a new password.'
+                      : 'Set your new candidate portal password below.'}
+                  </p>
 
-          {/* Loading State */}
-          {trackLoading && (
-            <div className="student-loading-state">
-              <RefreshCw size={28} className="spin-anim" />
-              <p>Fetching your application details and real-time review status…</p>
-            </div>
-          )}
+                  {forgotErr && (
+                    <div className="candidate-auth-error">
+                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                      <span>{forgotErr}</span>
+                    </div>
+                  )}
 
-          {/* Not Searched State */}
-          {!trackLoading && !searched && (
-            <div className="student-welcome-card">
-              <div className="welcome-illustration">
-                {activeTab === 'internship' ? <GraduationCap size={32} /> : <Calendar size={32} />}
-              </div>
-              <h4>
-                {activeTab === 'internship' 
-                  ? 'Track Your Internship Application' 
-                  : 'Track Your Event Registration'}
-              </h4>
-              <p>
-                {activeTab === 'internship'
-                  ? 'Enter the email address or phone number you used when submitting your internship application to view real-time status, domain details, and print your official application receipt.'
-                  : 'Enter the email address or phone number you used when registering for Wingroo tech events, bootcamps, or workshops to view your confirmation and entry pass.'}
-              </p>
+                  {forgotMsg && (
+                    <div className="candidate-auth-success">
+                      <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                      <span>{forgotMsg}</span>
+                    </div>
+                  )}
 
-              <div className="welcome-perks-grid">
-                <div className="perk-box">
-                  <CheckCircle size={16} className="perk-check" />
-                  <span>Real-time Status Badges</span>
+                  {forgotStep === 'verify' ? (
+                    <form onSubmit={handleForgotVerify}>
+                      <div className="candidate-form-group">
+                        <label className="candidate-form-label">Registered Email Address</label>
+                        <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                          <Mail size={17} className="candidate-input-icon" />
+                          <input 
+                            type="email"
+                            value={forgotEmail}
+                            onChange={(e) => setForgotEmail(e.target.value)}
+                            placeholder="candidate@example.com"
+                            className="candidate-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <button type="submit" disabled={forgotLoading} className="candidate-auth-btn">
+                        {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <ShieldCheck size={16} />}
+                        <span>{forgotLoading ? 'Verifying Account…' : 'Verify Candidate Account'}</span>
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleForgotReset}>
+                      <div className="candidate-form-group">
+                        <label className="candidate-form-label">New Password (min 6 characters)</label>
+                        <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                          <Lock size={17} className="candidate-input-icon" />
+                          <input 
+                            type="password"
+                            value={forgotNewPass}
+                            onChange={(e) => setForgotNewPass(e.target.value)}
+                            placeholder="Enter new password"
+                            className="candidate-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="candidate-form-group">
+                        <label className="candidate-form-label">Confirm New Password</label>
+                        <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                          <Lock size={17} className="candidate-input-icon" />
+                          <input 
+                            type="password"
+                            value={forgotConfirmPass}
+                            onChange={(e) => setForgotConfirmPass(e.target.value)}
+                            placeholder="Re-enter new password"
+                            className="candidate-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <button type="submit" disabled={forgotLoading} className="candidate-auth-btn">
+                        {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <Lock size={16} />}
+                        <span>{forgotLoading ? 'Updating Password…' : 'Save New Password & Sign In'}</span>
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="candidate-auth-footer">
+                    <button 
+                      type="button" 
+                      onClick={() => { setShowForgot(false); setForgotErr(''); setForgotMsg(''); }}
+                      className="candidate-back-btn"
+                    >
+                      ← Back to Candidate Login
+                    </button>
+                  </div>
                 </div>
-                <div className="perk-box">
-                  <Printer size={16} className="perk-check" />
-                  <span>Printable Official Slips & Passes</span>
-                </div>
-                <div className="perk-box">
-                  <ShieldCheck size={16} className="perk-check" />
-                  <span>Verified Participant Records</span>
-                </div>
-              </div>
-            </div>
-          )}
+              ) : (
+                /* Standard Candidate Login Form */
+                <div className="candidate-login-card">
+                  <div className="candidate-login-icon-wrap">
+                    <LogIn size={26} />
+                  </div>
+                  <h3 className="candidate-login-title">Candidate Sign In</h3>
+                  <p className="candidate-login-desc">
+                    Sign in to view your internship applications, review statuses, and download official event passes.
+                  </p>
 
-          {/* Searched Results View */}
-          {!trackLoading && searched && (
+                  {loginError && (
+                    <div className="candidate-auth-error">
+                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                      <span>{loginError}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleLoginSubmit}>
+                    <div className="candidate-form-group">
+                      <label className="candidate-form-label">Registered Email Address</label>
+                      <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                        <Mail size={17} className="candidate-input-icon" />
+                        <input 
+                          type="email"
+                          value={loginForm.email}
+                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                          placeholder="candidate@example.com"
+                          className="candidate-input"
+                          autoComplete="username"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="candidate-form-group">
+                      <div className="candidate-label-row">
+                        <label className="candidate-form-label">Password</label>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setShowForgot(true);
+                            setForgotEmail(loginForm.email);
+                            setForgotErr('');
+                            setForgotMsg('');
+                            setForgotStep('verify');
+                          }}
+                          className="candidate-forgot-link"
+                        >
+                          Forgot Password?
+                        </button>
+                      </div>
+                      <div className="candidate-input-wrap">
+                        <Lock size={17} className="candidate-input-icon" />
+                        <input 
+                          type="password"
+                          value={loginForm.password}
+                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                          placeholder="Enter your password"
+                          className="candidate-input"
+                          autoComplete="current-password"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" disabled={loginLoading} className="candidate-auth-btn">
+                      {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
+                      <span>{loginLoading ? 'Signing in…' : 'Sign In to Candidate Portal'}</span>
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ========================================================= */
+            /* 2. LOGGED IN: SHOW CANDIDATE DETAILS, APPLICATIONS & PASSES*/
+            /* ========================================================= */
             <>
-              {/* Profile Summary Strip */}
-              {applicantProfile && (
-                <div className="student-profile-strip">
-                  <div className="student-avatar-big">
-                    {applicantProfile.name?.slice(0, 2).toUpperCase() || 'CD'}
+              {/* Candidate Logged-In Session Strip */}
+              <div className="candidate-session-bar">
+                <div className="candidate-session-info">
+                  <div className="candidate-session-avatar">
+                    {currentUser.full_name?.slice(0, 2).toUpperCase() || 'CD'}
                   </div>
-                  <div className="student-profile-info">
-                    <div className="student-full-name">{applicantProfile.name}</div>
-                    <div className="student-sub-detail">
-                      {applicantProfile.college || 'Candidate'} {applicantProfile.course ? `• ${applicantProfile.course}` : ''}
-                    </div>
-                    <div className="student-contact-chips">
-                      {applicantProfile.email && (
-                        <span className="contact-chip">
-                          <Mail size={12} />
-                          <span>{applicantProfile.email}</span>
-                        </span>
-                      )}
-                      {applicantProfile.phone && (
-                        <span className="contact-chip">
-                          <Phone size={12} />
-                          <span>{applicantProfile.phone}</span>
-                        </span>
-                      )}
+                  <div>
+                    <div className="candidate-session-name">{currentUser.full_name}</div>
+                    <div className="candidate-session-email">
+                      {currentUser.email} • Candidate Account Active
                     </div>
                   </div>
-                  <div className="student-apps-count">
-                    <span className="count-num">
-                      {activeTab === 'internship' ? applications.length : eventRegistrations.length}
-                    </span>
-                    <span className="count-text">
-                      {activeTab === 'internship' ? 'Applications' : 'Registrations'}
-                    </span>
+                </div>
+
+                <button type="button" onClick={handleSignOut} className="candidate-signout-btn" title="Sign out of your account">
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+
+              {/* Lookup / Search Bar for logged-in user */}
+              <div className="student-search-card">
+                <div className="search-caption">
+                  <Sparkles size={16} style={{ color: '#0284c7' }} />
+                  <span>
+                    {activeTab === 'internship'
+                      ? 'Track Internship Application Status & Download Official Slip'
+                      : 'Track Event Registration Status & Download Verified Entry Pass'}
+                  </span>
+                </div>
+                <form onSubmit={(e) => { e.preventDefault(); fetchStudentApplications(searchQuery); }} className="student-search-form">
+                  <div className="search-input-wrap">
+                    <Search size={18} className="search-field-icon" />
+                    <input 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Lookup by Email, Phone, or Application / Registration #"
+                      className="student-search-input"
+                    />
                   </div>
+                  <button type="submit" disabled={trackLoading} className="student-search-btn">
+                    <span>{trackLoading ? 'Searching…' : 'Search Records'}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+                {trackErrorMsg && (
+                  <div className="student-search-error">
+                    <AlertCircle size={15} />
+                    <span>{trackErrorMsg}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Loading State */}
+              {trackLoading && (
+                <div className="student-loading-state">
+                  <RefreshCw size={28} className="spin-anim" />
+                  <p>Fetching your application details and real-time review status…</p>
                 </div>
               )}
 
-              {/* 1. Internship Apply Results */}
-              {activeTab === 'internship' && (
-                <div>
-                  {applications.length > 0 ? (
-                    <div className="student-apps-list">
-                      {applications.map((app) => (
-                        <div key={app.id} className="student-app-card">
-                          <div className="app-card-top">
-                            <div className="app-id-pill">
-                              <FileText size={14} />
-                              <span>{app.application_no}</span>
-                            </div>
-                            <div className="app-date-meta">
-                              <Calendar size={13} />
-                              <span>Applied on {app.created_at ? app.created_at.slice(0, 10) : 'Recently'}</span>
-                            </div>
-                            <span className={`status-pill ${
-                              app.status === 'Approved' || app.status === 'Selected' ? 'badge-selected' :
-                              app.status === 'Shortlisted' ? 'badge-shortlist' :
-                              app.status === 'Rejected' ? 'badge-rejected' : 'badge-review'
-                            }`}>
-                              {app.status || 'Under Review'}
-                            </span>
-                          </div>
-
-                          <div className="app-program-row">
-                            <div>
-                              <div className="program-title">{app.technology || 'Full Stack Development'}</div>
-                              <div className="program-type">{app.internship_type || 'Internship'} • {app.college}</div>
-                            </div>
-                            <button 
-                              type="button"
-                              onClick={() => setActiveSlip(app)} 
-                              className="btn-print-slip"
-                              title="Print Official Slip"
-                            >
-                              <Printer size={15} />
-                              <span>Print Application Slip</span>
-                            </button>
-                          </div>
-
-                          {/* 4-Stage Stepper */}
-                          <div className="app-stepper-wrap">
-                            <div className="stepper-title">Application Progress Tracking</div>
-                            <div className="app-stepper">
-                              {[
-                                { key: 'Submitted', label: 'Submitted' },
-                                { key: 'Review', label: 'Under Review' },
-                                { key: 'Shortlisted', label: 'Shortlisted' },
-                                { key: 'Approved', label: 'Offer Confirmed' }
-                              ].map((step, idx) => {
-                                const currentStatus = app.status || 'Under Review';
-                                const isDone = 
-                                  idx === 0 || 
-                                  (idx === 1 && currentStatus !== 'Rejected') ||
-                                  (idx === 2 && (currentStatus === 'Shortlisted' || currentStatus === 'Approved' || currentStatus === 'Selected')) ||
-                                  (idx === 3 && (currentStatus === 'Approved' || currentStatus === 'Selected'));
-
-                                return (
-                                  <React.Fragment key={step.key}>
-                                    <div className={`step-node ${isDone ? 'step-done' : ''}`}>
-                                      <div className="step-circle">{isDone ? <Check size={13} /> : idx + 1}</div>
-                                      <div className="step-label">{step.label}</div>
-                                    </div>
-                                    {idx < 3 && <div className={`step-line ${isDone ? 'line-done' : ''}`} />}
-                                  </React.Fragment>
-                                );
-                              })}
-                            </div>
-                          </div>
+              {/* Searched Results View */}
+              {!trackLoading && (
+                <>
+                  {/* Profile Summary Strip */}
+                  {applicantProfile && (
+                    <div className="student-profile-strip">
+                      <div className="student-avatar-big">
+                        {applicantProfile.name?.slice(0, 2).toUpperCase() || 'CD'}
+                      </div>
+                      <div className="student-profile-info">
+                        <div className="student-full-name">{applicantProfile.name}</div>
+                        <div className="student-sub-detail">
+                          {applicantProfile.college || 'Candidate'} {applicantProfile.course ? `• ${applicantProfile.course}` : ''}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="student-not-found-card">
-                      <GraduationCap size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
-                      <h4>No Internship Applications Found</h4>
-                      <p>
-                        We could not find any internship applications registered with &apos;{searchQuery}&apos;.
-                        If you registered for an event instead, check the <strong>Events Apply</strong> tab above.
-                      </p>
+                        <div className="student-contact-chips">
+                          {applicantProfile.email && (
+                            <span className="contact-chip">
+                              <Mail size={12} />
+                              <span>{applicantProfile.email}</span>
+                            </span>
+                          )}
+                          {applicantProfile.phone && (
+                            <span className="contact-chip">
+                              <Phone size={12} />
+                              <span>{applicantProfile.phone}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="student-apps-count">
+                        <span className="count-num">
+                          {activeTab === 'internship' ? applications.length : eventRegistrations.length}
+                        </span>
+                        <span className="count-text">
+                          {activeTab === 'internship' ? 'Applications' : 'Registrations'}
+                        </span>
+                      </div>
                     </div>
                   )}
-                </div>
-              )}
 
-              {/* 2. Events Apply Results */}
-              {activeTab === 'events' && (
-                <div>
-                  {eventRegistrations.length > 0 ? (
-                    <div className="student-apps-list">
-                      {eventRegistrations.map((ev) => (
-                        <div key={ev.id} className="student-app-card" style={{ borderLeft: '4px solid #0284c7' }}>
-                          <div className="app-card-top">
-                            <div className="app-id-pill" style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', borderColor: '#bae6fd' }}>
-                              <Award size={14} />
-                              <span>{ev.registration_no}</span>
-                            </div>
-                            <div className="app-date-meta">
-                              <Calendar size={13} />
-                              <span>Registered on {ev.created_at ? ev.created_at.slice(0, 10) : 'Recently'}</span>
-                            </div>
-                            <span className="status-pill badge-selected">
-                              {ev.status || 'Confirmed'}
-                            </span>
-                          </div>
+                  {/* 1. Internship Apply Results */}
+                  {activeTab === 'internship' && (
+                    <div>
+                      {applications.length > 0 ? (
+                        <div className="student-apps-list">
+                          {applications.map((app) => (
+                            <div key={app.id} className="student-app-card">
+                              <div className="app-card-top">
+                                <div className="app-id-pill">
+                                  <FileText size={14} />
+                                  <span>{app.application_no}</span>
+                                </div>
+                                <div className="app-date-meta">
+                                  <Calendar size={13} />
+                                  <span>Applied on {app.created_at ? app.created_at.slice(0, 10) : 'Recently'}</span>
+                                </div>
+                                <span className={`status-pill ${
+                                  app.status === 'Approved' || app.status === 'Selected' ? 'badge-selected' :
+                                  app.status === 'Shortlisted' ? 'badge-shortlist' :
+                                  app.status === 'Rejected' ? 'badge-rejected' : 'badge-review'
+                                }`}>
+                                  {app.status || 'Under Review'}
+                                </span>
+                              </div>
 
-                          <div className="app-program-row">
-                            <div>
-                              <div className="program-title">{ev.event_title}</div>
-                              <div className="program-type">Attendee: {ev.name} • {ev.college} {ev.year ? `(${ev.year})` : ''}</div>
+                              <div className="app-program-row">
+                                <div>
+                                  <div className="program-title">{app.technology || 'Full Stack Development'}</div>
+                                  <div className="program-type">{app.internship_type || 'Internship'} • {app.college}</div>
+                                </div>
+                                <button 
+                                  type="button"
+                                  onClick={() => setActiveSlip(app)} 
+                                  className="btn-print-slip"
+                                  title="Print Official Slip"
+                                >
+                                  <Printer size={15} />
+                                  <span>Print Application Slip</span>
+                                </button>
+                              </div>
+
+                              {/* 4-Stage Stepper */}
+                              <div className="app-stepper-wrap">
+                                <div className="stepper-title">Application Progress Tracking</div>
+                                <div className="app-stepper">
+                                  {[
+                                    { key: 'Submitted', label: 'Submitted' },
+                                    { key: 'Review', label: 'Under Review' },
+                                    { key: 'Shortlisted', label: 'Shortlisted' },
+                                    { key: 'Approved', label: 'Offer Confirmed' }
+                                  ].map((step, idx) => {
+                                    const currentStatus = app.status || 'Under Review';
+                                    const isDone = 
+                                      idx === 0 || 
+                                      (idx === 1 && currentStatus !== 'Rejected') ||
+                                      (idx === 2 && (currentStatus === 'Shortlisted' || currentStatus === 'Approved' || currentStatus === 'Selected')) ||
+                                      (idx === 3 && (currentStatus === 'Approved' || currentStatus === 'Selected'));
+
+                                    return (
+                                      <React.Fragment key={step.key}>
+                                        <div className={`step-node ${isDone ? 'step-done' : ''}`}>
+                                          <div className="step-circle">{isDone ? <Check size={13} /> : idx + 1}</div>
+                                          <div className="step-label">{step.label}</div>
+                                        </div>
+                                        {idx < 3 && <div className={`step-line ${isDone ? 'line-done' : ''}`} />}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             </div>
-                            <button 
-                              type="button"
-                              onClick={() => setActivePass(ev)} 
-                              className="btn-print-slip"
-                              style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff', borderColor: 'transparent' }}
-                              title="View & Print Official Event Pass"
-                            >
-                              <Award size={15} />
-                              <span>View & Print Pass</span>
-                            </button>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="student-not-found-card">
-                      <Calendar size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
-                      <h4>No Event Registrations Found</h4>
-                      <p>
-                        We could not find any event passes registered with &apos;{searchQuery}&apos;.
-                        If you submitted an internship application instead, check the <strong>Internship Apply</strong> tab above.
-                      </p>
+                      ) : (
+                        <div className="student-not-found-card">
+                          <GraduationCap size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
+                          <h4>No Internship Applications Found</h4>
+                          <p>
+                            We could not find any internship applications registered with your account.
+                            If you registered for an event instead, check the <strong>Events Apply</strong> tab above.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
+
+                  {/* 2. Events Apply Results */}
+                  {activeTab === 'events' && (
+                    <div>
+                      {eventRegistrations.length > 0 ? (
+                        <div className="student-apps-list">
+                          {eventRegistrations.map((ev) => (
+                            <div key={ev.id} className="student-app-card" style={{ borderLeft: '4px solid #0284c7' }}>
+                              <div className="app-card-top">
+                                <div className="app-id-pill" style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', borderColor: '#bae6fd' }}>
+                                  <Award size={14} />
+                                  <span>{ev.registration_no}</span>
+                                </div>
+                                <div className="app-date-meta">
+                                  <Calendar size={13} />
+                                  <span>Registered on {ev.created_at ? ev.created_at.slice(0, 10) : 'Recently'}</span>
+                                </div>
+                                <span className="status-pill badge-selected">
+                                  {ev.status || 'Confirmed'}
+                                </span>
+                              </div>
+
+                              <div className="app-program-row">
+                                <div>
+                                  <div className="program-title">{ev.event_title}</div>
+                                  <div className="program-type">Attendee: {ev.name} • {ev.college} {ev.year ? `(${ev.year})` : ''}</div>
+                                </div>
+                                <button 
+                                  type="button"
+                                  onClick={() => setActivePass(ev)} 
+                                  className="btn-print-slip"
+                                  style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff', borderColor: 'transparent' }}
+                                  title="View & Print Official Event Pass"
+                                >
+                                  <Award size={15} />
+                                  <span>View & Print Pass</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="student-not-found-card">
+                          <Calendar size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
+                          <h4>No Event Registrations Found</h4>
+                          <p>
+                            We could not find any event passes registered with your account.
+                            If you submitted an internship application instead, check the <strong>Internship Apply</strong> tab above.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -459,7 +767,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
             <div className="portal-redirect-left">
               <ShieldCheck size={22} style={{ color: '#0284c7', flexShrink: 0 }} />
               <div>
-                <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>Looking for Certificate Verification or Candidate Account?</strong>
+                <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>Looking for Certificate Verification or Candidate Credential Account?</strong>
                 <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Certificate verification, candidate login & credential registration are hosted in the Certification Portal.</div>
               </div>
             </div>

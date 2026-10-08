@@ -111,7 +111,7 @@ def login():
 
     user = User.query.filter(db.func.lower(User.email) == email).first()
     if not user or not user.check_password(password):
-        return jsonify({"detail": "No active account found with the given credentials"}), 401
+        return jsonify({"detail": "Invalid email or password. If you haven't set a password yet, please click Forgot Password."}), 401
 
     if not user.is_active:
         return jsonify({"detail": "This account is inactive."}), 401
@@ -182,6 +182,44 @@ def forgot_password():
         profile = StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first()
         if profile and profile.user:
             user = profile.user
+
+    # If user doesn't exist in User table yet, check if they exist in internship_applications or event_registrations
+    if not user and (email or reg_no):
+        from database import get_db_connection
+        conn, db_type = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            query_val = email or reg_no
+            row = None
+            if db_type == "mysql":
+                cursor.execute("SELECT name, email FROM internship_applications WHERE LOWER(email) = %s OR application_no = %s LIMIT 1", (query_val.lower(), query_val))
+                row = cursor.fetchone()
+                if not row:
+                    cursor.execute("SELECT name, email FROM event_registrations WHERE LOWER(email) = %s OR registration_no = %s LIMIT 1", (query_val.lower(), query_val))
+                    row = cursor.fetchone()
+            else:
+                cursor.execute("SELECT name, email FROM internship_applications WHERE LOWER(email) = ? OR application_no = ? LIMIT 1", (query_val.lower(), query_val))
+                row = cursor.fetchone()
+                if not row:
+                    cursor.execute("SELECT name, email FROM event_registrations WHERE LOWER(email) = ? OR registration_no = ? LIMIT 1", (query_val.lower(), query_val))
+                    row = cursor.fetchone()
+            if row:
+                row_dict = dict(row)
+                cand_name = row_dict.get("name") or "Candidate"
+                cand_email = (row_dict.get("email") or "").lower()
+                if cand_email:
+                    new_user = User(
+                        email=cand_email,
+                        full_name=cand_name,
+                        role="STUDENT",
+                        is_active=True
+                    )
+                    new_user.set_password("TempPassword123!")
+                    db.session.add(new_user)
+                    db.session.commit()
+                    user = new_user
+        except Exception as e:
+            print("[Forgot password lookup error]", e)
 
     if not user:
         return jsonify({"detail": "No candidate account found matching this email or register number."}), 404
