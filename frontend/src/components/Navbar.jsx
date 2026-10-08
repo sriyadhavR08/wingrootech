@@ -89,7 +89,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
         {/* Action Buttons */}
         <div className="navbar-actions">
           <a
-            href="/internship/verify"
+            href="/internship"
             className="nav-verify-btn"
             title="Certificate & Verification Portal"
           >
@@ -139,7 +139,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
           })}
           <div className="mobile-cta-wrapper">
             <a
-              href="/internship/verify"
+              href="/internship"
               className="mobile-verify-btn"
               onClick={() => setMobileMenuOpen(false)}
             >

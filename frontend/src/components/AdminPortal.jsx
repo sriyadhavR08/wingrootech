@@ -41,6 +41,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   });
   const [passcode, setPasscode] = useState('');
   const [authError, setAuthError] = useState('');
+  const [showForgotPasscode, setShowForgotPasscode] = useState(false);
   
   const [activeTab, setActiveTab] = useState('contacts'); // 'contacts' | 'internships' | 'event_registrations' | 'projects' | 'events'
   const [stats, setStats] = useState({ 
@@ -996,6 +997,16 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
               </p>
 
               <form onSubmit={handleLogin}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569', margin: 0 }}>Security Passcode</label>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowForgotPasscode(!showForgotPasscode)}
+                    style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                  >
+                    {showForgotPasscode ? 'Hide Recovery' : 'Forgot Passcode?'}
+                  </button>
+                </div>
                 <input 
                   type="password"
                   value={passcode}
@@ -1011,6 +1022,21 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                   <CheckCircle size={16} />
                 </button>
               </form>
+
+              {showForgotPasscode && (
+                <div style={{ marginTop: '14px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'left', fontSize: '0.8rem', color: '#475569' }}>
+                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Admin Passcode Recovery:</strong>
+                  <p style={{ margin: '0 0 8px 0' }}>The default administrator security key is <code>admin123</code> (or <code>wingroo2026</code>).</p>
+                  <button
+                    type="button"
+                    onClick={() => { setPasscode('admin123'); setAuthError(''); }}
+                    style={{ background: '#e0e7ff', border: '1px solid #c7d2fe', color: '#4338ca', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Autofill "admin123" & Unlock
+                  </button>
+                </div>
+              )}
+
               <p className="admin-hint-text">Default Key: <code>admin123</code></p>
             </div>
           </div>

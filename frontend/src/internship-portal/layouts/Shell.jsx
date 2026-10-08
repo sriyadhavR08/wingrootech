@@ -76,9 +76,6 @@ export default function Shell() {
               <NavLink to={prefix || "/internship"}>Home</NavLink>
               <NavLink to={`${prefix}/verify`}>Verify certificate</NavLink>
               <NavLink to={`${prefix}/login`}>Login</NavLink>
-              <Link className="btn btn-primary btn-sm" to={`${prefix}/register`}>
-                Register
-              </Link>
             </>
           ) : (
             <div className="d-flex align-items-center gap-3">
@@ -130,13 +127,6 @@ export default function Shell() {
                 <NavLink to={`${prefix}/login`} className="mobile-nav-link" onClick={() => setOpen(false)}>
                   <i className="bi bi-box-arrow-in-right me-2"></i> Login
                 </NavLink>
-                <Link
-                  className="btn btn-primary w-100 mt-2"
-                  to={`${prefix}/register`}
-                  onClick={() => setOpen(false)}
-                >
-                  <i className="bi bi-person-plus me-1"></i> Register Candidate
-                </Link>
               </div>
             ) : (
               <div className="d-flex flex-column gap-2">

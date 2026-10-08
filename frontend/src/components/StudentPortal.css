@@ -124,12 +124,16 @@
 /* Body - Clean Dashboard Slate */
 .student-portal-body {
   padding: 24px 28px;
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
   background: #f8fafc;
   color: #0f172a;
+  box-sizing: border-box;
 }
 
 /* Search Box */
@@ -877,25 +881,38 @@
   display: flex;
   background: #0f172a;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0 16px;
-  gap: 6px;
+  padding: 0 20px;
+  gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  align-items: stretch;
 }
 
 .student-nav-tab {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 18px;
+  padding: 0 22px;
+  height: 52px;
+  box-sizing: border-box;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   color: #94a3b8;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  margin: 0;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .student-nav-tab:hover {
@@ -905,8 +922,8 @@
 
 .student-nav-tab.active {
   color: #ffffff;
-  border-bottom-color: #0284c7;
-  background: rgba(2, 132, 199, 0.12);
+  border-bottom: 3px solid #0284c7;
+  background: rgba(2, 132, 199, 0.14);
 }
 
 .student-nav-tab .live-pill {
@@ -916,6 +933,101 @@
   background: #10b981;
   color: #fff;
   font-weight: 700;
+}
+
+/* Forgot Password Link in Login */
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.forgot-password-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+/* Register Redirect Card inside Candidate Login */
+.register-redirect-card {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, rgba(99, 102, 241, 0.08) 100%);
+  border: 1.5px dashed rgba(2, 132, 199, 0.35);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.register-redirect-text strong {
+  display: block;
+  font-size: 0.92rem;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.register-redirect-text p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.register-redirect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+  width: 100%;
+}
+
+.register-redirect-btn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+/* Back to Login Bar in Register View */
+.register-top-back-bar {
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.back-to-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.back-to-login-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 /* Verification Workspace */

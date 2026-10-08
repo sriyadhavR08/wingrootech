@@ -160,11 +160,11 @@ const CANDIDATE_CATEGORIES = [
 ];
 
 export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSwitchRole }) {
-  // Top Active Mode: 'verify' | 'login' | 'register' | 'workspace' | 'track'
+  // Top Active Mode: 'login' | 'register' | 'workspace' | 'track' | 'verify' | 'forgot'
   const [activeMode, setActiveMode] = useState(() => {
     if (window.location.hash.startsWith('#verify')) return 'verify';
     if (getCurrentStudentUser()) return 'workspace';
-    return 'verify';
+    return 'login';
   });
 
   // ==========================================
@@ -186,12 +186,22 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [verifyError, setVerifyError] = useState('');
 
   // ==========================================
-  // 2. AUTHENTICATION (Login & Register)
+  // 2. AUTHENTICATION (Login, Register & Forgot Password)
   // ==========================================
   const [currentUser, setCurrentUser] = useState(() => getCurrentStudentUser());
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  // Forgot Password State
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+  const [forgotConfirmPass, setForgotConfirmPass] = useState('');
+  const [forgotUserId, setForgotUserId] = useState(null);
+  const [forgotStep, setForgotStep] = useState('verify'); // 'verify' | 'reset'
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [forgotErr, setForgotErr] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const [regForm, setRegForm] = useState({
     candidate_type: 'COLLEGE_INTERN',
@@ -387,6 +397,63 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
     }
   };
 
+  // Candidate Forgot Password Handlers
+  const handleForgotVerify = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail, register_number: forgotEmail })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Verification failed');
+      setForgotUserId(data.user_id);
+      setForgotMsg(data.message || `Account verified for ${data.full_name}. Please choose a new password.`);
+      setForgotStep('reset');
+    } catch (err) {
+      setForgotErr(err.message);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleForgotReset = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: forgotUserId,
+          email: forgotEmail,
+          new_password: forgotNewPass,
+          confirm_password: forgotConfirmPass
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Reset failed');
+      setForgotMsg(data.message || 'Password successfully updated! You can now sign in.');
+      setTimeout(() => {
+        setActiveMode('login');
+        setForgotStep('verify');
+        setForgotNewPass('');
+        setForgotConfirmPass('');
+        setLoginForm(prev => ({ ...prev, email: forgotEmail }));
+      }, 2000);
+    } catch (err) {
+      setForgotErr(err.message);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   // Student Registration
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
@@ -579,17 +646,8 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           </div>
         </div>
 
-        {/* Feature Navigation Bar: Verify, Login, Register, Workspace, Track */}
+        {/* Feature Navigation Bar: Candidate Login First, Track Application Middle, Verify Certificate Last */}
         <div className="student-nav-tabs-bar">
-          <button 
-            type="button"
-            className={`student-nav-tab ${activeMode === 'verify' ? 'active' : ''}`}
-            onClick={() => setActiveMode('verify')}
-          >
-            <ShieldCheck size={16} />
-            <span>Verify Certificate</span>
-          </button>
-
           {currentUser ? (
             <button 
               type="button"
@@ -601,24 +659,14 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               <span className="live-pill">Active</span>
             </button>
           ) : (
-            <>
-              <button 
-                type="button"
-                className={`student-nav-tab ${activeMode === 'login' ? 'active' : ''}`}
-                onClick={() => setActiveMode('login')}
-              >
-                <LogIn size={16} />
-                <span>Candidate Login</span>
-              </button>
-              <button 
-                type="button"
-                className={`student-nav-tab ${activeMode === 'register' ? 'active' : ''}`}
-                onClick={() => setActiveMode('register')}
-              >
-                <UserPlus size={16} />
-                <span>Register Account</span>
-              </button>
-            </>
+            <button 
+              type="button"
+              className={`student-nav-tab ${(activeMode === 'login' || activeMode === 'register' || activeMode === 'forgot') ? 'active' : ''}`}
+              onClick={() => setActiveMode('login')}
+            >
+              <LogIn size={16} />
+              <span>Candidate Login</span>
+            </button>
           )}
 
           <button 
@@ -628,6 +676,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           >
             <Search size={16} />
             <span>Track Application</span>
+          </button>
+
+          <button 
+            type="button"
+            className={`student-nav-tab ${activeMode === 'verify' ? 'active' : ''}`}
+            onClick={() => setActiveMode('verify')}
+          >
+            <ShieldCheck size={16} />
+            <span>Verify Certificate</span>
           </button>
         </div>
 
@@ -841,7 +898,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           )}
 
           {/* ========================================================= */}
-          {/* 2. STUDENT LOGIN                                          */}
+          {/* 2. CANDIDATE LOGIN (FIRST TAB)                            */}
           {/* ========================================================= */}
           {activeMode === 'login' && !currentUser && (
             <div className="auth-form-container">
@@ -876,7 +933,16 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 </div>
 
                 <div className="form-row">
-                  <label>Password</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ margin: 0 }}>Password</label>
+                    <button 
+                      type="button" 
+                      onClick={() => { setActiveMode('forgot'); setForgotErr(''); setForgotMsg(''); setForgotStep('verify'); }}
+                      className="forgot-password-link"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                   <div className="form-input-wrap">
                     <Lock size={16} />
                     <input 
@@ -895,20 +961,137 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 </button>
               </form>
 
-              <div className="auth-switch-prompt">
-                <span>New intern at Wingroo?</span>
-                <button type="button" onClick={() => setActiveMode('register')} className="switch-link">
-                  Create Candidate Account
+              {/* Direct Redirect to Register Account */}
+              <div className="register-redirect-card">
+                <div className="register-redirect-text">
+                  <strong>Don't have an internship account?</strong>
+                  <p>Register as a College Intern, School Candidate, or Graduate to get verified certificates.</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setActiveMode('register')} 
+                  className="register-redirect-btn"
+                >
+                  <UserPlus size={16} />
+                  <span>Register Account Now →</span>
                 </button>
               </div>
             </div>
           )}
 
           {/* ========================================================= */}
-          {/* 3. STUDENT REGISTRATION                                   */}
+          {/* 2.1 FORGOT PASSWORD VIEW                                  */}
+          {/* ========================================================= */}
+          {activeMode === 'forgot' && !currentUser && (
+            <div className="auth-form-container">
+              <div className="auth-header-card">
+                <div className="auth-icon-circle">
+                  <Lock size={24} />
+                </div>
+                <h3>Reset Candidate Password</h3>
+                <p>Enter your registered email address or register number to reset your password.</p>
+              </div>
+
+              {forgotErr && (
+                <div className="auth-error-banner">
+                  <AlertCircle size={16} />
+                  <span>{forgotErr}</span>
+                </div>
+              )}
+
+              {forgotMsg && (
+                <div className="auth-success-banner">
+                  <CheckCircle size={16} />
+                  <span>{forgotMsg}</span>
+                </div>
+              )}
+
+              {forgotStep === 'verify' ? (
+                <form onSubmit={handleForgotVerify} className="auth-form">
+                  <div className="form-row">
+                    <label>Registered Email or Register Number</label>
+                    <div className="form-input-wrap">
+                      <Mail size={16} />
+                      <input 
+                        type="text" 
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="candidate@example.com or Roll No"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={forgotLoading} className="auth-submit-btn">
+                    {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <CheckCircle size={16} />}
+                    <span>{forgotLoading ? 'Verifying...' : 'Verify Candidate Account'}</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleForgotReset} className="auth-form">
+                  <div className="form-row">
+                    <label>New Password (min 6 characters)</label>
+                    <div className="form-input-wrap">
+                      <Lock size={16} />
+                      <input 
+                        type="password" 
+                        value={forgotNewPass}
+                        onChange={(e) => setForgotNewPass(e.target.value)}
+                        placeholder="Enter new password"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <label>Confirm New Password</label>
+                    <div className="form-input-wrap">
+                      <Lock size={16} />
+                      <input 
+                        type="password" 
+                        value={forgotConfirmPass}
+                        onChange={(e) => setForgotConfirmPass(e.target.value)}
+                        placeholder="Re-enter new password"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={forgotLoading} className="auth-submit-btn">
+                    {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <Lock size={16} />}
+                    <span>{forgotLoading ? 'Updating Password...' : 'Save New Password'}</span>
+                  </button>
+                </form>
+              )}
+
+              <div className="auth-switch-prompt">
+                <button 
+                  type="button" 
+                  onClick={() => { setActiveMode('login'); setForgotErr(''); setForgotMsg(''); }} 
+                  className="switch-link"
+                >
+                  ← Back to Candidate Login
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 3. STUDENT REGISTRATION (ACCESSIBLE VIA LOGIN REDIRECT)   */}
           {/* ========================================================= */}
           {activeMode === 'register' && !currentUser && (
             <div className="auth-form-container register-large">
+              <div className="register-top-back-bar">
+                <button 
+                  type="button" 
+                  onClick={() => setActiveMode('login')} 
+                  className="back-to-login-btn"
+                >
+                  <ArrowLeft size={16} />
+                  <span>Already have an account? Back to Candidate Login</span>
+                </button>
+              </div>
+
               <div className="auth-header-card">
                 <div className="auth-icon-circle">
                   <UserPlus size={24} />

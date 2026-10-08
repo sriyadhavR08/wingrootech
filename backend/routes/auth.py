@@ -164,3 +164,66 @@ def token_refresh():
         return jsonify({"access": access_token}), 200
     except Exception:
         return jsonify({"detail": "Token is invalid or expired."}), 401
+
+
+@auth_bp.route("/api/auth/forgot-password/", methods=["POST"])
+def forgot_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip().lower()
+    reg_no = data.get("register_number", "").strip().upper()
+
+    if not email and not reg_no:
+        return jsonify({"detail": "Please provide your registered email or register number."}), 400
+
+    user = None
+    if email:
+        user = User.query.filter(db.func.lower(User.email) == email).first()
+    if not user and reg_no:
+        profile = StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first()
+        if profile and profile.user:
+            user = profile.user
+
+    if not user:
+        return jsonify({"detail": "No candidate account found matching this email or register number."}), 404
+
+    return jsonify({
+        "success": True,
+        "message": f"Account verified for {user.full_name}.",
+        "user_id": user.id,
+        "email": user.email,
+        "full_name": user.full_name
+    }), 200
+
+
+@auth_bp.route("/api/auth/reset-password/", methods=["POST"])
+def reset_password():
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    email = data.get("email", "").strip().lower()
+    new_password = data.get("new_password", "")
+    confirm_password = data.get("confirm_password", "")
+
+    if not new_password:
+        return jsonify({"detail": "New password is required."}), 400
+    if len(new_password) < 6:
+        return jsonify({"detail": "Password must be at least 6 characters long."}), 400
+    if new_password != confirm_password:
+        return jsonify({"detail": "Passwords do not match."}), 400
+
+    user = None
+    if user_id:
+        user = User.query.get(user_id)
+    elif email:
+        user = User.query.filter(db.func.lower(User.email) == email).first()
+
+    if not user:
+        return jsonify({"detail": "User account not found."}), 404
+
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Password successfully updated! You can now login with your new password."
+    }), 200
+

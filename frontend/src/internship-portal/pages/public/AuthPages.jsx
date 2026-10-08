@@ -27,40 +27,176 @@ export function Login() {
       setBusy(false);
     }
   }
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotNewPass, setForgotNewPass] = useState("");
+  const [forgotConfirmPass, setForgotConfirmPass] = useState("");
+  const [forgotUserId, setForgotUserId] = useState(null);
+  const [forgotStep, setForgotStep] = useState("verify"); // 'verify' | 'reset'
+  const [forgotMsg, setForgotMsg] = useState("");
+  const [forgotErr, setForgotErr] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
+
+  async function handleForgotVerify(e) {
+    e.preventDefault();
+    setForgotErr("");
+    setForgotMsg("");
+    setForgotBusy(true);
+    try {
+      const res = await api.post("/auth/forgot-password/", { email: forgotEmail, register_number: forgotEmail });
+      setForgotUserId(res.data.user_id);
+      setForgotMsg(res.data.message || "Account verified. Please set your new password.");
+      setForgotStep("reset");
+    } catch (err) {
+      setForgotErr(await errorText(err));
+    } finally {
+      setForgotBusy(false);
+    }
+  }
+
+  async function handleForgotReset(e) {
+    e.preventDefault();
+    setForgotErr("");
+    setForgotMsg("");
+    setForgotBusy(true);
+    try {
+      const res = await api.post("/auth/reset-password/", {
+        user_id: forgotUserId,
+        email: forgotEmail,
+        new_password: forgotNewPass,
+        confirm_password: forgotConfirmPass
+      });
+      setForgotMsg(res.data.message || "Password successfully reset! You can now login.");
+      setTimeout(() => {
+        setShowForgot(false);
+        setForgotStep("verify");
+        setForgotNewPass("");
+        setForgotConfirmPass("");
+      }, 2500);
+    } catch (err) {
+      setForgotErr(await errorText(err));
+    } finally {
+      setForgotBusy(false);
+    }
+  }
+
   return (
     <section className="card auth-card">
       <img className="auth-logo" src={logo} alt="Wingroo" />
-      <h1 className="h3">Welcome back</h1>
+      <h1 className="h3">{showForgot ? "Reset Password" : "Welcome back"}</h1>
       <p className="text-secondary">
-        Sign in to access your internship certificate portal.
+        {showForgot 
+          ? "Enter your registered email or register number to reset your password." 
+          : "Sign in to access your internship certificate portal."}
       </p>
-      <Notice message={error} />
-      <form onSubmit={submit}>
-        <div className="row g-3 single-fields">
-          <Field
-            name="email"
-            label="Email"
-            type="email"
-            autoComplete="username"
-            value={values.email}
-            onChange={(e) => setValues({ ...values, email: e.target.value })}
-          />
-          <Field
-            name="password"
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            value={values.password}
-            onChange={(e) => setValues({ ...values, password: e.target.value })}
-          />
+
+      {showForgot ? (
+        <div>
+          {forgotMsg && <Notice type="success" message={forgotMsg} />}
+          {forgotErr && <Notice message={forgotErr} />}
+
+          {forgotStep === "verify" ? (
+            <form onSubmit={handleForgotVerify}>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Registered Email or Register Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="candidate@example.com or Reg No"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <button className="btn btn-primary w-100 mb-3" disabled={forgotBusy}>
+                {forgotBusy ? "Verifying..." : "Verify Candidate Account"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleForgotReset}>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">New Password (min 6 characters)</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="New password"
+                  value={forgotNewPass}
+                  onChange={(e) => setForgotNewPass(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Confirm New Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Confirm new password"
+                  value={forgotConfirmPass}
+                  onChange={(e) => setForgotConfirmPass(e.target.value)}
+                  required
+                />
+              </div>
+              <button className="btn btn-primary w-100 mb-3" disabled={forgotBusy}>
+                {forgotBusy ? "Updating Password..." : "Set New Password"}
+              </button>
+            </form>
+          )}
+
+          <div className="text-center">
+            <button 
+              type="button" 
+              onClick={() => { setShowForgot(false); setForgotErr(""); setForgotMsg(""); }} 
+              className="btn btn-link text-decoration-none"
+            >
+              ← Back to Login
+            </button>
+          </div>
         </div>
-        <button className="btn btn-primary w-100 mt-4" disabled={busy}>
-          {busy ? "Signing in…" : "Login"}
-        </button>
-      </form>
-      <p className="mb-0 mt-4 text-center">
-        New to Wingroo? <Link to={`${prefix}/register`}>Create an account</Link>
-      </p>
+      ) : (
+        <>
+          <Notice message={error} />
+          <form onSubmit={submit}>
+            <div className="row g-3 single-fields">
+              <Field
+                name="email"
+                label="Email"
+                type="email"
+                autoComplete="username"
+                value={values.email}
+                onChange={(e) => setValues({ ...values, email: e.target.value })}
+              />
+              <div>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label className="form-label mb-0 fw-semibold">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot(true); setForgotStep("verify"); setForgotErr(""); setForgotMsg(""); }}
+                    className="btn btn-link p-0 text-decoration-none small text-primary"
+                    style={{ fontSize: "0.82rem" }}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <input
+                  name="password"
+                  type="password"
+                  className="form-control"
+                  autoComplete="current-password"
+                  value={values.password || ""}
+                  onChange={(e) => setValues({ ...values, password: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <button className="btn btn-primary w-100 mt-4" disabled={busy}>
+              {busy ? "Signing in…" : "Login"}
+            </button>
+          </form>
+          <p className="mb-0 mt-4 text-center">
+            New to Wingroo? <Link to={`${prefix}/register`}>Create an account</Link>
+          </p>
+        </>
+      )}
     </section>
   );
 }
