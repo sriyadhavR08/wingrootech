@@ -2,7 +2,7 @@ import datetime
 from functools import wraps
 import jwt
 from flask import request, jsonify, current_app, g
-from models import User, StudentProfile
+from models import db, User, StudentProfile, Internship
 
 
 def generate_tokens(user):
@@ -110,15 +110,111 @@ def certificate_data(cert):
     }
 
 
+def ensure_student_records(user):
+    """
+    Ensure a STUDENT user has both a StudentProfile and an Internship record.
+    If missing, intelligently link details from internship_applications or event_registrations table.
+    """
+    if not user or user.role != "STUDENT":
+        return
+
+    import secrets
+    from datetime import date
+    from database import get_db_connection
+
+    profile = user.profile
+    internship = user.internship
+
+    if profile and internship:
+        return
+
+    # Check if there's an application in internship_applications or event_registrations
+    app_data = {}
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
+        ph = "%s" if db_type == "mysql" else "?"
+        cursor.execute(
+            f"SELECT * FROM internship_applications WHERE LOWER(email) = {ph} ORDER BY id DESC LIMIT 1",
+            (user.email.lower(),)
+        )
+        row = cursor.fetchone()
+        if not row:
+            cursor.execute(
+                f"SELECT * FROM event_registrations WHERE LOWER(email) = {ph} ORDER BY id DESC LIMIT 1",
+                (user.email.lower(),)
+            )
+            row = cursor.fetchone()
+
+        if row:
+            app_data = dict(row)
+    except Exception as e:
+        print("[ensure_student_records] DB lookup error:", e)
+
+    # 1. Ensure StudentProfile
+    if not profile:
+        reg_no = (
+            app_data.get("application_no")
+            or app_data.get("registration_no")
+            or f"WIN-{secrets.token_hex(4).upper()}"
+        )
+        existing_reg = StudentProfile.query.filter(
+            db.func.upper(StudentProfile.register_number) == reg_no.upper()
+        ).first()
+        if existing_reg:
+            reg_no = f"WIN-{secrets.token_hex(4).upper()}"
+
+        profile = StudentProfile(
+            user=user,
+            candidate_type="COLLEGE_INTERN",
+            gender="MALE",
+            mobile_number=app_data.get("phone") or "",
+            college_name=app_data.get("college") or "Registered Candidate",
+            department=app_data.get("course") or "Computer Science",
+            course=app_data.get("course") or "B.E / B.Tech",
+            register_number=reg_no,
+        )
+        db.session.add(profile)
+        user.profile = profile
+
+    # 2. Ensure Internship
+    if not internship:
+        proj = (
+            app_data.get("technology")
+            or app_data.get("internship_type")
+            or "Full Stack Web Development"
+        )
+        start_d = date.today()
+        if app_data.get("created_at"):
+            try:
+                created_val = app_data["created_at"]
+                if hasattr(created_val, "date"):
+                    start_d = created_val.date()
+                elif isinstance(created_val, str):
+                    start_d = date.fromisoformat(created_val.split(" ")[0].split("T")[0])
+            except Exception:
+                start_d = date.today()
+
+        internship = Internship(
+            student=user,
+            project_name=proj,
+            start_date=start_d,
+            status="REGISTERED",
+        )
+        db.session.add(internship)
+        user.internship = internship
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("[ensure_student_records] Commit error:", e)
+
+
 def student_data(user, request_host_url="http://127.0.0.1:5000"):
+    ensure_student_records(user)
     p = user.profile
     i = user.internship
-    if not p or not i:
-        return {
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-        }
 
     def format_media_url(file_path):
         if not file_path:
@@ -128,8 +224,8 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
         clean_path = file_path.lstrip("/")
         return f"{request_host_url}/media/{clean_path}"
 
-    duration = (i.end_date - i.start_date).days + 1 if (i.end_date and i.start_date) else None
-    cand_type = getattr(p, "candidate_type", "COLLEGE_INTERN")
+    duration = (i.end_date - i.start_date).days + 1 if (i and i.end_date and i.start_date) else None
+    cand_type = getattr(p, "candidate_type", "COLLEGE_INTERN") if p else "COLLEGE_INTERN"
     cand_label_map = {
         "SCHOOL_STUDENT": "School Student Intern",
         "COLLEGE_INTERN": "College Intern",
@@ -142,20 +238,20 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
         "email": user.email,
         "candidate_type": cand_type,
         "candidate_type_display": cand_label_map.get(cand_type, "College Intern"),
-        "gender": p.gender,
-        "mobile_number": p.mobile_number,
-        "college_name": p.college_name,
-        "department": p.department,
-        "course": p.course,
-        "register_number": p.register_number,
-        "college_id_card": format_media_url(p.college_id_card),
-        "selfie_photo": format_media_url(p.selfie_photo),
-        "internship_id": i.id,
-        "project_name": i.project_name,
-        "start_date": i.start_date.isoformat() if i.start_date else None,
-        "end_date": i.end_date.isoformat() if i.end_date else None,
-        "status": i.status,
-        "completed_at": i.completed_at.isoformat() if i.completed_at else None,
+        "gender": getattr(p, "gender", "MALE") if p else "MALE",
+        "mobile_number": getattr(p, "mobile_number", "") if p else "",
+        "college_name": getattr(p, "college_name", "") if p else "",
+        "department": getattr(p, "department", "") if p else "",
+        "course": getattr(p, "course", "") if p else "",
+        "register_number": getattr(p, "register_number", "") if p else "",
+        "college_id_card": format_media_url(getattr(p, "college_id_card", None)) if p else None,
+        "selfie_photo": format_media_url(getattr(p, "selfie_photo", None)) if p else None,
+        "internship_id": i.id if i else None,
+        "project_name": getattr(i, "project_name", "") if i else "",
+        "start_date": i.start_date.isoformat() if (i and i.start_date) else None,
+        "end_date": i.end_date.isoformat() if (i and i.end_date) else None,
+        "status": getattr(i, "status", "REGISTERED") if i else "REGISTERED",
+        "completed_at": i.completed_at.isoformat() if (i and i.completed_at) else None,
         "duration_days": duration,
-        "certificate": certificate_data(i.certificate),
+        "certificate": certificate_data(i.certificate) if (i and i.certificate) else None,
     }

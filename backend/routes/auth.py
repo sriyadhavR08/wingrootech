@@ -1,7 +1,7 @@
 from datetime import date
 from flask import Blueprint, request, jsonify, current_app, g
 from models import db, User, StudentProfile, Internship
-from services.auth import generate_tokens, jwt_required
+from services.auth import generate_tokens, jwt_required, ensure_student_records
 from services.storage import save_base64_file
 
 auth_bp = Blueprint("auth", __name__)
@@ -180,6 +180,14 @@ def candidate_register():
             register_number=auto_reg_no,
         )
         db.session.add(profile)
+
+        internship = Internship(
+            student=user,
+            project_name=data.get("technology") or data.get("project_name") or "Internship Program",
+            start_date=date.today(),
+            status="REGISTERED",
+        )
+        db.session.add(internship)
         db.session.commit()
 
         access_token, refresh_token = generate_tokens(user)
@@ -217,6 +225,9 @@ def login():
 
     if not user.is_active:
         return jsonify({"detail": "This account is inactive."}), 401
+
+    if user.role == "STUDENT":
+        ensure_student_records(user)
 
     profile = StudentProfile.query.filter_by(user_id=user.id).first()
     user_phone = profile.mobile_number if profile and profile.mobile_number != "N/A" else ""
@@ -331,6 +342,9 @@ def forgot_password():
 
     if not user:
         return jsonify({"detail": "No candidate account found matching this email or register number."}), 404
+
+    if user.role == "STUDENT":
+        ensure_student_records(user)
 
     return jsonify({
         "success": True,

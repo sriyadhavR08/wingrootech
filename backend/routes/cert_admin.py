@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 from flask import Blueprint, request, jsonify, make_response, current_app
 from models import db, User, StudentProfile, Internship, Certificate
-from services.auth import admin_required, student_data, certificate_data
+from services.auth import admin_required, student_data, certificate_data, ensure_student_records
 from services.pdf import snapshot_data, render_certificate_pdf
 from services.certificate import generate_certificate
 from services.storage import save_base64_file
@@ -38,6 +38,13 @@ def dashboard():
 @admin_required
 def students():
     host_url = request.host_url.rstrip("/")
+    # Auto-initialize any student lacking profile or internship
+    unlinked = User.query.filter_by(role="STUDENT").filter(
+        db.or_(~User.profile.has(), ~User.internship.has())
+    ).all()
+    for u in unlinked:
+        ensure_student_records(u)
+
     query = User.query.filter_by(role="STUDENT").join(StudentProfile, User.profile).join(Internship, User.internship)
 
     search = request.args.get("search", "").strip()
@@ -84,6 +91,8 @@ def student_detail(pk):
     user = User.query.filter_by(id=pk, role="STUDENT").first()
     if not user:
         return jsonify({"detail": "Student not found."}), 404
+
+    ensure_student_records(user)
 
     if request.method == "PUT":
         internship = user.internship

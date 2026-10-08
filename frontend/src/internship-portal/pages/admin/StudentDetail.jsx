@@ -72,6 +72,10 @@ export default function StudentDetail() {
   }
 
   async function showPreview() {
+    if (!data.internship_id) {
+      setError("Internship record not found for this candidate. Please edit candidate details first.");
+      return;
+    }
     if (!data.end_date && !endDateInput) {
       setError("Please set and save the internship End Date before previewing the certificate.");
       return;
@@ -99,6 +103,10 @@ export default function StudentDetail() {
 
   function handleStartGenerate() {
     setError("");
+    if (!data.internship_id) {
+      setError("Internship record not found for this candidate. Please edit candidate details first.");
+      return;
+    }
     if (!data.end_date && !endDateInput) {
       setError("Please set the internship End Date before generating the certificate.");
       return;
@@ -173,14 +181,18 @@ export default function StudentDetail() {
                   type="button"
                   className="btn btn-primary"
                   disabled={busy || !endDateInput || endDateInput === data.end_date}
-                  onClick={() =>
+                  onClick={() => {
+                    if (!data.internship_id) {
+                      setError("Internship record not found for this candidate. Please edit candidate details first.");
+                      return;
+                    }
                     perform(async () => {
                       await api.patch(
                         `/admin/internships/${data.internship_id}/end-date/`,
                         { end_date: endDateInput },
                       );
-                    }, "End date updated successfully.")
-                  }
+                    }, "End date updated successfully.");
+                  }}
                 >
                   Save End Date
                 </button>

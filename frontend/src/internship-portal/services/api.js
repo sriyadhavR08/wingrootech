@@ -63,8 +63,16 @@ export async function errorText(error) {
       data = null;
     }
   }
-  if (!data)
+  if (!data) {
+    if (error.response?.status === 404) return "Requested resource was not found (404).";
+    if (error.response?.status === 500) return "Internal server error. Please try again later.";
     return "Unable to connect. Please check your connection and try again.";
+  }
+  if (typeof data === "string" && (data.includes("<!doctype html>") || data.includes("<html"))) {
+    if (error.response?.status === 404) return "Requested resource was not found on the server (404).";
+    if (error.response?.status === 500) return "Internal server error (500). Please check backend logs.";
+    return `Server error (${error.response?.status || "unknown"}).`;
+  }
   const flatten = (value) =>
     typeof value === "string"
       ? value
