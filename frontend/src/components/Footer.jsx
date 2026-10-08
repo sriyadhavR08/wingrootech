@@ -131,11 +131,8 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
               <li><a href="#home" onClick={(e) => { e.preventDefault(); scrollTo('#home'); }}>Home</a></li>
               <li><a href="#about" onClick={(e) => { e.preventDefault(); scrollTo('#about'); }}>About</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollTo('#services'); }}>Services</a></li>
-              <li><a href="#internship" onClick={(e) => { e.preventDefault(); scrollTo('#internship'); }}>Internship</a></li>
               <li><a href="#events" onClick={(e) => { e.preventDefault(); scrollTo('#events'); }}>Events</a></li>
-              <li><a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollTo('#portfolio'); }}>Portfolio</a></li>
-              <li><a href="#reviews" onClick={(e) => { e.preventDefault(); scrollTo('#reviews'); }}>Reviews</a></li>
-              <li><a href="#faq-knowledge-hub" onClick={(e) => { e.preventDefault(); scrollTo('#faq-knowledge-hub'); }}>AI & FAQs Hub</a></li>
+              <li><a href="#faq-knowledge-hub" onClick={(e) => { e.preventDefault(); scrollTo('#faq-knowledge-hub'); }}>FAQs</a></li>
               <li><a href="#careers" onClick={(e) => { e.preventDefault(); scrollTo('#careers'); }}>Careers</a></li>
               <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>
             </ul>
