@@ -113,10 +113,14 @@ export function resolveMediaUrl(path) {
   ) {
     return path;
   }
+  let clean = path.startsWith("/") ? path : `/${path}`;
+  if (!clean.startsWith("/media") && !clean.startsWith("/uploads") && !clean.startsWith("/api")) {
+    clean = `/media${clean}`;
+  }
   const backendOrigin = baseURL.startsWith("http")
     ? baseURL.replace(/\/api\/?$/, "")
     : "";
-  return `${backendOrigin}${path.startsWith("/") ? "" : "/"}${path}`;
+  return `${backendOrigin}${clean}`;
 }
 
 

@@ -32,6 +32,12 @@ def _verify_certificate(cert):
         student_name = cert.internship.student.full_name
 
     photo_path = profile.selfie_photo if profile and profile.selfie_photo else snapshot.get("selfie_photo")
+    if photo_path and not (photo_path.startswith("http://") or photo_path.startswith("https://") or photo_path.startswith("data:")):
+        clean_p = photo_path.lstrip("/")
+        if not clean_p.startswith("media/"):
+            photo_path = f"/media/{clean_p}"
+        else:
+            photo_path = f"/{clean_p}"
 
     result = {
         "student_name": student_name,
@@ -118,3 +124,13 @@ def download_certificate(pk):
 @public_bp.route("/media/<path:filename>", methods=["GET"])
 def serve_media(filename):
     return send_from_directory(current_app.config["MEDIA_FOLDER"], filename)
+
+
+@public_bp.route("/selfies/<path:filename>", methods=["GET"])
+def serve_selfies(filename):
+    return send_from_directory(os.path.join(current_app.config["MEDIA_FOLDER"], "selfies"), filename)
+
+
+@public_bp.route("/college_ids/<path:filename>", methods=["GET"])
+def serve_college_ids(filename):
+    return send_from_directory(os.path.join(current_app.config["MEDIA_FOLDER"], "college_ids"), filename)

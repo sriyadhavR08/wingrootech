@@ -18,6 +18,14 @@ export default defineConfig({
       '/media': {
         target: 'http://127.0.0.1:5000',
         changeOrigin: true
+      },
+      '/selfies': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true
+      },
+      '/college_ids': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true
       }
     }
   }

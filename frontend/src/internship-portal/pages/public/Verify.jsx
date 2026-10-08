@@ -335,6 +335,11 @@ export default function Verify() {
                     <img 
                       src={resolveMediaUrl(result.selfie_photo)} 
                       alt={result.student_name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        const fb = e.currentTarget.parentElement?.querySelector(".photo-error-fallback");
+                        if (fb) fb.style.display = "flex";
+                      }}
                       style={{
                         width: "72px",
                         height: "88px",
@@ -344,6 +349,24 @@ export default function Verify() {
                         boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
                       }}
                     />
+                    <div
+                      className="photo-error-fallback"
+                      style={{
+                        display: "none",
+                        width: "72px",
+                        height: "88px",
+                        borderRadius: "6px",
+                        border: "1.5px dashed #0284c7",
+                        backgroundColor: "#f0f9ff",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#0284c7",
+                      }}
+                    >
+                      <i className="bi bi-person-fill fs-3"></i>
+                      <span style={{ fontSize: "10px", fontWeight: "bold" }}>PHOTO</span>
+                    </div>
                     <div>
                       <div className="small text-uppercase fw-bold text-primary mb-1">
                         <i className="bi bi-person-check-fill me-1"></i> Verified Candidate Photo
