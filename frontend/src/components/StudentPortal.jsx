@@ -41,6 +41,8 @@ import {
   downloadCertificatePdf 
 } from '../utils/certApi';
 import Scanner from './Scanner';
+import StudentFields from '../internship-portal/components/StudentFields';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './StudentPortal.css';
 
 const API_BASE = API_BASE_URL || '';
@@ -455,6 +457,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   };
 
   // Student Registration
+  const handleStudentFieldsChange = (e) => {
+    const { name, value } = e.target;
+    setRegForm((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setRegError('');
@@ -464,16 +471,23 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       setRegError('Passwords do not match.');
       return;
     }
-    if (regForm.password.length < 8) {
+    if (!regForm.password || regForm.password.length < 8) {
       setRegError('Password must be at least 8 characters long.');
       return;
     }
+    const candType = regForm.candidate_type || 'COLLEGE_INTERN';
     if (!regForm.college_id_card) {
-      setRegError(activeCatConfig.missingProofMsg);
+      const docLabel =
+        candType === 'SCHOOL_STUDENT'
+          ? 'School ID card / Student Proof'
+          : candType === 'COLLEGE_COMPLETED'
+          ? 'ID proof (Aadhaar / Degree Certificate / Govt ID)'
+          : 'College ID card photo';
+      setRegError(`Please attach your ${docLabel}.`);
       return;
     }
     if (!regForm.selfie_photo) {
-      setRegError('Please provide a live Selfie Photo (via camera snap or upload).');
+      setRegError('Please provide a live Selfie Photo (Upload file or Snap Photo).');
       return;
     }
 
@@ -482,7 +496,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       const res = await fetch(`${API_BASE}/api/auth/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(regForm)
+        body: JSON.stringify({
+          ...regForm,
+          candidate_type: candType
+        })
       });
       const data = await res.json();
       if (res.ok) {
@@ -493,7 +510,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           setRegSuccess('');
         }, 2200);
       } else {
-        const errorMsg = data.email?.[0] || data.register_number?.[0] || data.detail || 'Registration failed. Please check form values.';
+        const errorMsg = data.email?.[0] || data.register_number?.[0] || data.password?.[0] || data.detail || 'Registration failed. Please check form values.';
         setRegError(errorMsg);
       }
     } catch {
@@ -1077,10 +1094,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
           )}
 
           {/* ========================================================= */}
-          {/* 3. STUDENT REGISTRATION (ACCESSIBLE VIA LOGIN REDIRECT)   */}
+          {/* 3. STUDENT REGISTRATION (EXACT INTERNSHIP PORTAL FORM)    */}
           {/* ========================================================= */}
           {activeMode === 'register' && !currentUser && (
-            <div className="auth-form-container register-large">
+            <div className="registration portal-exact-registration">
               <div className="register-top-back-bar">
                 <button 
                   type="button" 
@@ -1088,295 +1105,72 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   className="back-to-login-btn"
                 >
                   <ArrowLeft size={16} />
-                  <span>Already have an account? Back to Candidate Login</span>
+                  <span>← Back to Candidate Login</span>
                 </button>
               </div>
 
-              <div className="auth-header-card">
-                <div className="auth-icon-circle">
-                  <UserPlus size={24} />
-                </div>
-                <h3>Internship Candidate Registration</h3>
-                <p>Register your candidate profile for official certificate tracking, identity validation, and project assignment.</p>
+              <div className="eyebrow" style={{ color: '#0284c7', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.12em', marginBottom: '4px' }}>
+                PORTAL ENROLLMENT & REGISTRATION
               </div>
+              <h1 className="mt-1 mb-2" style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a' }}>
+                Create Your Candidate Account
+              </h1>
+              <p className="text-secondary mb-4" style={{ fontSize: '0.92rem', color: '#64748b' }}>
+                Register as a School Candidate Intern, College Candidate Intern, or College Completed Candidate Intern for your verified credential.
+              </p>
 
-              {regError && (
-                <div className="auth-error-banner">
-                  <AlertCircle size={16} />
-                  <span>{regError}</span>
-                </div>
-              )}
-
-              {regSuccess && (
-                <div className="auth-success-banner">
-                  <CheckCircle size={16} />
-                  <span>{regSuccess}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleRegisterSubmit} className="register-grid-form">
-                {/* Candidate Type Selection */}
-                <div className="form-col-full">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <label className="mb-0">Candidate Category *</label>
-                    <span className="badge text-bg-primary" style={{ fontSize: '0.72rem' }}>
-                      Selected: {activeCatConfig.badge}
-                    </span>
-                  </div>
-
-                  {/* Interactive Category Selector Cards */}
-                  <div className="portal-candidate-type-grid">
-                    {CANDIDATE_CATEGORIES.map((cat) => {
-                      const isSelected = regForm.candidate_type === cat.key;
-                      return (
-                        <div
-                          key={cat.key}
-                          className={`portal-cat-card ${isSelected ? 'active' : ''}`}
-                          onClick={() => setRegForm(prev => ({ ...prev, candidate_type: cat.key }))}
-                          role="button"
-                          tabIndex={0}
-                        >
-                          <div className="portal-cat-card-top">
-                            <span className="portal-cat-badge">{cat.badge}</span>
-                            {isSelected && <CheckCircle size={15} className="portal-cat-check" />}
-                          </div>
-                          <div className="portal-cat-title">{cat.label}</div>
-                          <div className="portal-cat-desc">{cat.desc}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="category-active-notice">
-                    <Sparkles size={14} style={{ flexShrink: 0 }} />
-                    <span>
-                      Form customized for <strong>{activeCatConfig.label}</strong>. Fields and required verification proof adapt automatically.
-                    </span>
-                  </div>
-                </div>
-
-                {/* Full Name & Gender */}
-                <div className="form-col">
-                  <label>Full Name (As on Certificate) *</label>
-                  <input 
-                    type="text" 
-                    value={regForm.full_name}
-                    onChange={(e) => setRegForm({ ...regForm, full_name: e.target.value })}
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>Gender Title *</label>
-                  <select 
-                    value={regForm.gender}
-                    onChange={(e) => setRegForm({ ...regForm, gender: e.target.value })}
-                    className="styled-select"
+              {regSuccess ? (
+                <div className="card p-4 text-center my-4" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
+                  <CheckCircle size={36} style={{ color: '#16a34a', margin: '0 auto 12px auto' }} />
+                  <h4 style={{ color: '#166534', fontWeight: 700, margin: '0 0 6px 0' }}>Registration Successful!</h4>
+                  <p style={{ color: '#15803d', fontSize: '0.92rem', margin: '0 0 16px 0' }}>{regSuccess}</p>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    onClick={() => { setActiveMode('login'); setRegSuccess(''); setLoginForm(prev => ({ ...prev, email: regForm.email })); }}
+                    style={{ maxWidth: '200px', margin: '0 auto' }}
                   >
-                    <option value="MALE">Male (Mr.)</option>
-                    <option value="FEMALE">Female (Ms.)</option>
-                  </select>
-                </div>
-
-                {/* Email & Mobile */}
-                <div className="form-col">
-                  <label>Email Address *</label>
-                  <input 
-                    type="email" 
-                    value={regForm.email}
-                    onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                    placeholder="candidate@example.com"
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>Mobile Number *</label>
-                  <input 
-                    type="tel" 
-                    value={regForm.mobile_number}
-                    onChange={(e) => setRegForm({ ...regForm, mobile_number: e.target.value })}
-                    placeholder="+91 9876543210"
-                    required
-                  />
-                </div>
-
-                {/* Password & Confirm Password */}
-                <div className="form-col">
-                  <label>Password (Min 8 chars) *</label>
-                  <input 
-                    type="password" 
-                    value={regForm.password}
-                    onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                    placeholder="Create secure password"
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>Confirm Password *</label>
-                  <input 
-                    type="password" 
-                    value={regForm.confirm_password}
-                    onChange={(e) => setRegForm({ ...regForm, confirm_password: e.target.value })}
-                    placeholder="Re-enter password"
-                    required
-                  />
-                </div>
-
-                {/* Adaptive Institution Name */}
-                <div className="form-col-full">
-                  <label>{activeCatConfig.institutionLabel}</label>
-                  <input 
-                    type="text" 
-                    value={regForm.college_name}
-                    onChange={(e) => setRegForm({ ...regForm, college_name: e.target.value })}
-                    placeholder={activeCatConfig.institutionPlaceholder}
-                    required
-                  />
-                </div>
-
-                {/* Adaptive Department & Course */}
-                <div className="form-col">
-                  <label>{activeCatConfig.departmentLabel}</label>
-                  <input 
-                    type="text" 
-                    value={regForm.department}
-                    onChange={(e) => setRegForm({ ...regForm, department: e.target.value })}
-                    placeholder={activeCatConfig.departmentPlaceholder}
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>{activeCatConfig.courseLabel}</label>
-                  <input 
-                    type="text" 
-                    value={regForm.course}
-                    onChange={(e) => setRegForm({ ...regForm, course: e.target.value })}
-                    placeholder={activeCatConfig.coursePlaceholder}
-                    required
-                  />
-                </div>
-
-                {/* Adaptive Register / Roll Number */}
-                <div className="form-col-full">
-                  <label>{activeCatConfig.regNoLabel}</label>
-                  <input 
-                    type="text" 
-                    value={regForm.register_number}
-                    onChange={(e) => setRegForm({ ...regForm, register_number: e.target.value })}
-                    placeholder={activeCatConfig.regNoPlaceholder}
-                    required
-                  />
-                </div>
-
-                {/* Project & Dates */}
-                <div className="form-col-full">
-                  <label>Internship Project Title *</label>
-                  <input 
-                    type="text" 
-                    value={regForm.project_name}
-                    onChange={(e) => setRegForm({ ...regForm, project_name: e.target.value })}
-                    placeholder={activeCatConfig.projectPlaceholder}
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>Internship Start Date *</label>
-                  <input 
-                    type="date" 
-                    value={regForm.start_date}
-                    onChange={(e) => setRegForm({ ...regForm, start_date: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-col">
-                  <label>Internship End Date (Optional)</label>
-                  <input 
-                    type="date" 
-                    value={regForm.end_date}
-                    onChange={(e) => setRegForm({ ...regForm, end_date: e.target.value })}
-                  />
-                </div>
-
-                {/* Adaptive Identity Document Proof & Selfie */}
-                <div className="form-col">
-                  <label>{activeCatConfig.proofLabel}</label>
-                  <div className="doc-upload-box">
-                    <input 
-                      type="file" 
-                      accept="image/*,application/pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const dataUri = await resizeImage(file, 1000);
-                          setRegForm(prev => ({ ...prev, college_id_card: dataUri }));
-                        }
-                      }}
-                    />
-                    {regForm.college_id_card ? (
-                      <div className="upload-preview-chip">
-                        <CheckCircle size={14} style={{ color: '#10b981' }} />
-                        <span>{activeCatConfig.proofBadge}</span>
-                      </div>
-                    ) : (
-                      <span className="upload-hint">{activeCatConfig.proofHint}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="form-col">
-                  <label>Live Selfie Photo *</label>
-                  <div className="doc-upload-box">
-                    {selfieCameraActive ? (
-                      <div className="selfie-camera-live">
-                        <video ref={selfieVideoRef} autoPlay playsInline style={{ width: '100%', height: '140px', borderRadius: '8px', objectFit: 'cover' }} />
-                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
-                          <button type="button" onClick={captureSelfiePhoto} className="btn-snap">Capture</button>
-                          <button type="button" onClick={stopSelfieCamera} className="btn-cancel-cam">Cancel</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="selfie-options">
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const dataUri = await resizeImage(file, 640);
-                              setRegForm(prev => ({ ...prev, selfie_photo: dataUri }));
-                            }
-                          }}
-                        />
-                        <button type="button" onClick={startSelfieCamera} className="btn-open-selfie-cam">
-                          <Camera size={13} />
-                          <span>Snap Photo</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {regForm.selfie_photo && !selfieCameraActive && (
-                      <div className="upload-preview-chip">
-                        <CheckCircle size={14} style={{ color: '#10b981' }} />
-                        <span>Selfie Photo Attached</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="form-col-full">
-                  <button type="submit" disabled={regLoading} className="auth-submit-btn">
-                    {regLoading ? <RefreshCw size={16} className="spin-anim" /> : <UserPlus size={16} />}
-                    <span>{regLoading ? 'Registering...' : 'Complete Registration'}</span>
+                    Continue to Login
                   </button>
                 </div>
-              </form>
+              ) : (
+                <form className="card registration-form" onSubmit={handleRegisterSubmit}>
+                  {regError && (
+                    <div className="alert alert-danger py-2 px-3 mb-3 d-flex align-items-center gap-2" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: '8px' }}>
+                      <AlertCircle size={16} />
+                      <span>{regError}</span>
+                    </div>
+                  )}
 
-              <div className="auth-switch-prompt">
-                <span>Already have an account?</span>
-                <button type="button" onClick={() => setActiveMode('login')} className="switch-link">
-                  Sign in here
-                </button>
-              </div>
+                  <StudentFields
+                    values={regForm}
+                    onChange={handleStudentFieldsChange}
+                    account
+                  />
+
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 pt-3 border-top">
+                    <span style={{ fontSize: '0.88rem', color: '#64748b' }}>
+                      Already registered?{' '}
+                      <button 
+                        type="button" 
+                        onClick={() => setActiveMode('login')} 
+                        className="btn btn-link p-0 text-decoration-none fw-semibold"
+                        style={{ color: '#0284c7', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        Login here
+                      </button>
+                    </span>
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary px-4 py-2" 
+                      disabled={regLoading}
+                      style={{ background: '#2d427d', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, padding: '10px 24px', cursor: 'pointer' }}
+                    >
+                      {regLoading ? 'Creating account…' : 'Create account'}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 

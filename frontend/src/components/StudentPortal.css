@@ -2047,3 +2047,216 @@
   }
 }
 
+/* =========================================================
+   EXACT INTERNSHIP PORTAL FORM STYLING IN MODAL
+   ========================================================= */
+.portal-exact-registration {
+  max-width: 100%;
+}
+
+.portal-exact-registration .registration-form {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.portal-exact-registration .form-section {
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e8ecf3;
+}
+
+.portal-exact-registration .form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.portal-exact-registration .form-section h2 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.portal-exact-registration .section-number {
+  font-size: 11px;
+  background: #edf2fb;
+  color: #2d427d;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.portal-exact-registration .form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.portal-exact-registration .form-control,
+.portal-exact-registration .form-select {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1e293b;
+  background-color: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.portal-exact-registration .form-control:focus,
+.portal-exact-registration .form-select:focus {
+  border-color: #0284c7;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.portal-exact-registration .input-group {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.portal-exact-registration .input-group .form-control {
+  border-radius: 8px;
+}
+
+.portal-exact-registration .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -10px;
+  margin-left: -10px;
+}
+
+.portal-exact-registration .row > [class*="col-"] {
+  padding-right: 10px;
+  padding-left: 10px;
+  box-sizing: border-box;
+}
+
+.portal-exact-registration .col-md-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.portal-exact-registration .col-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .portal-exact-registration .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+.portal-exact-registration .g-3 {
+  row-gap: 14px;
+}
+
+.portal-exact-registration .candidate-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.portal-exact-registration .candidate-type-card {
+  position: relative;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.portal-exact-registration .candidate-type-card:hover {
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.portal-exact-registration .candidate-type-card.active {
+  border-color: #2d427d;
+  background: #f0f4ff;
+  box-shadow: 0 4px 14px rgba(45, 66, 125, 0.12);
+}
+
+.portal-exact-registration .candidate-type-card .card-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 12px;
+  background: #f1f5f9;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.portal-exact-registration .candidate-type-card.active .card-icon-wrap {
+  background: #2d427d;
+  color: #ffffff;
+}
+
+.portal-exact-registration .candidate-type-card .card-title-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.portal-exact-registration .candidate-type-card .card-subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.portal-exact-registration .candidate-type-card .active-check-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 1.25rem;
+  color: #2d427d;
+}
+
+@media (max-width: 768px) {
+  .portal-exact-registration .candidate-type-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .portal-exact-registration .candidate-type-card {
+    padding: 12px 14px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .portal-exact-registration .candidate-type-card .card-icon-wrap {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .portal-exact-registration .candidate-type-card .active-check-icon {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+
