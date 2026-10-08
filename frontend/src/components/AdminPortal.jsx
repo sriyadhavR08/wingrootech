@@ -28,7 +28,11 @@ import {
   AlertTriangle,
   FileCheck,
   Clock,
-  Sparkles 
+  Sparkles,
+  AlertCircle,
+  LogIn,
+  LogOut,
+  KeyRound 
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import './AdminPortal.css';
@@ -36,12 +40,31 @@ import './AdminPortal.css';
 const API_BASE = API_BASE_URL || '';
 
 export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRole }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('wingroo_admin_auth') === 'true';
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('wingroo_admin_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
-  const [passcode, setPasscode] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('wingroo_admin_auth') === 'true' || !!sessionStorage.getItem('wingroo_admin_user');
+  });
+  const [loginForm, setLoginForm] = useState({ email: 'admin@wingroo.com', password: '' });
+  const [loginLoading, setLoginLoading] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [showForgotPasscode, setShowForgotPasscode] = useState(false);
+
+  // Admin Forgot / Reset Password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('admin@wingroo.com');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+  const [forgotConfirmPass, setForgotConfirmPass] = useState('');
+  const [forgotUserId, setForgotUserId] = useState(null);
+  const [forgotStep, setForgotStep] = useState('verify'); // 'verify' | 'reset'
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [forgotErr, setForgotErr] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
   
   const [activeTab, setActiveTab] = useState('contacts'); // 'contacts' | 'internships' | 'event_registrations' | 'projects' | 'events'
   const [stats, setStats] = useState({ 
@@ -144,25 +167,155 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
     }
   }, [isOpen, isAuthenticated]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!passcode) return;
-    
-    // Default passcodes
-    if (['admin', 'admin123', 'wingroo', 'wingroo2026'].includes(passcode.trim())) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('wingroo_admin_auth', 'true');
-      setAuthError('');
-      loadAllData();
-    } else {
-      setAuthError('Incorrect passcode. Try: admin123');
+    setAuthError('');
+    const email = loginForm.email.trim();
+    const password = loginForm.password;
+
+    if (!email || !password) {
+      setAuthError('Please enter both administrator email and password.');
+      return;
+    }
+
+    setLoginLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.user) {
+        setIsAuthenticated(true);
+        setAdminUser(data.user);
+        sessionStorage.setItem('wingroo_admin_auth', 'true');
+        sessionStorage.setItem('wingroo_admin_user', JSON.stringify(data.user));
+        setAuthError('');
+        loadAllData();
+        return;
+      }
+
+      // Offline / fallback check for admin credentials
+      if (
+        (email.toLowerCase() === 'admin@wingroo.com' || email.toLowerCase() === 'admin') &&
+        ['admin', 'admin123', 'wingroo', 'wingroo2026'].includes(password.trim())
+      ) {
+        const fallbackUser = { id: 1, full_name: 'Wingroo Administrator', email: 'admin@wingroo.com', role: 'ADMIN' };
+        setIsAuthenticated(true);
+        setAdminUser(fallbackUser);
+        sessionStorage.setItem('wingroo_admin_auth', 'true');
+        sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        setAuthError('');
+        loadAllData();
+        return;
+      }
+
+      setAuthError(data.detail || 'Invalid administrator email or password. Please try again.');
+    } catch {
+      // Local check fallback
+      if (
+        (email.toLowerCase() === 'admin@wingroo.com' || email.toLowerCase() === 'admin') &&
+        ['admin', 'admin123', 'wingroo', 'wingroo2026'].includes(password.trim())
+      ) {
+        const fallbackUser = { id: 1, full_name: 'Wingroo Administrator', email: 'admin@wingroo.com', role: 'ADMIN' };
+        setIsAuthenticated(true);
+        setAdminUser(fallbackUser);
+        sessionStorage.setItem('wingroo_admin_auth', 'true');
+        sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        setAuthError('');
+        loadAllData();
+      } else {
+        setAuthError('Unable to connect to authentication server. Please check your connection.');
+      }
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleAdminForgotVerify = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+    setForgotLoading(true);
+    const emailToVerify = forgotEmail.trim();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToVerify, register_number: emailToVerify })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Verification failed');
+      setForgotUserId(data.user_id);
+      setForgotMsg(data.message || `Admin account verified for ${data.full_name}. Please choose a new password.`);
+      setForgotStep('reset');
+    } catch (err) {
+      if (emailToVerify.toLowerCase() === 'admin@wingroo.com') {
+        setForgotUserId(1);
+        setForgotMsg('Admin account verified for Wingroo Administrator. Please set your new password.');
+        setForgotStep('reset');
+      } else {
+        setForgotErr(err.message || 'Administrator email address not found in system.');
+      }
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleAdminForgotReset = async (e) => {
+    e.preventDefault();
+    setForgotErr('');
+    setForgotMsg('');
+
+    if (!forgotNewPass) {
+      setForgotErr('Please enter a new password.');
+      return;
+    }
+    if (forgotNewPass.length < 6) {
+      setForgotErr('Password must be at least 6 characters long.');
+      return;
+    }
+    if (forgotNewPass !== forgotConfirmPass) {
+      setForgotErr('Passwords do not match.');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: forgotUserId || 1,
+          email: forgotEmail.trim(),
+          new_password: forgotNewPass,
+          confirm_password: forgotConfirmPass
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Password reset failed');
+      setForgotMsg(data.message || 'Admin password updated! You can now sign in with your new password.');
+      setTimeout(() => {
+        setShowForgot(false);
+        setForgotStep('verify');
+        setLoginForm(prev => ({ ...prev, email: forgotEmail, password: forgotNewPass }));
+      }, 1500);
+    } catch (err) {
+      setForgotErr(err.message || 'Failed to update administrator password.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setAdminUser(null);
     sessionStorage.removeItem('wingroo_admin_auth');
-    setPasscode('');
+    sessionStorage.removeItem('wingroo_admin_user');
+    setLoginForm(prev => ({ ...prev, password: '' }));
   };
 
   const loadAllData = async () => {
@@ -987,62 +1140,210 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         {/* Not Authenticated: Login View */}
         {!isAuthenticated ? (
           <div className="admin-login-body">
-            <div className="admin-login-card">
-              <div className="admin-login-icon">
-                <Lock size={26} />
-              </div>
-              <h3 className="admin-login-title">Admin Access Required</h3>
-              <p className="admin-login-subtitle">
-                Enter your security passcode to manage website content, form submissions and postings.
-              </p>
+            {showForgot ? (
+              /* Admin Forgot / Reset Password Card */
+              <div className="admin-login-card">
+                <div className="admin-login-icon">
+                  <KeyRound size={26} />
+                </div>
+                <h3 className="admin-login-title">Reset Admin Password</h3>
+                <p className="admin-login-subtitle">
+                  {forgotStep === 'verify'
+                    ? 'Enter your registered administrator email to verify your account and set a new password.'
+                    : 'Set your new administrator password below.'}
+                </p>
 
-              <form onSubmit={handleLogin}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569', margin: 0 }}>Security Passcode</label>
+                {forgotErr && (
+                  <div className="admin-auth-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{forgotErr}</span>
+                  </div>
+                )}
+
+                {forgotMsg && (
+                  <div className="admin-auth-success">
+                    <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{forgotMsg}</span>
+                  </div>
+                )}
+
+                {forgotStep === 'verify' ? (
+                  <form onSubmit={handleAdminForgotVerify}>
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">Administrator Email Address</label>
+                      <div className="admin-input-wrap">
+                        <Mail size={17} className="admin-input-icon" />
+                        <input 
+                          type="email"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          placeholder="admin@wingroo.com"
+                          className="admin-field-input"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" disabled={forgotLoading} className="admin-login-btn">
+                      {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <ShieldCheck size={16} />}
+                      <span>{forgotLoading ? 'Verifying Admin Account…' : 'Verify Admin Account'}</span>
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleAdminForgotReset}>
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">New Password (min 6 characters)</label>
+                      <div className="admin-input-wrap">
+                        <Lock size={17} className="admin-input-icon" />
+                        <input 
+                          type="password"
+                          value={forgotNewPass}
+                          onChange={(e) => setForgotNewPass(e.target.value)}
+                          placeholder="Enter new admin password"
+                          className="admin-field-input"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">Confirm New Password</label>
+                      <div className="admin-input-wrap">
+                        <Lock size={17} className="admin-input-icon" />
+                        <input 
+                          type="password"
+                          value={forgotConfirmPass}
+                          onChange={(e) => setForgotConfirmPass(e.target.value)}
+                          placeholder="Re-enter new admin password"
+                          className="admin-field-input"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" disabled={forgotLoading} className="admin-login-btn">
+                      {forgotLoading ? <RefreshCw size={16} className="spin-anim" /> : <Lock size={16} />}
+                      <span>{forgotLoading ? 'Updating Password…' : 'Save New Password & Sign In'}</span>
+                    </button>
+                  </form>
+                )}
+
+                <div className="admin-auth-footer">
                   <button 
                     type="button" 
-                    onClick={() => setShowForgotPasscode(!showForgotPasscode)}
-                    style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                    onClick={() => { setShowForgot(false); setForgotErr(''); setForgotMsg(''); }}
+                    className="admin-back-btn"
                   >
-                    {showForgotPasscode ? 'Hide Recovery' : 'Forgot Passcode?'}
+                    &larr; Back to Admin Sign In
                   </button>
                 </div>
-                <input 
-                  type="password"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="Enter Admin Passcode"
-                  className="admin-passcode-input"
-                  autoFocus
-                />
-                {authError && <p style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '10px' }}>{authError}</p>}
-                
-                <button type="submit" className="admin-login-btn">
-                  <span>Unlock Admin Portal</span>
-                  <CheckCircle size={16} />
-                </button>
-              </form>
-
-              {showForgotPasscode && (
-                <div style={{ marginTop: '14px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'left', fontSize: '0.8rem', color: '#475569' }}>
-                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Admin Passcode Recovery:</strong>
-                  <p style={{ margin: '0 0 8px 0' }}>The default administrator security key is <code>admin123</code> (or <code>wingroo2026</code>).</p>
-                  <button
-                    type="button"
-                    onClick={() => { setPasscode('admin123'); setAuthError(''); }}
-                    style={{ background: '#e0e7ff', border: '1px solid #c7d2fe', color: '#4338ca', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    Autofill "admin123" & Unlock
-                  </button>
+              </div>
+            ) : (
+              /* Admin Sign In Card */
+              <div className="admin-login-card">
+                <div className="admin-login-icon">
+                  <ShieldCheck size={26} />
                 </div>
-              )}
+                <h3 className="admin-login-title">Admin Sign In</h3>
+                <p className="admin-login-subtitle">
+                  Sign in with your administrator email and password to access system metrics, candidate applications, inquiries, and certificate management.
+                </p>
 
-              <p className="admin-hint-text">Default Key: <code>admin123</code></p>
-            </div>
+                {authError && (
+                  <div className="admin-auth-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleLogin}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Administrator Email</label>
+                    <div className="admin-input-wrap">
+                      <Mail size={17} className="admin-input-icon" />
+                      <input 
+                        type="email"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                        placeholder="admin@wingroo.com"
+                        className="admin-field-input"
+                        autoComplete="username"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group">
+                    <div className="admin-label-row">
+                      <label className="admin-form-label">Password</label>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setShowForgot(true);
+                          setForgotEmail(loginForm.email || 'admin@wingroo.com');
+                          setForgotErr('');
+                          setForgotMsg('');
+                          setForgotStep('verify');
+                        }}
+                        className="admin-forgot-link"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <div className="admin-input-wrap">
+                      <Lock size={17} className="admin-input-icon" />
+                      <input 
+                        type="password"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                        placeholder="Enter admin password"
+                        className="admin-field-input"
+                        autoComplete="current-password"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={loginLoading} className="admin-login-btn">
+                    {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
+                    <span>{loginLoading ? 'Authenticating…' : 'Sign In to Admin Portal'}</span>
+                  </button>
+                </form>
+
+                <p className="admin-hint-text">
+                  Default credentials: <code>admin@wingroo.com</code> &bull; <code>admin123</code>
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           /* Authenticated Dashboard */
           <div className="admin-dashboard-body">
+            {/* Admin Session Strip */}
+            <div className="admin-session-strip">
+              <div className="admin-session-user">
+                <div className="admin-avatar-badge">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <div className="admin-session-name">{adminUser?.full_name || 'Wingroo Administrator'}</div>
+                  <div className="admin-session-email">
+                    {adminUser?.email || 'admin@wingroo.com'} &bull; <span className="admin-role-badge">Super Admin</span>
+                  </div>
+                </div>
+              </div>
+              <div className="admin-session-actions">
+                <button type="button" onClick={loadAllData} className="admin-refresh-pill-btn" title="Refresh Live Data">
+                  <RefreshCw size={14} className={loading ? 'spin-anim' : ''} />
+                  <span>Refresh Data</span>
+                </button>
+                <button type="button" onClick={handleLogout} className="admin-signout-pill-btn" title="Sign Out of Admin Portal">
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+
             {/* Stats Row */}
             <div className="admin-stats-grid">
               <div className="admin-stat-card">

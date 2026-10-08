@@ -151,12 +151,12 @@
 .admin-login-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 36px;
+  border-radius: 18px;
+  padding: 34px 36px;
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  text-align: center;
+  max-width: 440px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+  text-align: left;
 }
 
 .admin-login-icon {
@@ -169,7 +169,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 18px auto;
+  margin: 0 auto 16px auto;
 }
 
 .admin-login-title {
@@ -177,31 +177,110 @@
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--text-heading);
-  margin-bottom: 6px;
+  margin: 0 0 6px 0;
+  text-align: center;
 }
 
 .admin-login-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: var(--text-muted);
-  margin-bottom: 24px;
+  margin: 0 0 22px 0;
+  line-height: 1.5;
+  text-align: center;
 }
 
-.admin-passcode-input {
+.admin-form-group {
+  margin-bottom: 18px;
+}
+
+.admin-form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.admin-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.admin-forgot-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0284c7;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.admin-forgot-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+.admin-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.admin-field-input {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 0.95rem;
+  padding: 11px 14px 11px 42px;
+  background: #f8fafc;
   border: 1.5px solid #cbd5e1;
   border-radius: 10px;
+  color: #0f172a;
+  font-size: 0.92rem;
   outline: none;
   transition: all 0.2s ease;
-  margin-bottom: 14px;
-  text-align: center;
-  letter-spacing: 0.05em;
+  box-sizing: border-box;
 }
 
-.admin-passcode-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+.admin-field-input:focus {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.admin-auth-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-auth-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-login-btn {
@@ -211,7 +290,7 @@
   color: #ffffff;
   border: none;
   border-radius: 10px;
-  font-size: 0.95rem;
+  font-size: 0.93rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -219,18 +298,156 @@
   justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
+  margin-top: 6px;
 }
 
-.admin-login-btn:hover {
+.admin-login-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   background: linear-gradient(135deg, #0369a1 0%, #f17d47 100%);
-  box-shadow: 0 4px 14px rgba(241, 125, 71, 0.4);
+  box-shadow: 0 4px 14px rgba(241, 125, 71, 0.35);
+}
+
+.admin-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-auth-footer {
+  text-align: center;
+  margin-top: 18px;
+}
+
+.admin-back-btn {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-back-btn:hover {
+  text-decoration: underline;
 }
 
 .admin-hint-text {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: #94a3b8;
-  margin-top: 14px;
+  margin-top: 18px;
+  text-align: center;
+}
+
+.admin-hint-text code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* Authenticated Session Strip */
+.admin-session-strip {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.admin-session-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-avatar-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4f46e5, #0284c7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.admin-session-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.admin-session-email {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-role-badge {
+  background: rgba(2, 132, 199, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.admin-session-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-refresh-pill-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-refresh-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.admin-signout-pill-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-signout-pill-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
 }
 
 /* Dashboard Content */
