@@ -87,9 +87,24 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [activeSlip, setActiveSlip] = useState(null);
   const [activePass, setActivePass] = useState(null);
 
+  const [pendingApply, setPendingApply] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('wingroo_pending_apply');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   // When modal opens or user logs in, automatically fetch records if user is logged in
   useEffect(() => {
     if (isOpen) {
+      try {
+        const raw = sessionStorage.getItem('wingroo_pending_apply');
+        setPendingApply(raw ? JSON.parse(raw) : null);
+      } catch {
+        setPendingApply(null);
+      }
       if (currentUser?.email) {
         fetchStudentApplications(currentUser.email);
       } else if (initialQuery) {
@@ -115,7 +130,14 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       if (res.ok && data.user) {
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
         setCurrentUser(data.user);
+        window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
         fetchStudentApplications(data.user.email);
+        const hasPending = !!sessionStorage.getItem('wingroo_pending_apply');
+        if (hasPending && typeof onClose === 'function') {
+          setTimeout(() => {
+            onClose();
+          }, 350);
+        }
       } else {
         setLoginError(data.detail || 'Invalid email or password. Please check your credentials.');
       }
@@ -166,10 +188,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       if (res.ok && data.user) {
         setRegisterSuccess('Account created successfully! Logging you in…');
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
+        const hasPending = !!sessionStorage.getItem('wingroo_pending_apply');
         setTimeout(() => {
           setCurrentUser(data.user);
           fetchStudentApplications(data.user.email);
-        }, 700);
+          if (hasPending && typeof onClose === 'function') {
+            onClose();
+          }
+        }, 600);
       } else {
         setRegisterError(data.detail || data.message || 'Registration failed. Please check the entered details.');
       }
@@ -531,6 +558,25 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       <span>Create Account</span>
                     </button>
                   </div>
+
+                  {pendingApply && (
+                    <div className="candidate-pending-banner">
+                      <div className="pending-banner-icon">
+                        <Lock size={18} />
+                      </div>
+                      <div className="pending-banner-body">
+                        <div className="pending-banner-heading">Login Required to Apply</div>
+                        <div className="pending-banner-text">
+                          {pendingApply.title 
+                            ? `You are applying for ${pendingApply.title}. Sign in or create an account to proceed.` 
+                            : 'Sign in or create an account to proceed with your application.'}
+                          <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px', fontSize: '0.82rem' }}>
+                            ✓ Your application form will open automatically once signed in.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {authMode === 'login' ? (
                     <>

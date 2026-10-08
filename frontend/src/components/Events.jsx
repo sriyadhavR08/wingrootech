@@ -60,7 +60,17 @@ const DEFAULT_EVENTS = [
   }
 ];
 
-export default function Events() {
+export default function Events({ onOpenStudentPortal }) {
+  const getCandidateUser = () => {
+    try {
+      const raw = sessionStorage.getItem('wingroo_student_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [candidateUser, setCandidateUser] = useState(getCandidateUser);
   const [eventsList, setEventsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -145,21 +155,80 @@ export default function Events() {
     return () => window.removeEventListener('wingroo_data_changed', fetchEvents);
   }, []);
 
+  // Listen for Candidate Login to auto-open pending event registration
+  useEffect(() => {
+    const handleCandidateLogin = (e) => {
+      const cand = e?.detail || getCandidateUser();
+      setCandidateUser(cand);
+
+      try {
+        const rawPending = sessionStorage.getItem('wingroo_pending_apply');
+        if (rawPending) {
+          const pending = JSON.parse(rawPending);
+          if (pending.type === 'event' && pending.event) {
+            sessionStorage.removeItem('wingroo_pending_apply');
+            setSelectedEvent(pending.event);
+            setRegResult(null);
+            setRegError('');
+            setFormData({
+              name: cand?.full_name || '',
+              email: cand?.email || '',
+              phone: cand?.phone || '',
+              college: cand?.college || '',
+              year: ''
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error handling pending event registration:', err);
+      }
+    };
+
+    window.addEventListener('wingroo_student_logged_in', handleCandidateLogin);
+    return () => window.removeEventListener('wingroo_student_logged_in', handleCandidateLogin);
+  }, []);
+
   const handleRegisterClick = (event) => {
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'event',
+        event: event,
+        title: event.title
+      }));
+      if (typeof onOpenStudentPortal === 'function') {
+        onOpenStudentPortal();
+      }
+      return;
+    }
+
     setSelectedEvent(event);
     setRegResult(null);
     setRegError('');
     setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      college: '',
+      name: cand.full_name || '',
+      email: cand.email || '',
+      phone: cand.phone || '',
+      college: cand.college || '',
       year: ''
     });
   };
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'event',
+        event: selectedEvent,
+        title: selectedEvent?.title
+      }));
+      setSelectedEvent(null);
+      onOpenStudentPortal?.();
+      return;
+    }
+
     setSubmitting(true);
     setRegError('');
 
@@ -380,35 +449,52 @@ export default function Events() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleRegisterSubmit} className="intern-form">
-                {regError && (
-                  <div className="status-alert status-error" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '8px', marginBottom: '14px', fontSize: '0.85rem' }}>
-                    {regError}
+              <>
+                {candidateUser && (
+                  <div className="candidate-verified-banner">
+                    <div className="verified-badge-icon">
+                      <CheckCircle size={16} />
+                    </div>
+                    <div className="verified-badge-text">
+                      <span className="verified-badge-title">Logged In Candidate</span>
+                      <strong className="verified-badge-name">{candidateUser.full_name || candidateUser.email}</strong>
+                      <span className="verified-badge-email">({candidateUser.email})</span>
+                    </div>
+                    <div className="verified-pill">✓ Verified</div>
                   </div>
                 )}
-                <div className="form-group">
-                  <label className="form-label">Full Name *</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="form-input" 
-                    placeholder="Enter your full name" 
-                  />
-                </div>
-                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+
+                <form onSubmit={handleRegisterSubmit} className="intern-form">
+                  {regError && (
+                    <div className="status-alert status-error" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '8px', marginBottom: '14px', fontSize: '0.85rem' }}>
+                      {regError}
+                    </div>
+                  )}
                   <div className="form-group">
-                    <label className="form-label">Email Address *</label>
+                    <label className="form-label">Full Name *</label>
                     <input 
-                      type="email" 
+                      type="text" 
                       required 
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="form-input" 
-                      placeholder="e.g. candidate@gmail.com" 
+                      placeholder="Enter your full name" 
                     />
                   </div>
+                  <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Email Address *</label>
+                      <input 
+                        type="email" 
+                        required 
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="form-input" 
+                        placeholder="e.g. candidate@gmail.com" 
+                        readOnly={!!candidateUser?.email}
+                        style={candidateUser?.email ? { background: '#f8fafc', color: '#334155', cursor: 'not-allowed' } : {}}
+                      />
+                    </div>
                   <div className="form-group">
                     <label className="form-label">Phone / WhatsApp *</label>
                     <input 
@@ -454,7 +540,8 @@ export default function Events() {
                   <ArrowRight size={16} />
                 </button>
               </form>
-            )}
+            </>
+          )}
           </div>
         </div>
       )}

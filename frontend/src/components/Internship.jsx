@@ -315,6 +315,16 @@ const JOB_TECHS = [
 ];
 
 export default function Internship({ onOpenStudentPortal }) {
+  const getCandidateUser = () => {
+    try {
+      const raw = sessionStorage.getItem('wingroo_student_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [candidateUser, setCandidateUser] = useState(getCandidateUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [activeScheduleDomain, setActiveScheduleDomain] = useState('Full Stack Development');
@@ -393,10 +403,79 @@ export default function Internship({ onOpenStudentPortal }) {
     return () => window.removeEventListener('wingroo_data_changed', fetchCollegePostings);
   }, []);
 
+  // Listen for Candidate Login to auto-open pending apply & sync candidate profile
+  useEffect(() => {
+    const handleCandidateLogin = (e) => {
+      const cand = e?.detail || getCandidateUser();
+      setCandidateUser(cand);
+
+      try {
+        const rawPending = sessionStorage.getItem('wingroo_pending_apply');
+        if (rawPending) {
+          const pending = JSON.parse(rawPending);
+          if (pending.type === 'internship') {
+            sessionStorage.removeItem('wingroo_pending_apply');
+            setSelectedType(pending.internshipType || 'College Internship');
+            if (pending.tech) setSelectedTech(pending.tech);
+            setOptScholarship(pending.withScholarship ?? true);
+            setFormData(prev => ({
+              ...prev,
+              name: cand?.full_name || prev.name,
+              email: cand?.email || prev.email,
+              phone: cand?.phone || prev.phone,
+              college: cand?.college || prev.college,
+            }));
+            setSubmitStatus(null);
+            setUploadResumeError('');
+            setIsModalOpen(true);
+          } else if (pending.type === 'job') {
+            sessionStorage.removeItem('wingroo_pending_apply');
+            setJobFormData(prev => ({
+              ...prev,
+              name: cand?.full_name || prev.name,
+              email: cand?.email || prev.email,
+              phone: cand?.phone || prev.phone,
+            }));
+            setJobSubmitStatus(null);
+            setJobResumeError('');
+            setIsJobModalOpen(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error handling pending apply in Internship:', err);
+      }
+    };
+
+    window.addEventListener('wingroo_student_logged_in', handleCandidateLogin);
+    return () => window.removeEventListener('wingroo_student_logged_in', handleCandidateLogin);
+  }, []);
+
   const openModal = (type = 'College Internship', tech = 'Full Stack Development', withScholarship = true) => {
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'internship',
+        internshipType: type,
+        tech,
+        withScholarship: type === 'College Internship' ? withScholarship : false,
+        title: `${type} (${tech})`
+      }));
+      if (typeof onOpenStudentPortal === 'function') {
+        onOpenStudentPortal();
+      }
+      return;
+    }
+
     setSelectedType(type);
     if (tech) setSelectedTech(tech);
     setOptScholarship(type === 'College Internship' ? withScholarship : false);
+    setFormData(prev => ({
+      ...prev,
+      name: cand.full_name || prev.name,
+      email: cand.email || prev.email,
+      phone: cand.phone || prev.phone,
+      college: cand.college || prev.college,
+    }));
     setSubmitStatus(null);
     setUploadResumeError('');
     setIsModalOpen(true);
@@ -469,6 +548,24 @@ export default function Internship({ onOpenStudentPortal }) {
 
   // Careers / Job Application Handlers
   const openJobModal = () => {
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'job',
+        title: 'Core Engineering Career Role'
+      }));
+      if (typeof onOpenStudentPortal === 'function') {
+        onOpenStudentPortal();
+      }
+      return;
+    }
+
+    setJobFormData(prev => ({
+      ...prev,
+      name: cand.full_name || prev.name,
+      email: cand.email || prev.email,
+      phone: cand.phone || prev.phone,
+    }));
     setJobSubmitStatus(null);
     setJobResumeError('');
     setIsJobModalOpen(true);
@@ -529,6 +626,17 @@ export default function Internship({ onOpenStudentPortal }) {
   const handleJobSubmit = async (e) => {
     e.preventDefault();
     setJobResumeError('');
+
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'job',
+        title: 'Core Engineering Career Role'
+      }));
+      setIsJobModalOpen(false);
+      onOpenStudentPortal?.();
+      return;
+    }
 
     if (!jobResumeUrl) {
       setJobResumeError('Please upload your Resume / CV (PDF or DOCX) to apply.');
@@ -600,6 +708,20 @@ export default function Internship({ onOpenStudentPortal }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUploadResumeError('');
+
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'internship',
+        internshipType: selectedType,
+        tech: selectedTech,
+        withScholarship: optScholarship,
+        title: `${selectedType} (${selectedTech})`
+      }));
+      setIsModalOpen(false);
+      onOpenStudentPortal?.();
+      return;
+    }
 
     // If Live Project Internship, resume is strictly required
     if (selectedType === 'Live Project Internship' && !resumeUrl) {
@@ -1279,6 +1401,20 @@ export default function Internship({ onOpenStudentPortal }) {
               </div>
             )}
 
+            {candidateUser && (
+              <div className="candidate-verified-banner">
+                <div className="verified-badge-icon">
+                  <CheckCircle2 size={16} />
+                </div>
+                <div className="verified-badge-text">
+                  <span className="verified-badge-title">Logged In Candidate</span>
+                  <strong className="verified-badge-name">{candidateUser.full_name || candidateUser.email}</strong>
+                  <span className="verified-badge-email">({candidateUser.email})</span>
+                </div>
+                <div className="verified-pill">✓ Verified</div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="intern-form">
               <div className="form-row">
                 <div className="form-group">
@@ -1303,6 +1439,8 @@ export default function Internship({ onOpenStudentPortal }) {
                     placeholder="Enter your email address"
                     value={formData.email}
                     onChange={handleInputChange}
+                    readOnly={!!candidateUser?.email}
+                    style={candidateUser?.email ? { background: '#f8fafc', color: '#334155', cursor: 'not-allowed' } : {}}
                   />
                 </div>
               </div>
@@ -1559,6 +1697,20 @@ export default function Internship({ onOpenStudentPortal }) {
               </div>
             )}
 
+            {candidateUser && (
+              <div className="candidate-verified-banner">
+                <div className="verified-badge-icon">
+                  <CheckCircle2 size={16} />
+                </div>
+                <div className="verified-badge-text">
+                  <span className="verified-badge-title">Logged In Candidate</span>
+                  <strong className="verified-badge-name">{candidateUser.full_name || candidateUser.email}</strong>
+                  <span className="verified-badge-email">({candidateUser.email})</span>
+                </div>
+                <div className="verified-pill">✓ Verified</div>
+              </div>
+            )}
+
             <form onSubmit={handleJobSubmit} className="intern-form">
               <div className="form-row">
                 <div className="form-group">
@@ -1581,6 +1733,8 @@ export default function Internship({ onOpenStudentPortal }) {
                     placeholder="Enter email address"
                     value={jobFormData.email}
                     onChange={(e) => setJobFormData(prev => ({ ...prev, email: e.target.value }))}
+                    readOnly={!!candidateUser?.email}
+                    style={candidateUser?.email ? { background: '#f8fafc', color: '#334155', cursor: 'not-allowed' } : {}}
                   />
                 </div>
               </div>

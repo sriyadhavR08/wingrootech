@@ -95,7 +95,17 @@ const CULTURE_PERKS = [
   }
 ];
 
-export default function Careers() {
+export default function Careers({ onOpenStudentPortal }) {
+  const getCandidateUser = () => {
+    try {
+      const raw = sessionStorage.getItem('wingroo_student_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [candidateUser, setCandidateUser] = useState(getCandidateUser);
   const [selectedRole, setSelectedRole] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -141,6 +151,39 @@ export default function Careers() {
     return () => window.removeEventListener('resize', checkRolesScroll);
   }, []);
 
+  // Listen for Candidate Login to auto-open pending career application
+  useEffect(() => {
+    const handleCandidateLogin = (e) => {
+      const cand = e?.detail || getCandidateUser();
+      setCandidateUser(cand);
+
+      try {
+        const rawPending = sessionStorage.getItem('wingroo_pending_apply');
+        if (rawPending) {
+          const pending = JSON.parse(rawPending);
+          if (pending.type === 'career') {
+            sessionStorage.removeItem('wingroo_pending_apply');
+            setSelectedRole(pending.role || null);
+            setSubmitResult(null);
+            setFormData(prev => ({
+              ...prev,
+              name: cand?.full_name || prev.name,
+              email: cand?.email || prev.email,
+              phone: cand?.phone || prev.phone,
+              technologies: pending.role ? pending.role.skills.slice(0, 3) : prev.technologies
+            }));
+            setIsModalOpen(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error handling pending career apply:', err);
+      }
+    };
+
+    window.addEventListener('wingroo_student_logged_in', handleCandidateLogin);
+    return () => window.removeEventListener('wingroo_student_logged_in', handleCandidateLogin);
+  }, []);
+
   const scrollRoles = (direction) => {
     const el = rolesSliderRef.current;
     if (!el) return;
@@ -163,13 +206,27 @@ export default function Careers() {
   };
 
   const handleOpenApply = (role = null) => {
-    setSelectedRole(role);
-    if (role) {
-      setFormData(prev => ({
-        ...prev,
-        technologies: role.skills.slice(0, 3)
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'career',
+        role: role,
+        title: role ? role.title : 'General Position'
       }));
+      if (typeof onOpenStudentPortal === 'function') {
+        onOpenStudentPortal();
+      }
+      return;
     }
+
+    setSelectedRole(role);
+    setFormData(prev => ({
+      ...prev,
+      name: cand.full_name || prev.name,
+      email: cand.email || prev.email,
+      phone: cand.phone || prev.phone,
+      technologies: role ? role.skills.slice(0, 3) : prev.technologies
+    }));
     setSubmitResult(null);
     setIsModalOpen(true);
   };
@@ -215,6 +272,19 @@ export default function Careers() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const cand = getCandidateUser();
+    if (!cand) {
+      sessionStorage.setItem('wingroo_pending_apply', JSON.stringify({
+        type: 'career',
+        role: selectedRole,
+        title: selectedRole ? selectedRole.title : 'General Position'
+      }));
+      setIsModalOpen(false);
+      onOpenStudentPortal?.();
+      return;
+    }
+
     if (!formData.name || !formData.email || !formData.phone) {
       alert("Please enter your name, email, and phone number.");
       return;
@@ -535,32 +605,49 @@ export default function Careers() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="job-application-form">
-                  <div className="job-form-row">
-                    <div className="job-form-group">
-                      <label className="job-label">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        className="job-input"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      />
+                <>
+                  {candidateUser && (
+                    <div className="candidate-verified-banner">
+                      <div className="verified-badge-icon">
+                        <CheckCircle2 size={16} />
+                      </div>
+                      <div className="verified-badge-text">
+                        <span className="verified-badge-title">Logged In Candidate</span>
+                        <strong className="verified-badge-name">{candidateUser.full_name || candidateUser.email}</strong>
+                        <span className="verified-badge-email">({candidateUser.email})</span>
+                      </div>
+                      <div className="verified-pill">✓ Verified</div>
                     </div>
+                  )}
 
-                    <div className="job-form-group">
-                      <label className="job-label">Email Address *</label>
-                      <input
-                        type="email"
-                        required
-                        className="job-input"
-                        placeholder="Enter your email address"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      />
+                  <form onSubmit={handleSubmit} className="job-application-form">
+                    <div className="job-form-row">
+                      <div className="job-form-group">
+                        <label className="job-label">Full Name *</label>
+                        <input
+                          type="text"
+                          required
+                          className="job-input"
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="job-form-group">
+                        <label className="job-label">Email Address *</label>
+                        <input
+                          type="email"
+                          required
+                          className="job-input"
+                          placeholder="Enter your email address"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          readOnly={!!candidateUser?.email}
+                          style={candidateUser?.email ? { background: '#f8fafc', color: '#334155', cursor: 'not-allowed' } : {}}
+                        />
+                      </div>
                     </div>
-                  </div>
 
                   <div className="job-form-row">
                     <div className="job-form-group">
@@ -685,7 +772,8 @@ export default function Careers() {
                     </button>
                   </div>
                 </form>
-              )}
+              </>
+            )}
             </div>
           </div>
         </div>

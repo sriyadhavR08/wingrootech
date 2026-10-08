@@ -193,6 +193,8 @@ def candidate_register():
                 "full_name": user.full_name,
                 "email": user.email,
                 "role": user.role,
+                "phone": phone,
+                "college": college,
             }
         }), 201
     except Exception as e:
@@ -216,6 +218,10 @@ def login():
     if not user.is_active:
         return jsonify({"detail": "This account is inactive."}), 401
 
+    profile = StudentProfile.query.filter_by(user_id=user.id).first()
+    user_phone = profile.mobile_number if profile and profile.mobile_number != "N/A" else ""
+    user_college = profile.college_name if profile and profile.college_name != "Registered Candidate" else ""
+
     access_token, refresh_token = generate_tokens(user)
     return jsonify({
         "access": access_token,
@@ -225,6 +231,8 @@ def login():
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
+            "phone": user_phone,
+            "college": user_college,
         },
     }), 200
 

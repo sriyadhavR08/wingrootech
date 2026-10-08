@@ -82,11 +82,11 @@ function LandingPage() {
         <Services />
         <Portfolio key={`portfolio-${dataVersion}`} />
         <Internship onOpenStudentPortal={handleOpenStudent} />
-        <Events key={`events-${dataVersion}`} />
+        <Events key={`events-${dataVersion}`} onOpenStudentPortal={handleOpenStudent} />
         <WhyWingroo />
         <Reviews />
         <AEOKnowledgeHub />
-        <Careers />
+        <Careers onOpenStudentPortal={handleOpenStudent} />
         <CTA />
         <Contact />
       </main>

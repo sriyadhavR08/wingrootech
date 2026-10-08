@@ -1030,6 +1030,58 @@
   color: #0f172a;
 }
 
+/* Candidate Pending Apply Notice Banner */
+.candidate-pending-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(241, 125, 71, 0.09) 100%);
+  border: 1.5px solid rgba(2, 132, 199, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  text-align: left;
+  animation: pendingPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes pendingPulse {
+  0%, 100% { border-color: rgba(2, 132, 199, 0.35); box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06); }
+  50% { border-color: rgba(241, 125, 71, 0.5); box-shadow: 0 4px 14px rgba(241, 125, 71, 0.12); }
+}
+
+.pending-banner-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+.pending-banner-body {
+  flex: 1;
+}
+
+.pending-banner-heading {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pending-banner-text {
+  font-size: 0.83rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
 /* Verification Workspace */
 .verify-workspace-wrap {
   padding: 4px;
