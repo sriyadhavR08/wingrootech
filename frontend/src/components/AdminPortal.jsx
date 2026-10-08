@@ -51,13 +51,13 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('wingroo_admin_auth') === 'true' || !!sessionStorage.getItem('wingroo_admin_user');
   });
-  const [loginForm, setLoginForm] = useState({ email: 'admin@wingroo.com', password: '' });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
   // Admin Forgot / Reset Password state
   const [showForgot, setShowForgot] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('admin@wingroo.com');
+  const [forgotEmail, setForgotEmail] = useState('');
   const [forgotNewPass, setForgotNewPass] = useState('');
   const [forgotConfirmPass, setForgotConfirmPass] = useState('');
   const [forgotUserId, setForgotUserId] = useState(null);
@@ -192,6 +192,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setAdminUser(data.user);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(data.user));
+        window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: data.user }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
         loadAllData();
         return;
@@ -207,6 +209,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setAdminUser(fallbackUser);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
         loadAllData();
         return;
@@ -224,6 +228,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setAdminUser(fallbackUser);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
         loadAllData();
       } else {
@@ -315,6 +321,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
     setAdminUser(null);
     sessionStorage.removeItem('wingroo_admin_auth');
     sessionStorage.removeItem('wingroo_admin_user');
+    window.dispatchEvent(new CustomEvent('wingroo_admin_logged_out'));
+    window.dispatchEvent(new Event('wingroo_auth_state_changed'));
     setLoginForm(prev => ({ ...prev, password: '' }));
   };
 
@@ -1177,7 +1185,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                           type="email"
                           value={forgotEmail}
                           onChange={(e) => setForgotEmail(e.target.value)}
-                          placeholder="admin@wingroo.com"
+                          placeholder="Enter your administrator email"
                           className="admin-field-input"
                           required
                         />
@@ -1265,7 +1273,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                         type="email"
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        placeholder="admin@wingroo.com"
+                        placeholder="Enter your administrator email"
                         className="admin-field-input"
                         autoComplete="username"
                         required
@@ -1280,7 +1288,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                         type="button"
                         onClick={() => {
                           setShowForgot(true);
-                          setForgotEmail(loginForm.email || 'admin@wingroo.com');
+                          setForgotEmail(loginForm.email || '');
                           setForgotErr('');
                           setForgotMsg('');
                           setForgotStep('verify');
@@ -1309,10 +1317,6 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                     <span>{loginLoading ? 'Authenticating…' : 'Sign In to Admin Portal'}</span>
                   </button>
                 </form>
-
-                <p className="admin-hint-text">
-                  Default credentials: <code>admin@wingroo.com</code> &bull; <code>admin123</code>
-                </p>
               </div>
             )}
           </div>

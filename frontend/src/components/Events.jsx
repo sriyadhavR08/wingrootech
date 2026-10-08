@@ -490,7 +490,7 @@ export default function Events({ onOpenStudentPortal }) {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="form-input" 
-                        placeholder="e.g. candidate@gmail.com" 
+                        placeholder="Enter your email address" 
                         readOnly={!!candidateUser?.email}
                         style={candidateUser?.email ? { background: '#f8fafc', color: '#334155', cursor: 'not-allowed' } : {}}
                       />
@@ -503,7 +503,7 @@ export default function Events({ onOpenStudentPortal }) {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="form-input" 
-                      placeholder="e.g. 9876543210" 
+                      placeholder="Enter your mobile number" 
                     />
                   </div>
                 </div>
@@ -516,7 +516,7 @@ export default function Events({ onOpenStudentPortal }) {
                       value={formData.college}
                       onChange={(e) => setFormData({ ...formData, college: e.target.value })}
                       className="form-input" 
-                      placeholder="College or company name" 
+                      placeholder="Enter your college or company name" 
                     />
                   </div>
                   <div className="form-group">
@@ -526,7 +526,7 @@ export default function Events({ onOpenStudentPortal }) {
                       value={formData.year}
                       onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                       className="form-input" 
-                      placeholder="e.g. 3rd Year / Dev" 
+                      placeholder="Enter your year of study or role" 
                     />
                   </div>
                 </div>

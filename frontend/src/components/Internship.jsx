@@ -950,7 +950,6 @@ export default function Internship({ onOpenStudentPortal }) {
               <li><CheckCircle2 size={16} className="perk-check" /> Guidance from seasoned software engineers</li>
               <li>
                 <CheckCircle2 size={16} className="perk-check" /> Official internship certificate & performance evaluation
-                <a href="/internship/verify" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#0284c7', fontWeight: 700, textDecoration: 'none' }}>[Verify Certificate →]</a>
               </li>
               <li style={{ color: '#0284c7', fontWeight: 600 }}>
                 <Sparkles size={16} className="perk-check" style={{ color: '#0284c7' }} />

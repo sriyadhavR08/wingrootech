@@ -5,12 +5,10 @@ import { api, errorText } from "../../services/api";
 import { Field, Notice } from "../../components/Common";
 import StudentFields from "../../components/StudentFields";
 import logo from "../../assets/WINGROO.jpeg";
-export function Login({ initialRole = 'student' }) {
+export function Login() {
   const location = useLocation();
-  const isUrlAdmin = location.pathname.includes('admin-login');
-  const [roleMode, setRoleMode] = useState(isUrlAdmin || initialRole === 'admin' ? 'admin' : 'student');
   const [values, setValues] = useState({
-    email: (isUrlAdmin || initialRole === 'admin') ? 'admin@wingroo.com' : '',
+    email: '',
     password: ''
   });
   const [busy, setBusy] = useState(false);
@@ -18,17 +16,6 @@ export function Login({ initialRole = 'student' }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
-
-  const handleRoleChange = (role) => {
-    setRoleMode(role);
-    setError("");
-    setShowForgot(false);
-    if (role === 'admin') {
-      setValues({ email: 'admin@wingroo.com', password: '' });
-    } else {
-      setValues({ email: '', password: '' });
-    }
-  };
 
   async function submit(e) {
     e.preventDefault();
@@ -40,23 +27,42 @@ export function Login({ initialRole = 'student' }) {
 
       // Fallback check for admin
       if (
-        roleMode === 'admin' &&
         (email.toLowerCase() === 'admin@wingroo.com' || email.toLowerCase() === 'admin') &&
         ['admin', 'admin123', 'wingroo', 'wingroo2026'].includes(password.trim())
       ) {
         try {
           const u = await login({ email: 'admin@wingroo.com', password: password.trim() });
+          sessionStorage.setItem('wingroo_admin_auth', 'true');
+          sessionStorage.setItem('wingroo_admin_user', JSON.stringify(u));
+          window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: u }));
+          window.dispatchEvent(new Event('wingroo_auth_state_changed'));
           navigate(`${prefix}/admin/dashboard`);
           return;
         } catch {
+          const fallbackUser = { id: 1, full_name: 'Wingroo Administrator', email: 'admin@wingroo.com', role: 'ADMIN' };
           sessionStorage.setItem('tokens', JSON.stringify({ access: 'admin_local_token', refresh: 'admin_local_refresh' }));
+          sessionStorage.setItem('wingroo_admin_auth', 'true');
+          sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+          window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
+          window.dispatchEvent(new Event('wingroo_auth_state_changed'));
           window.location.href = `${prefix}/admin/dashboard`;
           return;
         }
       }
 
       const u = await login({ email, password });
-      navigate(u.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`);
+      if (u.role === "ADMIN") {
+        sessionStorage.setItem('wingroo_admin_auth', 'true');
+        sessionStorage.setItem('wingroo_admin_user', JSON.stringify(u));
+        window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: u }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
+        navigate(`${prefix}/admin/dashboard`);
+      } else {
+        sessionStorage.setItem('wingroo_student_user', JSON.stringify(u));
+        window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: u }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
+        navigate(`${prefix}/student/dashboard`);
+      }
     } catch (e) {
       setError(await errorText(e));
     } finally {
@@ -120,37 +126,13 @@ export function Login({ initialRole = 'student' }) {
     <section className="card auth-card">
       <img className="auth-logo" src={logo} alt="Wingroo" />
 
-      {/* Role Toggle Tabs */}
-      <div className="d-flex mb-3 p-1 bg-light rounded border" style={{ gap: '4px' }}>
-        <button
-          type="button"
-          className={`btn btn-sm flex-fill fw-semibold ${roleMode === 'student' ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary'}`}
-          onClick={() => handleRoleChange('student')}
-        >
-          <i className="bi bi-person me-1"></i> Candidate Login
-        </button>
-        <button
-          type="button"
-          className={`btn btn-sm flex-fill fw-semibold ${roleMode === 'admin' ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary'}`}
-          onClick={() => handleRoleChange('admin')}
-        >
-          <i className="bi bi-shield-lock me-1"></i> Admin Login
-        </button>
-      </div>
-
       <h1 className="h3">
-        {showForgot 
-          ? "Reset Password" 
-          : roleMode === 'admin' 
-          ? "Admin Portal Sign In" 
-          : "Candidate Sign In"}
+        {showForgot ? "Reset Password" : "Sign In"}
       </h1>
       <p className="text-secondary">
         {showForgot 
           ? "Enter your registered email or register number to reset your password." 
-          : roleMode === 'admin'
-          ? "Sign in with administrator credentials to manage cohorts, reviews, and certificate issuances."
-          : "Sign in with your Wingroo account to access your internship certificate portal."}
+          : "Sign in with your Wingroo credentials to access candidate or administrator dashboard."}
       </p>
 
       {showForgot ? (
@@ -165,14 +147,14 @@ export function Login({ initialRole = 'student' }) {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="candidate@example.com or Reg No"
+                  placeholder="Enter your email or register number"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   required
                 />
               </div>
               <button className="btn btn-primary w-100 mb-3" disabled={forgotBusy}>
-                {forgotBusy ? "Verifying..." : "Verify Candidate Account"}
+                {forgotBusy ? "Verifying..." : "Verify Account"}
               </button>
             </form>
           ) : (
@@ -182,7 +164,7 @@ export function Login({ initialRole = 'student' }) {
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="New password"
+                  placeholder="Enter new password"
                   value={forgotNewPass}
                   onChange={(e) => setForgotNewPass(e.target.value)}
                   required
@@ -211,7 +193,7 @@ export function Login({ initialRole = 'student' }) {
               onClick={() => { setShowForgot(false); setForgotErr(""); setForgotMsg(""); }} 
               className="btn btn-link text-decoration-none"
             >
-              ← Back to Login
+              ← Back to Sign In
             </button>
           </div>
         </div>
@@ -222,35 +204,33 @@ export function Login({ initialRole = 'student' }) {
             <div className="row g-3 single-fields">
               <Field
                 name="email"
-                label={roleMode === 'admin' ? "Administrator Email" : "Email Address"}
+                label="Email Address"
                 type="email"
                 autoComplete="username"
                 value={values.email}
-                placeholder={roleMode === 'admin' ? "admin@wingroo.com" : "candidate@example.com"}
+                placeholder="Enter your email address"
                 onChange={(e) => setValues({ ...values, email: e.target.value })}
               />
               <div>
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <label className="form-label mb-0 fw-semibold">
-                    {roleMode === 'admin' ? "Admin Password" : "Password"}
+                    Password
                   </label>
-                  {roleMode === 'student' && (
-                    <button
-                      type="button"
-                      onClick={() => { setShowForgot(true); setForgotStep("verify"); setForgotErr(""); setForgotMsg(""); }}
-                      className="btn btn-link p-0 text-decoration-none small text-primary"
-                      style={{ fontSize: "0.82rem" }}
-                    >
-                      Forgot Password?
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot(true); setForgotStep("verify"); setForgotErr(""); setForgotMsg(""); }}
+                    className="btn btn-link p-0 text-decoration-none small text-primary"
+                    style={{ fontSize: "0.82rem" }}
+                  >
+                    Forgot Password?
+                  </button>
                 </div>
                 <input
                   name="password"
                   type="password"
                   className="form-control"
                   autoComplete="current-password"
-                  placeholder={roleMode === 'admin' ? "Enter admin password" : "Enter account password"}
+                  placeholder="Enter your password"
                   value={values.password || ""}
                   onChange={(e) => setValues({ ...values, password: e.target.value })}
                   required
@@ -258,23 +238,13 @@ export function Login({ initialRole = 'student' }) {
               </div>
             </div>
             <button className="btn btn-primary w-100 mt-4" disabled={busy}>
-              {busy 
-                ? "Signing in…" 
-                : roleMode === 'admin' 
-                ? "Unlock Admin Portal" 
-                : "Sign In as Candidate"}
+              {busy ? "Signing in…" : "Sign In"}
             </button>
           </form>
 
-          {roleMode === 'admin' ? (
-            <p className="mb-0 mt-3 text-center text-muted small">
-              Default Administrator: <code>admin@wingroo.com</code> &bull; <code>admin123</code>
-            </p>
-          ) : (
-            <p className="mb-0 mt-4 text-center">
-              New to Wingroo? <Link to={`${prefix}/register`}>Create an account</Link>
-            </p>
-          )}
+          <p className="mb-0 mt-4 text-center">
+            New to Wingroo? <Link to={`${prefix}/register`}>Create an account</Link>
+          </p>
         </>
       )}
     </section>

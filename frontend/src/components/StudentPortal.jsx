@@ -131,6 +131,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
         setCurrentUser(data.user);
         window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         fetchStudentApplications(data.user.email);
         const hasPending = !!sessionStorage.getItem('wingroo_pending_apply');
         if (hasPending && typeof onClose === 'function') {
@@ -189,6 +190,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         setRegisterSuccess('Account created successfully! Logging you in…');
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
         window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         const hasPending = !!sessionStorage.getItem('wingroo_pending_apply');
         setTimeout(() => {
           setCurrentUser(data.user);
@@ -266,6 +268,8 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
   const handleSignOut = () => {
     sessionStorage.removeItem('wingroo_student_user');
+    window.dispatchEvent(new CustomEvent('wingroo_student_logged_out'));
+    window.dispatchEvent(new Event('wingroo_auth_state_changed'));
     setCurrentUser(null);
     setApplications([]);
     setEventRegistrations([]);
@@ -475,7 +479,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                             type="email"
                             value={forgotEmail}
                             onChange={(e) => setForgotEmail(e.target.value)}
-                            placeholder="candidate@example.com"
+                            placeholder="Enter your registered email address"
                             className="candidate-input"
                             required
                           />
@@ -604,7 +608,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               type="email"
                               value={loginForm.email}
                               onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                              placeholder="candidate@example.com"
+                              placeholder="Enter your email address"
                               className="candidate-input"
                               autoComplete="username"
                               required
@@ -694,7 +698,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               type="text"
                               value={registerForm.full_name}
                               onChange={(e) => setRegisterForm({ ...registerForm, full_name: e.target.value })}
-                              placeholder="e.g. Priyadharshini R"
+                              placeholder="Enter your full name"
                               className="candidate-input"
                               required
                             />
@@ -709,7 +713,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               type="email"
                               value={registerForm.email}
                               onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                              placeholder="candidate@example.com"
+                              placeholder="Enter your email address"
                               className="candidate-input"
                               autoComplete="username"
                               required
@@ -726,7 +730,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                                 type="tel"
                                 value={registerForm.phone}
                                 onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
-                                placeholder="9876543210"
+                                placeholder="Enter your mobile number"
                                 className="candidate-input"
                               />
                             </div>
@@ -740,7 +744,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                                 type="text"
                                 value={registerForm.college}
                                 onChange={(e) => setRegisterForm({ ...registerForm, college: e.target.value })}
-                                placeholder="College / Institution"
+                                placeholder="Enter your college / institute name"
                                 className="candidate-input"
                               />
                             </div>
@@ -755,7 +759,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               type="password"
                               value={registerForm.password}
                               onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                              placeholder="Create strong password"
+                              placeholder="Enter your password"
                               className="candidate-input"
                               autoComplete="new-password"
                               required
@@ -771,7 +775,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                               type="password"
                               value={registerForm.confirm_password}
                               onChange={(e) => setRegisterForm({ ...registerForm, confirm_password: e.target.value })}
-                              placeholder="Confirm password"
+                              placeholder="Confirm your password"
                               className="candidate-input"
                               autoComplete="new-password"
                               required
