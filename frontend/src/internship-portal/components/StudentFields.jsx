@@ -543,7 +543,7 @@ export default function StudentFields({ values, onChange, account = false }) {
               placeholder="Enter your password"
               value={values.password}
               onChange={onChange}
-              minLength={8}
+              minLength={6}
               maxLength={128}
               autoComplete="new-password"
             />
@@ -554,13 +554,13 @@ export default function StudentFields({ values, onChange, account = false }) {
               placeholder="Enter confirm password"
               value={values.confirm_password}
               onChange={onChange}
-              minLength={8}
+              minLength={6}
               maxLength={128}
               autoComplete="new-password"
             />
           </div>
           <p className="form-text mt-3 mb-0">
-            Use at least 8 characters; avoid common passwords and personal information.
+            Use at least 6 characters. If you have an existing Wingroo main website account, enter the same password to automatically link your profile.
           </p>
         </section>
       )}

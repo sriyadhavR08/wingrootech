@@ -21,7 +21,8 @@ import {
   LogIn,
   LogOut,
   User,
-  KeyRound
+  KeyRound,
+  UserPlus
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -40,10 +41,26 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
     }
   });
 
+  // Auth view mode: 'login' | 'register'
+  const [authMode, setAuthMode] = useState('login');
+
   // Login form state
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  // Register form state
+  const [registerForm, setRegisterForm] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    college: '',
+    password: '',
+    confirm_password: ''
+  });
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerError, setRegisterError] = useState('');
+  const [registerSuccess, setRegisterSuccess] = useState('');
 
   // Forgot Password state
   const [showForgot, setShowForgot] = useState(false);
@@ -106,6 +123,60 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       setLoginError('Unable to connect to authentication server. Please check your connection.');
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterSuccess('');
+
+    if (!registerForm.full_name.trim()) {
+      setRegisterError('Please enter your full name.');
+      return;
+    }
+    if (!registerForm.email.trim()) {
+      setRegisterError('Please enter your email address.');
+      return;
+    }
+    if (registerForm.password !== registerForm.confirm_password) {
+      setRegisterError('Passwords do not match.');
+      return;
+    }
+    if (registerForm.password.length < 6) {
+      setRegisterError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setRegisterLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/candidate-register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: registerForm.full_name.trim(),
+          email: registerForm.email.trim(),
+          password: registerForm.password,
+          confirm_password: registerForm.confirm_password,
+          phone: registerForm.phone.trim(),
+          college: registerForm.college.trim()
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setRegisterSuccess('Account created successfully! Logging you in…');
+        sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        setTimeout(() => {
+          setCurrentUser(data.user);
+          fetchStudentApplications(data.user.email);
+        }, 700);
+      } else {
+        setRegisterError(data.detail || data.message || 'Registration failed. Please check the entered details.');
+      }
+    } catch {
+      setRegisterError('Unable to connect to registration server. Please try again.');
+    } finally {
+      setRegisterLoading(false);
     }
   };
 
@@ -439,76 +510,247 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   </div>
                 </div>
               ) : (
-                /* Standard Candidate Login Form */
+                /* Standard Candidate Login & Registration Form */
                 <div className="candidate-login-card">
-                  <div className="candidate-login-icon-wrap">
-                    <LogIn size={26} />
+                  {/* Mode Switcher: Sign In vs Create Account */}
+                  <div className="candidate-auth-toggle-tabs">
+                    <button 
+                      type="button" 
+                      className={`candidate-toggle-tab ${authMode === 'login' ? 'active' : ''}`}
+                      onClick={() => { setAuthMode('login'); setLoginError(''); setRegisterError(''); setRegisterSuccess(''); }}
+                    >
+                      <LogIn size={15} />
+                      <span>Candidate Sign In</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`candidate-toggle-tab ${authMode === 'register' ? 'active' : ''}`}
+                      onClick={() => { setAuthMode('register'); setLoginError(''); setRegisterError(''); setRegisterSuccess(''); }}
+                    >
+                      <UserPlus size={15} />
+                      <span>Create Account</span>
+                    </button>
                   </div>
-                  <h3 className="candidate-login-title">Candidate Sign In</h3>
-                  <p className="candidate-login-desc">
-                    Sign in to view your internship applications, review statuses, and download official event passes.
-                  </p>
 
-                  {loginError && (
-                    <div className="candidate-auth-error">
-                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                      <span>{loginError}</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleLoginSubmit}>
-                    <div className="candidate-form-group">
-                      <label className="candidate-form-label">Registered Email Address</label>
-                      <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
-                        <Mail size={17} className="candidate-input-icon" />
-                        <input 
-                          type="email"
-                          value={loginForm.email}
-                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                          placeholder="candidate@example.com"
-                          className="candidate-input"
-                          autoComplete="username"
-                          required
-                        />
+                  {authMode === 'login' ? (
+                    <>
+                      <div className="candidate-login-icon-wrap">
+                        <LogIn size={26} />
                       </div>
-                    </div>
+                      <h3 className="candidate-login-title">Candidate Sign In</h3>
+                      <p className="candidate-login-desc">
+                        Sign in to view your internship applications, review statuses, and download official event passes.
+                      </p>
 
-                    <div className="candidate-form-group">
-                      <div className="candidate-label-row">
-                        <label className="candidate-form-label">Password</label>
+                      {loginError && (
+                        <div className="candidate-auth-error">
+                          <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                          <span>{loginError}</span>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleLoginSubmit}>
+                        <div className="candidate-form-group">
+                          <label className="candidate-form-label">Registered Email Address</label>
+                          <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                            <Mail size={17} className="candidate-input-icon" />
+                            <input 
+                              type="email"
+                              value={loginForm.email}
+                              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                              placeholder="candidate@example.com"
+                              className="candidate-input"
+                              autoComplete="username"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="candidate-form-group">
+                          <div className="candidate-label-row">
+                            <label className="candidate-form-label">Password</label>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setShowForgot(true);
+                                setForgotEmail(loginForm.email);
+                                setForgotErr('');
+                                setForgotMsg('');
+                                setForgotStep('verify');
+                              }}
+                              className="candidate-forgot-link"
+                            >
+                              Forgot Password?
+                            </button>
+                          </div>
+                          <div className="candidate-input-wrap">
+                            <Lock size={17} className="candidate-input-icon" />
+                            <input 
+                              type="password"
+                              value={loginForm.password}
+                              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                              placeholder="Enter your password"
+                              className="candidate-input"
+                              autoComplete="current-password"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <button type="submit" disabled={loginLoading} className="candidate-auth-btn">
+                          {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
+                          <span>{loginLoading ? 'Signing in…' : 'Sign In to Candidate Portal'}</span>
+                        </button>
+                      </form>
+
+                      <div className="candidate-auth-footer">
+                        <span>New candidate to Wingroo? </span>
                         <button 
-                          type="button"
-                          onClick={() => {
-                            setShowForgot(true);
-                            setForgotEmail(loginForm.email);
-                            setForgotErr('');
-                            setForgotMsg('');
-                            setForgotStep('verify');
-                          }}
-                          className="candidate-forgot-link"
+                          type="button" 
+                          onClick={() => { setAuthMode('register'); setLoginError(''); }}
+                          className="candidate-switch-link"
                         >
-                          Forgot Password?
+                          Create an account
                         </button>
                       </div>
-                      <div className="candidate-input-wrap">
-                        <Lock size={17} className="candidate-input-icon" />
-                        <input 
-                          type="password"
-                          value={loginForm.password}
-                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                          placeholder="Enter your password"
-                          className="candidate-input"
-                          autoComplete="current-password"
-                          required
-                        />
+                    </>
+                  ) : (
+                    /* Create Account Form */
+                    <>
+                      <div className="candidate-login-icon-wrap" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', color: '#059669' }}>
+                        <UserPlus size={26} />
                       </div>
-                    </div>
+                      <h3 className="candidate-login-title">Create Candidate Account</h3>
+                      <p className="candidate-login-desc">
+                        Create your account to submit and track internships, view passes, and earn verified certificates.
+                      </p>
 
-                    <button type="submit" disabled={loginLoading} className="candidate-auth-btn">
-                      {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
-                      <span>{loginLoading ? 'Signing in…' : 'Sign In to Candidate Portal'}</span>
-                    </button>
-                  </form>
+                      {registerError && (
+                        <div className="candidate-auth-error">
+                          <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                          <span>{registerError}</span>
+                        </div>
+                      )}
+
+                      {registerSuccess && (
+                        <div className="candidate-auth-success">
+                          <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                          <span>{registerSuccess}</span>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleRegisterSubmit}>
+                        <div className="candidate-form-group">
+                          <label className="candidate-form-label">Full Name</label>
+                          <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                            <User size={17} className="candidate-input-icon" />
+                            <input 
+                              type="text"
+                              value={registerForm.full_name}
+                              onChange={(e) => setRegisterForm({ ...registerForm, full_name: e.target.value })}
+                              placeholder="e.g. Priyadharshini R"
+                              className="candidate-input"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="candidate-form-group">
+                          <label className="candidate-form-label">Email Address</label>
+                          <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                            <Mail size={17} className="candidate-input-icon" />
+                            <input 
+                              type="email"
+                              value={registerForm.email}
+                              onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                              placeholder="candidate@example.com"
+                              className="candidate-input"
+                              autoComplete="username"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="row g-2" style={{ display: 'flex', gap: '10px' }}>
+                          <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
+                            <label className="candidate-form-label">Mobile Number</label>
+                            <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                              <Phone size={17} className="candidate-input-icon" />
+                              <input 
+                                type="tel"
+                                value={registerForm.phone}
+                                onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
+                                placeholder="9876543210"
+                                className="candidate-input"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
+                            <label className="candidate-form-label">College / Institute</label>
+                            <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                              <GraduationCap size={17} className="candidate-input-icon" />
+                              <input 
+                                type="text"
+                                value={registerForm.college}
+                                onChange={(e) => setRegisterForm({ ...registerForm, college: e.target.value })}
+                                placeholder="College / Institution"
+                                className="candidate-input"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="candidate-form-group">
+                          <label className="candidate-form-label">Password (min 6 characters)</label>
+                          <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                            <Lock size={17} className="candidate-input-icon" />
+                            <input 
+                              type="password"
+                              value={registerForm.password}
+                              onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                              placeholder="Create strong password"
+                              className="candidate-input"
+                              autoComplete="new-password"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="candidate-form-group">
+                          <label className="candidate-form-label">Confirm Password</label>
+                          <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                            <Lock size={17} className="candidate-input-icon" />
+                            <input 
+                              type="password"
+                              value={registerForm.confirm_password}
+                              onChange={(e) => setRegisterForm({ ...registerForm, confirm_password: e.target.value })}
+                              placeholder="Confirm password"
+                              className="candidate-input"
+                              autoComplete="new-password"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <button type="submit" disabled={registerLoading} className="candidate-auth-btn">
+                          {registerLoading ? <RefreshCw size={16} className="spin-anim" /> : <UserPlus size={16} />}
+                          <span>{registerLoading ? 'Creating Account…' : 'Create Candidate Account'}</span>
+                        </button>
+                      </form>
+
+                      <div className="candidate-auth-footer">
+                        <span>Already have an account? </span>
+                        <button 
+                          type="button" 
+                          onClick={() => { setAuthMode('login'); setRegisterError(''); }}
+                          className="candidate-switch-link"
+                        >
+                          Sign In
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

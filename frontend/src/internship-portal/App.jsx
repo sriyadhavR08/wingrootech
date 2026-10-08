@@ -68,6 +68,7 @@ export default function InternshipApp() {
           <Route index element={<Home />} />
           <Route element={<PublicOnly />}>
             <Route path="login" element={<Login />} />
+            <Route path="admin-login" element={<Login initialRole="admin" />} />
             <Route path="register" element={<Register />} />
           </Route>
           <Route path="verify" element={<Verify />} />

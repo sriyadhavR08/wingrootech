@@ -2593,6 +2593,57 @@
   text-decoration: underline;
 }
 
+.candidate-auth-toggle-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 22px;
+  gap: 4px;
+}
+
+.candidate-toggle-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.candidate-toggle-tab:hover {
+  color: #0f172a;
+}
+
+.candidate-toggle-tab.active {
+  background: #ffffff;
+  color: #0284c7;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.candidate-switch-link {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.84rem;
+  text-decoration: underline;
+}
+
+.candidate-switch-link:hover {
+  color: #0369a1;
+}
+
 /* Logged-In User Bar in Body */
 .candidate-session-bar {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);

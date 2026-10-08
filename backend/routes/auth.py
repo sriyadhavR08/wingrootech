@@ -23,18 +23,29 @@ def register():
         return jsonify({"password": ["Password is required."]}), 400
     if password != confirm_password:
         return jsonify({"confirm_password": ["Passwords do not match."]}), 400
-    if len(password) < 8:
-        return jsonify({"password": ["Password must be at least 8 characters."]}), 400
+    if len(password) < 6:
+        return jsonify({"password": ["Password must be at least 6 characters."]}), 400
 
-    if User.query.filter(db.func.lower(User.email) == email).first():
-        return jsonify({"email": ["Email already registered."]}), 400
+    existing_user = User.query.filter(db.func.lower(User.email) == email).first()
+    if existing_user:
+        # Check if password matches their main website / Wingroo account password
+        if not existing_user.check_password(password):
+            return jsonify({
+                "password": ["An account with this email already exists on Wingroo. Please enter your correct Wingroo account password to link your certificate registration."]
+            }), 400
+        user = existing_user
+        if full_name and not user.full_name:
+            user.full_name = full_name
+    else:
+        user = None
 
     reg_no = data.get("register_number", "").strip().upper()
     if not reg_no:
         return jsonify({"register_number": ["Register number is required."]}), 400
 
-    if StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first():
-        return jsonify({"register_number": ["Register number already exists."]}), 400
+    existing_profile_with_reg = StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first()
+    if existing_profile_with_reg and (not user or existing_profile_with_reg.user_id != user.id):
+        return jsonify({"register_number": ["Register number already registered to another candidate."]}), 400
 
     start_date_str = data.get("start_date")
     if not start_date_str:
@@ -61,43 +72,132 @@ def register():
     selfie_path = save_base64_file(data.get("selfie_photo"), media_folder, "selfies", "selfie")
 
     try:
+        if not user:
+            user = User(
+                email=email,
+                full_name=full_name,
+                role="STUDENT",
+            )
+            user.set_password(password)
+            db.session.add(user)
+            db.session.flush()
+
+        profile = StudentProfile.query.filter_by(user_id=user.id).first()
+        if not profile:
+            profile = StudentProfile(
+                user=user,
+                candidate_type=cand_type,
+                gender=data.get("gender", "MALE"),
+                mobile_number=data.get("mobile_number", ""),
+                college_name=data.get("college_name", ""),
+                department=data.get("department", ""),
+                course=data.get("course", ""),
+                register_number=reg_no,
+                college_id_card=college_id_path,
+                selfie_photo=selfie_path,
+            )
+            db.session.add(profile)
+        else:
+            profile.candidate_type = cand_type
+            if data.get("mobile_number"): profile.mobile_number = data.get("mobile_number")
+            if data.get("college_name"): profile.college_name = data.get("college_name")
+            if data.get("department"): profile.department = data.get("department")
+            if data.get("course"): profile.course = data.get("course")
+            if reg_no: profile.register_number = reg_no
+            if college_id_path: profile.college_id_card = college_id_path
+            if selfie_path: profile.selfie_photo = selfie_path
+
+        internship = Internship.query.filter_by(student_id=user.id).first()
+        if not internship:
+            internship = Internship(
+                student=user,
+                project_name=data.get("project_name", ""),
+                start_date=start_date,
+                end_date=end_date,
+                status="REGISTERED",
+            )
+            db.session.add(internship)
+        else:
+            internship.project_name = data.get("project_name", "") or internship.project_name
+            internship.start_date = start_date
+            internship.end_date = end_date
+            internship.status = "REGISTERED"
+
+        db.session.commit()
+
+        return jsonify({"success": True, "message": "Registration successful! You can now sign in with your account credentials."}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"detail": f"Registration failed: {str(e)}"}), 500
+
+
+@auth_bp.route("/api/auth/candidate-register/", methods=["POST"])
+def candidate_register():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip().lower()
+    full_name = data.get("full_name", "").strip()
+    password = data.get("password", "")
+    confirm_password = data.get("confirm_password", "")
+    phone = data.get("phone", "") or data.get("mobile_number", "")
+    college = data.get("college", "") or data.get("college_name", "Registered Candidate")
+
+    if not email:
+        return jsonify({"detail": "Email address is required."}), 400
+    if not full_name:
+        return jsonify({"detail": "Full name is required."}), 400
+    if not password:
+        return jsonify({"detail": "Password is required."}), 400
+    if len(password) < 6:
+        return jsonify({"detail": "Password must be at least 6 characters long."}), 400
+    if password != confirm_password:
+        return jsonify({"detail": "Passwords do not match."}), 400
+
+    existing_user = User.query.filter(db.func.lower(User.email) == email).first()
+    if existing_user:
+        return jsonify({"detail": "An account with this email already exists. Please sign in with your password."}), 400
+
+    try:
         user = User(
             email=email,
             full_name=full_name,
             role="STUDENT",
+            is_active=True,
         )
         user.set_password(password)
         db.session.add(user)
         db.session.flush()
 
+        import secrets
+        auto_reg_no = f"WIN-{secrets.token_hex(4).upper()}"
         profile = StudentProfile(
             user=user,
-            candidate_type=cand_type,
-            gender=data.get("gender", "MALE"),
-            mobile_number=data.get("mobile_number", ""),
-            college_name=data.get("college_name", ""),
-            department=data.get("department", ""),
-            course=data.get("course", ""),
-            register_number=reg_no,
-            college_id_card=college_id_path,
-            selfie_photo=selfie_path,
+            candidate_type="COLLEGE_INTERN",
+            gender="MALE",
+            mobile_number=phone or "N/A",
+            college_name=college or "Registered Candidate",
+            department=data.get("department", "General"),
+            course=data.get("course", "Internship Program"),
+            register_number=auto_reg_no,
         )
         db.session.add(profile)
-
-        internship = Internship(
-            student=user,
-            project_name=data.get("project_name", ""),
-            start_date=start_date,
-            end_date=end_date,
-            status="REGISTERED",
-        )
-        db.session.add(internship)
         db.session.commit()
 
-        return jsonify({"success": True, "message": "Registration successful. Please sign in."}), 201
+        access_token, refresh_token = generate_tokens(user)
+        return jsonify({
+            "success": True,
+            "message": "Account created successfully! Welcome to Wingroo.",
+            "access": access_token,
+            "refresh": refresh_token,
+            "user": {
+                "id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role,
+            }
+        }), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"detail": f"Registration failed: {str(e)}"}), 500
+        return jsonify({"detail": f"Account creation failed: {str(e)}"}), 500
 
 
 @auth_bp.route("/api/auth/login/", methods=["POST"])
