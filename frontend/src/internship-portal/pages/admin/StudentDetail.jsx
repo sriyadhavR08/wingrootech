@@ -624,6 +624,17 @@ export default function StudentDetail() {
           <p>
             The certificate will be officially issued for candidate <strong>{data.full_name}</strong> from <strong>{data.start_date}</strong> to <strong>{endDateInput || data.end_date}</strong>.
           </p>
+          {data.selfie_photo ? (
+            <div className="d-flex align-items-center gap-2 p-2 mb-2 bg-success-subtle text-success-emphasis rounded border border-success-subtle small">
+              <i className="bi bi-person-check-fill fs-5"></i>
+              <span><strong>Candidate Photo Attached:</strong> Candidate's passport photo will be officially printed in the top-right corner of the certificate.</span>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-2 p-2 mb-2 bg-warning-subtle text-warning-emphasis rounded border border-warning-subtle small">
+              <i className="bi bi-exclamation-triangle-fill fs-5"></i>
+              <span><strong>No Candidate Photo Attached:</strong> The certificate will be generated without a candidate photo. You can attach a photo under "Edit details" first if needed.</span>
+            </div>
+          )}
           <p className="text-secondary small mb-0">
             Once generated, the candidate will immediately see the certificate download option in their dashboard, and the QR code will be publicly verifiable.
           </p>

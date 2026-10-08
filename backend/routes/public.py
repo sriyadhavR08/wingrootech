@@ -31,6 +31,8 @@ def _verify_certificate(cert):
     if not student_name and cert.internship and cert.internship.student:
         student_name = cert.internship.student.full_name
 
+    photo_path = profile.selfie_photo if profile and profile.selfie_photo else snapshot.get("selfie_photo")
+
     result = {
         "student_name": student_name,
         "candidate_type": cand_type,
@@ -42,6 +44,7 @@ def _verify_certificate(cert):
         "department": profile.department if profile else snapshot.get("department", ""),
         "course": profile.course if profile else snapshot.get("course", ""),
         "register_number": profile.register_number if profile else snapshot.get("register_number", ""),
+        "selfie_photo": photo_path,
         "verified_at": datetime.now().strftime("%d %B %Y, %I:%M %p"),
     }
 

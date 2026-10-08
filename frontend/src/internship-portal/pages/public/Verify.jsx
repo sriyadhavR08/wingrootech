@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api, errorText } from "../../services/api";
+import { api, errorText, resolveMediaUrl } from "../../services/api";
 import { Loading, Notice, dateLabel } from "../../components/Common";
 import Scanner from "../../components/Scanner";
 
@@ -329,6 +329,30 @@ export default function Verify() {
                     </span>
                   </div>
                 </div>
+
+                {result.selfie_photo && (
+                  <div className="d-flex align-items-center gap-3 p-3 mb-3 bg-light rounded border">
+                    <img 
+                      src={resolveMediaUrl(result.selfie_photo)} 
+                      alt={result.student_name}
+                      style={{
+                        width: "72px",
+                        height: "88px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                        border: "1.5px solid #0284c7",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+                      }}
+                    />
+                    <div>
+                      <div className="small text-uppercase fw-bold text-primary mb-1">
+                        <i className="bi bi-person-check-fill me-1"></i> Verified Candidate Photo
+                      </div>
+                      <div className="fw-bold text-dark">{result.student_name}</div>
+                      <div className="small text-muted">Identity verified against Wingroo certificate record</div>
+                    </div>
+                  </div>
+                )}
 
                 <dl className="details-grid mb-0">
                   <div>
