@@ -22,7 +22,8 @@ import {
   LogOut,
   User,
   KeyRound,
-  UserPlus
+  UserPlus,
+  Briefcase
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -51,10 +52,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
   // Register form state
   const [registerForm, setRegisterForm] = useState({
+    candidate_type: 'INTERNSHIP_EVENT',
     full_name: '',
     email: '',
     phone: '',
     college: '',
+    department: '',
+    course: '',
     password: '',
     confirm_password: ''
   });
@@ -177,12 +181,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          candidate_type: registerForm.candidate_type || 'INTERNSHIP_EVENT',
           full_name: registerForm.full_name.trim(),
           email: registerForm.email.trim(),
           password: registerForm.password,
           confirm_password: registerForm.confirm_password,
           phone: registerForm.phone.trim(),
-          college: registerForm.college.trim()
+          college: registerForm.college.trim(),
+          department: registerForm.department.trim(),
+          course: registerForm.course.trim()
         })
       });
       const data = await res.json();
@@ -690,6 +697,87 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       )}
 
                       <form onSubmit={handleRegisterSubmit}>
+                        {/* 2 Candidate Types Track Selection */}
+                        <div className="candidate-form-group" style={{ marginBottom: '18px' }}>
+                          <label className="candidate-form-label" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>Select Candidate Type / Track</span>
+                            <span style={{ fontSize: '0.74rem', color: registerForm.candidate_type === 'PROJECT_CLIENT' ? '#7c3aed' : '#0284c7', fontWeight: 700 }}>
+                              {registerForm.candidate_type === 'PROJECT_CLIENT' ? 'Project Client Track' : 'Internship & Event Track'}
+                            </span>
+                          </label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setRegisterForm({ ...registerForm, candidate_type: 'PROJECT_CLIENT' })}
+                              style={{
+                                border: registerForm.candidate_type === 'PROJECT_CLIENT' ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+                                background: registerForm.candidate_type === 'PROJECT_CLIENT' ? '#faf5ff' : '#ffffff',
+                                borderRadius: '12px',
+                                padding: '12px 14px',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.86rem', color: registerForm.candidate_type === 'PROJECT_CLIENT' ? '#6d28d9' : '#1e293b' }}>
+                                  <Briefcase size={16} color={registerForm.candidate_type === 'PROJECT_CLIENT' ? '#7c3aed' : '#64748b'} />
+                                  <span>Project Client Candidate</span>
+                                </div>
+                                <span style={{
+                                  width: '15px',
+                                  height: '15px',
+                                  borderRadius: '50%',
+                                  border: registerForm.candidate_type === 'PROJECT_CLIENT' ? '5px solid #7c3aed' : '2px solid #cbd5e1',
+                                  background: '#fff',
+                                  display: 'inline-block'
+                                }} />
+                              </div>
+                              <span style={{ fontSize: '0.73rem', color: '#64748b', lineHeight: 1.35 }}>
+                                Live client software projects, tech stack & corporate deliverables
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setRegisterForm({ ...registerForm, candidate_type: 'INTERNSHIP_EVENT' })}
+                              style={{
+                                border: registerForm.candidate_type === 'INTERNSHIP_EVENT' ? '2px solid #0284c7' : '1px solid #e2e8f0',
+                                background: registerForm.candidate_type === 'INTERNSHIP_EVENT' ? '#f0f9ff' : '#ffffff',
+                                borderRadius: '12px',
+                                padding: '12px 14px',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.86rem', color: registerForm.candidate_type === 'INTERNSHIP_EVENT' ? '#0284c7' : '#1e293b' }}>
+                                  <GraduationCap size={16} color={registerForm.candidate_type === 'INTERNSHIP_EVENT' ? '#0284c7' : '#64748b'} />
+                                  <span>Internship & Event Candidate</span>
+                                </div>
+                                <span style={{
+                                  width: '15px',
+                                  height: '15px',
+                                  borderRadius: '50%',
+                                  border: registerForm.candidate_type === 'INTERNSHIP_EVENT' ? '5px solid #0284c7' : '2px solid #cbd5e1',
+                                  background: '#fff',
+                                  display: 'inline-block'
+                                }} />
+                              </div>
+                              <span style={{ fontSize: '0.73rem', color: '#64748b', lineHeight: 1.35 }}>
+                                College internship programs, technical workshops & campus events
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+
                         <div className="candidate-form-group">
                           <label className="candidate-form-label">Full Name</label>
                           <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
@@ -723,6 +811,44 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                         <div className="row g-2" style={{ display: 'flex', gap: '10px' }}>
                           <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
+                            <label className="candidate-form-label">
+                              {registerForm.candidate_type === 'PROJECT_CLIENT' ? 'Client Company / Organization' : 'College / Institute'}
+                            </label>
+                            <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                              {registerForm.candidate_type === 'PROJECT_CLIENT' ? (
+                                <Briefcase size={17} className="candidate-input-icon" />
+                              ) : (
+                                <GraduationCap size={17} className="candidate-input-icon" />
+                              )}
+                              <input 
+                                type="text"
+                                value={registerForm.college}
+                                onChange={(e) => setRegisterForm({ ...registerForm, college: e.target.value })}
+                                placeholder={registerForm.candidate_type === 'PROJECT_CLIENT' ? 'Enter client or company name' : 'Enter your college / institute name'}
+                                className="candidate-input"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
+                            <label className="candidate-form-label">
+                              {registerForm.candidate_type === 'PROJECT_CLIENT' ? 'Domain / Tech Stack' : 'Department / Stream'}
+                            </label>
+                            <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
+                              <Sparkles size={17} className="candidate-input-icon" />
+                              <input 
+                                type="text"
+                                value={registerForm.department}
+                                onChange={(e) => setRegisterForm({ ...registerForm, department: e.target.value })}
+                                placeholder={registerForm.candidate_type === 'PROJECT_CLIENT' ? 'e.g. Full Stack Web, AI/ML' : 'e.g. Computer Science, IT, ECE'}
+                                className="candidate-input"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="row g-2" style={{ display: 'flex', gap: '10px' }}>
+                          <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
                             <label className="candidate-form-label">Mobile Number</label>
                             <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
                               <Phone size={17} className="candidate-input-icon" />
@@ -737,14 +863,16 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                           </div>
 
                           <div className="candidate-form-group" style={{ flex: 1, marginBottom: '14px' }}>
-                            <label className="candidate-form-label">College / Institute</label>
+                            <label className="candidate-form-label">
+                              {registerForm.candidate_type === 'PROJECT_CLIENT' ? 'Project Role / Track' : 'Course / Degree'}
+                            </label>
                             <div className="candidate-input-wrap" style={{ marginTop: '6px' }}>
-                              <GraduationCap size={17} className="candidate-input-icon" />
+                              <FileText size={17} className="candidate-input-icon" />
                               <input 
                                 type="text"
-                                value={registerForm.college}
-                                onChange={(e) => setRegisterForm({ ...registerForm, college: e.target.value })}
-                                placeholder="Enter your college / institute name"
+                                value={registerForm.course}
+                                onChange={(e) => setRegisterForm({ ...registerForm, course: e.target.value })}
+                                placeholder={registerForm.candidate_type === 'PROJECT_CLIENT' ? 'e.g. Client Project Intern' : 'e.g. B.E, B.Tech, MCA'}
                                 className="candidate-input"
                               />
                             </div>
@@ -816,7 +944,20 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     {currentUser.full_name?.slice(0, 2).toUpperCase() || 'CD'}
                   </div>
                   <div>
-                    <div className="candidate-session-name">{currentUser.full_name}</div>
+                    <div className="candidate-session-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span>{currentUser.full_name}</span>
+                      <span style={{
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: currentUser.candidate_type === 'PROJECT_CLIENT' ? '#f3e8ff' : '#e0f2fe',
+                        color: currentUser.candidate_type === 'PROJECT_CLIENT' ? '#7c3aed' : '#0284c7',
+                        border: `1px solid ${currentUser.candidate_type === 'PROJECT_CLIENT' ? '#d8b4fe' : '#bae6fd'}`
+                      }}>
+                        {currentUser.candidate_type_display || (currentUser.candidate_type === 'PROJECT_CLIENT' ? 'Project Client Candidate' : 'Internship & Event Candidate')}
+                      </span>
+                    </div>
                     <div className="candidate-session-email">
                       {currentUser.email} • Candidate Account Active
                     </div>

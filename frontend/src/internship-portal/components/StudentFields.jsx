@@ -155,20 +155,26 @@ export default function StudentFields({ values, onChange, account = false }) {
     stopCamera();
   }
 
-  const candType = values.candidate_type || "INTERNSHIP_EVENT";
+  const candType = values.candidate_type || "COLLEGE_INTERN";
 
   const candidateCategories = [
     {
-      key: "PROJECT_CLIENT",
-      label: "Project Client Candidate",
-      subtext: "Candidate engaged in live client projects, software development & client deliverables",
-      icon: "bi-laptop",
+      key: "COLLEGE_INTERN",
+      label: "College Intern",
+      subtext: "Degree / Diploma candidate undergoing internship",
+      icon: "bi-mortarboard-fill",
     },
     {
-      key: "INTERNSHIP_EVENT",
-      label: "Internship & Event Candidate",
-      subtext: "Candidate attending college internship programs, technical workshops & tech events",
-      icon: "bi-mortarboard-fill",
+      key: "SCHOOL_STUDENT",
+      label: "School Candidate Intern",
+      subtext: "School candidate undergoing internship & foundation training",
+      icon: "bi-backpack2-fill",
+    },
+    {
+      key: "COLLEGE_COMPLETED",
+      label: "College Completed Candidate Intern",
+      subtext: "Graduate / alumni candidate undergoing internship & project training",
+      icon: "bi-briefcase-fill",
     },
   ];
 

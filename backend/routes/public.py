@@ -22,11 +22,11 @@ def _verify_certificate(cert):
     cand_type = profile.candidate_type if profile else snapshot.get("candidate_type", "COLLEGE_INTERN")
 
     cand_label_map = {
-        "PROJECT_CLIENT": "Project Client Candidate",
-        "INTERNSHIP_EVENT": "Internship & Event Candidate",
-        "COLLEGE_INTERN": "Internship & Event Candidate",
+        "COLLEGE_INTERN": "College Intern",
         "SCHOOL_STUDENT": "School Student Intern",
         "COLLEGE_COMPLETED": "College Completed Student Intern",
+        "PROJECT_CLIENT": "Project Client Candidate",
+        "INTERNSHIP_EVENT": "Internship & Event Candidate",
     }
 
     student_name = snapshot.get("student_name")

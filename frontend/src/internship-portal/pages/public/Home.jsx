@@ -13,9 +13,9 @@ export default function Home() {
             <br />
             <span>Achievement verified.</span>
           </h1>
-          <p className="lead mt-4 fw-semibold text-dark">Wingroo Project & Internship Credential Portal</p>
+          <p className="lead mt-4 fw-semibold text-dark">Wingroo Technologies Verified Internship Portal</p>
           <p className="text-secondary hero-copy">
-            Portal for Project Client Candidates and Internship & Event Candidates. Complete project milestones, access official verified credentials, and authenticate certificates instantly.
+            Portal for college interns, school interns, and graduate candidates. Complete your internship milestones, access official verified credentials, and authenticate certificates instantly.
           </p>
           <div className="d-flex flex-wrap gap-3 mt-4">
             <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
@@ -35,13 +35,13 @@ export default function Home() {
             <div className="eyebrow">WINGROO CREDENTIALS</div>
             <h2 className="h3 mt-3">A milestone worth keeping.</h2>
             <p className="text-secondary">
-              Your professional journey across client delivery and internships, with verified digital credentials.
+              Your professional journey across internship and research training, with verified digital credentials.
             </p>
             <div className="journey-step">
               <span>01</span>
               <div>
-                <strong>Register your candidate track</strong>
-                <small>Choose Project Client or Internship & Event track.</small>
+                <strong>Register your candidate profile</strong>
+                <small>Upload ID proof, take a live selfie, and submit your profile.</small>
               </div>
             </div>
             <div className="journey-step">

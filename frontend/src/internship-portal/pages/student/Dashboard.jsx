@@ -30,32 +30,38 @@ export default function StudentDashboard() {
             <dl className="details-grid">
               {[
                 ["Candidate Name", data.full_name],
-                ["Candidate Category", data.candidate_type === "PROJECT_CLIENT" ? "Project Client Candidate" : (data.candidate_type_display || "Internship & Event Candidate")],
+                ["Category / Role", data.candidate_type_display || "College Intern"],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Client / Organization"
-                    : "College / University",
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "School Name"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Graduated College"
+                    : "College",
                   data.college_name,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Domain / Tech Stack"
-                    : "Department / Stream",
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "Board / Stream"
+                    : "Department",
                   data.department,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Project Role / Track"
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "Class / Standard"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Qualification / Degree"
                     : "Course / Degree",
                   data.course,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Client Project ID / Reg No"
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "School Roll Number"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Member / Reg ID"
                     : "Register Number",
                   data.register_number,
                 ],
-                [data.candidate_type === "PROJECT_CLIENT" ? "Live Project Name" : "Internship Project", data.project_name],
+                ["Project", data.project_name],
                 ["Start date", dateLabel(data.start_date)],
                 ["End date", dateLabel(data.end_date)],
                 ["Duration", `${data.duration_days} days`],

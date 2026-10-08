@@ -67,11 +67,11 @@ class StudentProfile(db.Model):
     __tablename__ = "accounts_studentprofile"
 
     CANDIDATE_TYPES = {
+        "COLLEGE_INTERN": "College Intern",
+        "SCHOOL_STUDENT": "School Candidate Intern",
+        "COLLEGE_COMPLETED": "College Completed Candidate Intern",
         "PROJECT_CLIENT": "Project Client Candidate",
         "INTERNSHIP_EVENT": "Internship & Event Candidate",
-        "COLLEGE_INTERN": "Internship & Event Candidate",
-        "SCHOOL_STUDENT": "School Student Intern",
-        "COLLEGE_COMPLETED": "College Completed Student Intern",
     }
 
     id = db.Column(db.Integer, primary_key=True)

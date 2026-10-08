@@ -389,8 +389,10 @@ export default function Verify() {
                   {result.college_name && (
                     <div>
                       <dt>
-                        {result.candidate_type === "PROJECT_CLIENT"
-                          ? "Client / Organization"
+                        {result.candidate_type === "SCHOOL_STUDENT"
+                          ? "School Name"
+                          : result.candidate_type === "COLLEGE_COMPLETED"
+                          ? "Graduated Institution"
                           : "College / Institution"}
                       </dt>
                       <dd>{result.college_name}</dd>
@@ -399,8 +401,10 @@ export default function Verify() {
                   {result.department && (
                     <div>
                       <dt>
-                        {result.candidate_type === "PROJECT_CLIENT"
-                          ? "Domain & Project Role"
+                        {result.candidate_type === "SCHOOL_STUDENT"
+                          ? "Board & Class / Standard"
+                          : result.candidate_type === "COLLEGE_COMPLETED"
+                          ? "Specialization & Qualification"
                           : "Department & Course"}
                       </dt>
                       <dd>{result.department} {result.course ? `(${result.course})` : ""}</dd>

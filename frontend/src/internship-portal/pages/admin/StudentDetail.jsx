@@ -295,29 +295,35 @@ export default function StudentDetail() {
           <>
             <dl className="details-grid mt-4">
               {[
-                ["Category / Track", data.candidate_type === "PROJECT_CLIENT" ? "Project Client Candidate" : (data.candidate_type_display || "Internship & Event Candidate")],
+                ["Category / Role", data.candidate_type_display || "College Intern"],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Client / Organization"
-                    : "College / University",
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "School Name"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Graduated College"
+                    : "College",
                   data.college_name,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Domain / Tech Stack"
-                    : "Department / Stream",
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "Board / Stream"
+                    : "Department",
                   data.department,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Role / Track"
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "Class / Standard"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Qualification / Degree"
                     : "Course / Degree",
                   data.course,
                 ],
                 [
-                  data.candidate_type === "PROJECT_CLIENT"
-                    ? "Client Project ID / Reg No"
-                    : "Register / Roll Number",
+                  data.candidate_type === "SCHOOL_STUDENT"
+                    ? "School Roll Number"
+                    : data.candidate_type === "COLLEGE_COMPLETED"
+                    ? "Member / Reg ID"
+                    : "Register Number",
                   data.register_number,
                 ],
                 ["Gender", data.gender],

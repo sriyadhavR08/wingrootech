@@ -316,7 +316,7 @@ export function Login({ initialRole = 'student' }) {
 export function Register() {
   const location = useLocation();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
-  const [values, setValues] = useState({ candidate_type: "INTERNSHIP_EVENT" }),
+  const [values, setValues] = useState({ candidate_type: "COLLEGE_INTERN" }),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [done, setDone] = useState(false);
@@ -328,11 +328,14 @@ export function Register() {
       setError("Passwords do not match.");
       return;
     }
-    const candType = values.candidate_type || "INTERNSHIP_EVENT";
+    const candType = values.candidate_type || "COLLEGE_INTERN";
     if (!values.college_id_card) {
-      const docLabel = candType === "PROJECT_CLIENT"
-        ? "Client / Identity Document (Aadhaar / ID Card / Offer Letter)"
-        : "College ID Card Photo / Student Bonafide";
+      const docLabel =
+        candType === "SCHOOL_STUDENT"
+          ? "School ID card / Candidate ID proof"
+          : candType === "COLLEGE_COMPLETED"
+          ? "ID proof (Aadhaar / College ID / Degree Certificate / Govt ID)"
+          : "College ID card photo";
       setError(`Please attach your ${docLabel}.`);
       return;
     }
@@ -360,7 +363,7 @@ export function Register() {
       <div className="eyebrow">PORTAL ENROLLMENT & REGISTRATION</div>
       <h1 className="mt-2">Create Your Candidate Account</h1>
       <p className="text-secondary">
-        Register as a Project Client Candidate or Internship & Event Candidate for verified credentials and workspace access.
+        Register as a School Candidate Intern, College Candidate Intern, or College Completed Candidate Intern for your verified credential.
       </p>
 
       {/* Unified Main Website Account Notice */}

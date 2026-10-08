@@ -1748,7 +1748,9 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                               st.full_name?.toLowerCase().includes(q) ||
                               st.email?.toLowerCase().includes(q) ||
                               st.register_number?.toLowerCase().includes(q) ||
-                              st.college_name?.toLowerCase().includes(q)
+                              st.college_name?.toLowerCase().includes(q) ||
+                              st.candidate_type?.toLowerCase().includes(q) ||
+                              st.candidate_type_display?.toLowerCase().includes(q)
                             );
                           })
                           .map((st) => {

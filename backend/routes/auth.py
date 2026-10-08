@@ -169,21 +169,36 @@ def candidate_register():
 
         import secrets
         auto_reg_no = f"WIN-{secrets.token_hex(4).upper()}"
+
+        cand_type_raw = (data.get("candidate_type") or "").strip().upper()
+        if cand_type_raw == "PROJECT_CLIENT":
+            candidate_type = "PROJECT_CLIENT"
+            default_college = "Client Project Organization"
+            default_dept = "Software Delivery"
+            default_course = "Client Project Track"
+            cand_display = "Project Client Candidate"
+        else:
+            candidate_type = "INTERNSHIP_EVENT"
+            default_college = "Registered Institution"
+            default_dept = "General"
+            default_course = "Internship Program"
+            cand_display = "Internship & Event Candidate"
+
         profile = StudentProfile(
             user=user,
-            candidate_type="COLLEGE_INTERN",
+            candidate_type=candidate_type,
             gender="MALE",
             mobile_number=phone or "N/A",
-            college_name=college or "Registered Candidate",
-            department=data.get("department", "General"),
-            course=data.get("course", "Internship Program"),
+            college_name=college or default_college,
+            department=data.get("department") or default_dept,
+            course=data.get("course") or default_course,
             register_number=auto_reg_no,
         )
         db.session.add(profile)
 
         internship = Internship(
             student=user,
-            project_name=data.get("technology") or data.get("project_name") or "Internship Program",
+            project_name=data.get("technology") or data.get("project_name") or ("Client Project Deliverables" if candidate_type == "PROJECT_CLIENT" else "Internship Program"),
             start_date=date.today(),
             status="REGISTERED",
         )
@@ -202,7 +217,9 @@ def candidate_register():
                 "email": user.email,
                 "role": user.role,
                 "phone": phone,
-                "college": college,
+                "college": profile.college_name,
+                "candidate_type": candidate_type,
+                "candidate_type_display": cand_display,
             }
         }), 201
     except Exception as e:
@@ -233,6 +250,16 @@ def login():
     user_phone = profile.mobile_number if profile and profile.mobile_number != "N/A" else ""
     user_college = profile.college_name if profile and profile.college_name != "Registered Candidate" else ""
 
+    user_cand_type = profile.candidate_type if profile else "INTERNSHIP_EVENT"
+    cand_label_map = {
+        "PROJECT_CLIENT": "Project Client Candidate",
+        "INTERNSHIP_EVENT": "Internship & Event Candidate",
+        "COLLEGE_INTERN": "College Intern",
+        "SCHOOL_STUDENT": "School Student",
+        "COLLEGE_COMPLETED": "College Completed",
+    }
+    user_cand_display = cand_label_map.get(user_cand_type, "Internship & Event Candidate")
+
     access_token, refresh_token = generate_tokens(user)
     return jsonify({
         "access": access_token,
@@ -244,6 +271,8 @@ def login():
             "role": user.role,
             "phone": user_phone,
             "college": user_college,
+            "candidate_type": user_cand_type,
+            "candidate_type_display": user_cand_display,
         },
     }), 200
 
