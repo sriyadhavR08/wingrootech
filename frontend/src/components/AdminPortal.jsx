@@ -933,7 +933,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                 </span>
               </h3>
               <p className="admin-header-subtitle">
-                Manage inquiries, student applications, portfolio projects & public events
+                Manage inquiries, candidate applications, portfolio projects & public events
               </p>
             </div>
           </div>
@@ -1130,7 +1130,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                   onClick={() => setActiveTab('students')}
                 >
                   <User size={16} />
-                  <span>Student Accounts</span>
+                  <span>Candidate Accounts</span>
                   <span className="admin-tab-count">{studentsList.length}</span>
                 </button>
                 <button 
