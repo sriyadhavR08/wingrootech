@@ -49,7 +49,12 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
     }
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('wingroo_admin_auth') === 'true' || !!sessionStorage.getItem('wingroo_admin_user');
+    return (
+      sessionStorage.getItem('wingroo_admin_auth') === 'true' ||
+      localStorage.getItem('wingroo_admin_auth') === 'true' ||
+      !!sessionStorage.getItem('wingroo_admin_user') ||
+      !!localStorage.getItem('wingroo_admin_user')
+    );
   });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
@@ -191,7 +196,16 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setIsAuthenticated(true);
         setAdminUser(data.user);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
+        localStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(data.user));
+        localStorage.setItem('wingroo_admin_user', JSON.stringify(data.user));
+        if (data.access && data.refresh) {
+          const tokenObj = { access: data.access, refresh: data.refresh };
+          sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
+          localStorage.setItem('tokens', JSON.stringify(tokenObj));
+          sessionStorage.setItem('wingroo_token', data.access);
+          localStorage.setItem('wingroo_token', data.access);
+        }
         window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: data.user }));
         window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
@@ -208,7 +222,12 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setIsAuthenticated(true);
         setAdminUser(fallbackUser);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
+        localStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        localStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        const tokenObj = { access: 'admin_local_token', refresh: 'admin_local_refresh' };
+        sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
+        localStorage.setItem('tokens', JSON.stringify(tokenObj));
         window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
         window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
@@ -227,7 +246,12 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         setIsAuthenticated(true);
         setAdminUser(fallbackUser);
         sessionStorage.setItem('wingroo_admin_auth', 'true');
+        localStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        localStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
+        const tokenObj = { access: 'admin_local_token', refresh: 'admin_local_refresh' };
+        sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
+        localStorage.setItem('tokens', JSON.stringify(tokenObj));
         window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
         window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         setAuthError('');
@@ -321,6 +345,12 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
     setAdminUser(null);
     sessionStorage.removeItem('wingroo_admin_auth');
     sessionStorage.removeItem('wingroo_admin_user');
+    localStorage.removeItem('wingroo_admin_auth');
+    localStorage.removeItem('wingroo_admin_user');
+    sessionStorage.removeItem('tokens');
+    localStorage.removeItem('tokens');
+    sessionStorage.removeItem('wingroo_token');
+    localStorage.removeItem('wingroo_token');
     window.dispatchEvent(new CustomEvent('wingroo_admin_logged_out'));
     window.dispatchEvent(new Event('wingroo_auth_state_changed'));
     setLoginForm(prev => ({ ...prev, password: '' }));

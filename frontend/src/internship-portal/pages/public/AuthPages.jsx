@@ -373,37 +373,269 @@ export function Login({ initialRole = 'student' }) {
   );
 }
 export function Register() {
-  return (
-    <section className="card auth-card shadow-sm border-0 text-center py-4 px-3" style={{ borderRadius: '20px' }}>
-      <img className="auth-logo mx-auto mb-3" src={logo} alt="Wingroo" />
-      <div 
-        className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
-        style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#ecfdf5', color: '#059669' }}
-      >
-        <i className="bi bi-person-plus-fill" style={{ fontSize: '1.75rem' }}></i>
-      </div>
-      <h2 className="h4 fw-bold mb-2">Register on Wingroo Main Website</h2>
-      <p className="text-secondary small mb-4 mx-auto" style={{ maxWidth: '420px', lineHeight: 1.6 }}>
-        Candidate registration is processed exclusively on the <strong>Wingroo Main Website</strong>. 
-        Please create your profile on the main website to access your internship workspace.
-      </p>
-      <div className="mx-auto w-100" style={{ maxWidth: '360px' }}>
-        <button
-          type="button"
-          onClick={() => {
-            sessionStorage.setItem('wingroo_open_student_portal', 'true');
-            sessionStorage.setItem('wingroo_open_register_tab', 'true');
-            window.location.href = '/#login';
-          }}
-          className="btn btn-primary rounded-pill py-2 fw-semibold w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
+  const navigate = useNavigate();
+  const location = useLocation();
+  const prefix = location.pathname.startsWith('/internship') ? '/internship' : '';
+
+  const storedStudent = (() => {
+    try {
+      const raw = sessionStorage.getItem("wingroo_student_user") || localStorage.getItem("wingroo_student_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  const [form, setForm] = useState({
+    candidate_type: 'COLLEGE_INTERN',
+    full_name: '',
+    email: '',
+    password: '',
+    confirm_password: '',
+    phone: '',
+    college: '',
+    department: '',
+    course: ''
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  if (storedStudent) {
+    return (
+      <section className="card auth-card shadow-sm border-0 text-center py-4 px-3" style={{ borderRadius: '20px' }}>
+        <img className="auth-logo mx-auto mb-3" src={logo} alt="Wingroo" />
+        <div 
+          className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+          style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a' }}
         >
-          <i className="bi bi-box-arrow-in-right"></i>
-          <span>Create Account on Main Website</span>
-        </button>
-        <Link to="/internship/login" className="btn btn-link text-decoration-none text-muted small mt-3 d-block">
-          &larr; Back to Sign In
-        </Link>
+          <i className="bi bi-person-check-fill" style={{ fontSize: '1.75rem' }}></i>
+        </div>
+        <h2 className="h4 fw-bold mb-1 text-dark">Already Registered & Active</h2>
+        <p className="text-dark fw-semibold mb-1">{storedStudent.full_name}</p>
+        <p className="text-secondary small mb-3">{storedStudent.email}</p>
+        <p className="text-muted small mb-4 mx-auto" style={{ maxWidth: '380px' }}>
+          You already have an active candidate account. You can immediately access your workspace and view your evaluation status.
+        </p>
+        <div className="mx-auto w-100" style={{ maxWidth: '340px' }}>
+          <button
+            type="button"
+            onClick={() => navigate(`${prefix}/student/dashboard`)}
+            className="btn btn-primary rounded-pill py-2 fw-semibold w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
+          >
+            <span>View Internship Status</span>
+            <i className="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!form.full_name.trim()) return setError('Please enter your full name.');
+    if (!form.email.trim()) return setError('Please enter your email address.');
+    if (form.password.length < 6) return setError('Password must be at least 6 characters long.');
+    if (form.password !== form.confirm_password) return setError('Passwords do not match.');
+    if (!form.phone.trim()) return setError('Please enter your mobile phone number.');
+    if (!form.college.trim()) return setError('Please enter your college/institution name.');
+
+    setBusy(true);
+    try {
+      const res = await api.post('/auth/candidate-register/', {
+        candidate_type: form.candidate_type,
+        full_name: form.full_name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        confirm_password: form.confirm_password,
+        phone: form.phone.trim(),
+        college: form.college.trim(),
+        department: form.department.trim(),
+        course: form.course.trim(),
+      });
+
+      const data = res.data;
+      if (data.user) {
+        setSuccess('Registration successful! Taking you to your dashboard…');
+        saveTokens({ access: data.access, refresh: data.refresh });
+        sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        localStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
+        window.dispatchEvent(new Event('wingroo_auth_state_changed'));
+
+        setTimeout(() => {
+          navigate(`${prefix}/student/dashboard`);
+        }, 700);
+      }
+    } catch (err) {
+      setError(await errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="card auth-card shadow-sm border-0 p-4" style={{ borderRadius: '20px', maxWidth: '640px', margin: '0 auto' }}>
+      <div className="text-center mb-3">
+        <img className="auth-logo mx-auto mb-2" src={logo} alt="Wingroo" />
+        <h1 className="h4 fw-bold mb-1">Internship Candidate Registration</h1>
+        <p className="text-secondary small mb-0">
+          Register your candidate profile to track internship progress and access verified credentials.
+        </p>
       </div>
+
+      {error && <Notice message={error} />}
+      {success && <Notice type="success" message={success} />}
+
+      <form onSubmit={handleSubmit} className="mt-3">
+        <div className="row g-3">
+          <div className="col-12">
+            <label className="form-label fw-semibold small mb-1">Candidate Category</label>
+            <select
+              name="candidate_type"
+              className="form-select form-select-sm rounded-3"
+              value={form.candidate_type}
+              onChange={handleChange}
+            >
+              <option value="COLLEGE_INTERN">College Intern (B.E, B.Tech, Arts, Science, Diploma)</option>
+              <option value="SCHOOL_STUDENT">School Student Intern</option>
+              <option value="COLLEGE_COMPLETED">College Completed / Graduate Candidate</option>
+              <option value="PROJECT_CLIENT">Project Client Candidate</option>
+              <option value="INTERNSHIP_EVENT">Internship & Event Candidate</option>
+            </select>
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Full Name *</label>
+            <input
+              name="full_name"
+              type="text"
+              className="form-control form-control-sm rounded-3"
+              placeholder="e.g. John Doe"
+              value={form.full_name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Email Address *</label>
+            <input
+              name="email"
+              type="email"
+              className="form-control form-control-sm rounded-3"
+              placeholder="e.g. candidate@example.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Create Password *</label>
+            <input
+              name="password"
+              type="password"
+              className="form-control form-control-sm rounded-3"
+              placeholder="Min 6 characters"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Confirm Password *</label>
+            <input
+              name="confirm_password"
+              type="password"
+              className="form-control form-control-sm rounded-3"
+              placeholder="Re-enter password"
+              value={form.confirm_password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Mobile Phone Number *</label>
+            <input
+              name="phone"
+              type="tel"
+              className="form-control form-control-sm rounded-3"
+              placeholder="10-digit mobile number"
+              value={form.phone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">College / Institution Name *</label>
+            <input
+              name="college"
+              type="text"
+              className="form-control form-control-sm rounded-3"
+              placeholder="e.g. National Engineering College"
+              value={form.college}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Department</label>
+            <input
+              name="department"
+              type="text"
+              className="form-control form-control-sm rounded-3"
+              placeholder="e.g. Computer Science / IT"
+              value={form.department}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold small mb-1">Course / Degree</label>
+            <input
+              name="course"
+              type="text"
+              className="form-control form-control-sm rounded-3"
+              placeholder="e.g. B.E / B.Tech / MCA"
+              value={form.course}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <button
+            type="submit"
+            className="btn btn-primary rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
+            disabled={busy}
+          >
+            {busy ? (
+              <span>Registering candidate…</span>
+            ) : (
+              <>
+                <span>Complete Registration & View Status</span>
+                <i className="bi bi-arrow-right"></i>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="text-center mt-3">
+          <a href="/" className="btn btn-link text-decoration-none text-muted small p-0">
+            &larr; Return to Wingroo Main Website
+          </a>
+        </div>
+      </form>
     </section>
   );
 }

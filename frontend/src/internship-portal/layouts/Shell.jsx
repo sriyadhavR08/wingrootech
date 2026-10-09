@@ -80,10 +80,10 @@ export default function Shell() {
           {!user ? (
             <>
               <NavLink to={prefix || "/internship"} className="shell-nav-link">Home</NavLink>
-              <NavLink to={`${prefix}/verify`} className="shell-nav-link">Verify certificate</NavLink>
-              <NavLink to={`${prefix}/login`} className="shell-login-btn">
-                <i className="bi bi-box-arrow-in-right me-1"></i> Login
+              <NavLink to={`${prefix}/register`} className="shell-nav-link">
+                <i className="bi bi-person-plus me-1"></i> Candidate Registration
               </NavLink>
+              <NavLink to={`${prefix}/verify`} className="shell-nav-link">Verify certificate</NavLink>
             </>
           ) : (
             <div className="d-flex align-items-center gap-3">
@@ -134,8 +134,8 @@ export default function Shell() {
                 <NavLink to={prefix || "/internship"} className="mobile-nav-link" onClick={() => setOpen(false)}>
                   <i className="bi bi-house me-2"></i> Home
                 </NavLink>
-                <NavLink to={`${prefix}/login`} className="mobile-nav-link text-primary fw-semibold" onClick={() => setOpen(false)}>
-                  <i className="bi bi-box-arrow-in-right me-2"></i> Login
+                <NavLink to={`${prefix}/register`} className="mobile-nav-link text-primary fw-semibold" onClick={() => setOpen(false)}>
+                  <i className="bi bi-person-plus me-2"></i> Candidate Registration
                 </NavLink>
                 <NavLink to={`${prefix}/verify`} className="mobile-nav-link" onClick={() => setOpen(false)}>
                   <i className="bi bi-qr-code-scan me-2"></i> Verify Certificate

@@ -213,12 +213,20 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
     if (userRole === 'admin') {
       sessionStorage.removeItem('wingroo_admin_auth');
       sessionStorage.removeItem('wingroo_admin_user');
+      localStorage.removeItem('wingroo_admin_auth');
+      localStorage.removeItem('wingroo_admin_user');
       window.dispatchEvent(new CustomEvent('wingroo_admin_logged_out'));
     } else {
       sessionStorage.removeItem('wingroo_student_user');
+      localStorage.removeItem('wingroo_student_user');
       window.dispatchEvent(new CustomEvent('wingroo_student_logged_out'));
     }
     sessionStorage.removeItem('tokens');
+    localStorage.removeItem('tokens');
+    sessionStorage.removeItem('wingroo_student_tokens');
+    localStorage.removeItem('wingroo_student_tokens');
+    sessionStorage.removeItem('wingroo_token');
+    localStorage.removeItem('wingroo_token');
     window.dispatchEvent(new Event('wingroo_auth_state_changed'));
     setProfileDropdownOpen(false);
     syncUser();

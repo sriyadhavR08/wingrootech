@@ -3,15 +3,22 @@ import { api, clearSession, saveTokens } from "../services/api";
 const AuthContext = createContext(null);
 const getStoredCandidate = () => {
   try {
-    const raw =
-      sessionStorage.getItem("wingroo_student_user") ||
-      localStorage.getItem("wingroo_student_user") ||
+    const adminRaw =
       sessionStorage.getItem("wingroo_admin_user") ||
       localStorage.getItem("wingroo_admin_user");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+    if (adminRaw) {
+      const parsed = JSON.parse(adminRaw);
+      return { ...parsed, role: "ADMIN" };
+    }
+    const studentRaw =
+      sessionStorage.getItem("wingroo_student_user") ||
+      localStorage.getItem("wingroo_student_user");
+    if (studentRaw) {
+      const parsed = JSON.parse(studentRaw);
+      return { ...parsed, role: parsed.role || "STUDENT" };
+    }
+  } catch {}
+  return null;
 };
 
 export function AuthProvider({ children }) {
@@ -20,12 +27,22 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let live = true;
-    const ended = () => {
-      // Only clear if no main site candidate is stored
-      const stillActive = getStoredCandidate();
-      if (!stillActive) setUser(null);
+    const syncCurrent = () => {
+      const current = getStoredCandidate();
+      if (live) setUser(current);
     };
+
+    const ended = () => {
+      const stillActive = getStoredCandidate();
+      if (!stillActive && live) setUser(null);
+    };
+
     window.addEventListener("session-ended", ended);
+    window.addEventListener("wingroo_auth_state_changed", syncCurrent);
+    window.addEventListener("wingroo_student_logged_in", syncCurrent);
+    window.addEventListener("wingroo_admin_logged_in", syncCurrent);
+    window.addEventListener("wingroo_student_logged_out", ended);
+    window.addEventListener("wingroo_admin_logged_out", ended);
 
     const savedTokens = sessionStorage.getItem("tokens") || localStorage.getItem("tokens");
     const mainSiteCandidate = getStoredCandidate();
@@ -36,10 +53,11 @@ export function AuthProvider({ children }) {
         .then((r) => {
           if (live && r.data) {
             setUser((prev) => ({ ...prev, ...r.data }));
-            // Also keep wingroo_student_user synced with backend
-            const updated = { ...(mainSiteCandidate || {}), ...r.data };
-            sessionStorage.setItem("wingroo_student_user", JSON.stringify(updated));
-            localStorage.setItem("wingroo_student_user", JSON.stringify(updated));
+            if (r.data.role !== "ADMIN") {
+              const updated = { ...(mainSiteCandidate || {}), ...r.data };
+              sessionStorage.setItem("wingroo_student_user", JSON.stringify(updated));
+              localStorage.setItem("wingroo_student_user", JSON.stringify(updated));
+            }
           }
         })
         .catch(() => {
@@ -60,14 +78,21 @@ export function AuthProvider({ children }) {
     return () => {
       live = false;
       window.removeEventListener("session-ended", ended);
+      window.removeEventListener("wingroo_auth_state_changed", syncCurrent);
+      window.removeEventListener("wingroo_student_logged_in", syncCurrent);
+      window.removeEventListener("wingroo_admin_logged_in", syncCurrent);
+      window.removeEventListener("wingroo_student_logged_out", ended);
+      window.removeEventListener("wingroo_admin_logged_out", ended);
     };
   }, []);
+
   async function login(values) {
     const { data } = await api.post("/auth/login/", values);
     saveTokens({ access: data.access, refresh: data.refresh });
     setUser(data.user);
     return data.user;
   }
+
   async function logout() {
     try {
       const t = JSON.parse(sessionStorage.getItem("tokens") || localStorage.getItem("tokens") || "{}");
@@ -78,11 +103,16 @@ export function AuthProvider({ children }) {
       clearSession();
       sessionStorage.removeItem("wingroo_student_user");
       localStorage.removeItem("wingroo_student_user");
+      sessionStorage.removeItem("wingroo_admin_user");
+      localStorage.removeItem("wingroo_admin_user");
+      sessionStorage.removeItem("wingroo_admin_auth");
+      localStorage.removeItem("wingroo_admin_auth");
       sessionStorage.removeItem("tokens");
       localStorage.removeItem("tokens");
       setUser(null);
     }
   }
+
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
