@@ -14,19 +14,41 @@ import Students from "./pages/admin/Students";
 import StudentDetail from "./pages/admin/StudentDetail";
 import Certificates from "./pages/admin/Certificates";
 
+function getEffectiveUser(contextUser) {
+  if (contextUser) return contextUser;
+  try {
+    const raw =
+      sessionStorage.getItem("wingroo_student_user") ||
+      localStorage.getItem("wingroo_student_user") ||
+      sessionStorage.getItem("wingroo_admin_user") ||
+      localStorage.getItem("wingroo_admin_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 function Protected({ role }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
-  if (loading) return <Loading />;
-  if (!user) return <Navigate to={`${prefix}/login`} replace />;
-  if (user.role !== role)
-    return (
-      <Navigate
-        to={user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`}
-        replace
-      />
-    );
+  const effectiveUser = getEffectiveUser(user);
+
+  if (loading && !effectiveUser) return <Loading />;
+  if (!effectiveUser) return <Navigate to={`${prefix}/login`} replace />;
+
+  const normUserRole = (effectiveUser.role || "").toUpperCase();
+  const targetRole = (role || "").toUpperCase();
+  const isStudent = normUserRole === "STUDENT" || normUserRole === "CANDIDATE";
+  const isAdmin = normUserRole === "ADMIN";
+
+  if (targetRole === "STUDENT" && !isStudent) {
+    return <Navigate to={`${prefix}/admin/dashboard`} replace />;
+  }
+  if (targetRole === "ADMIN" && !isAdmin) {
+    return <Navigate to={`${prefix}/student/dashboard`} replace />;
+  }
+
   return <Outlet />;
 }
 
@@ -34,15 +56,19 @@ function PublicOnly() {
   const { user, loading } = useAuth();
   const location = useLocation();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
-  if (loading) return <Loading />;
-  return user ? (
-    <Navigate
-      to={user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`}
-      replace
-    />
-  ) : (
-    <Outlet />
-  );
+  const effectiveUser = getEffectiveUser(user);
+
+  if (loading && !effectiveUser) return <Loading />;
+  if (effectiveUser) {
+    const isAdmin = (effectiveUser.role || "").toUpperCase() === "ADMIN";
+    return (
+      <Navigate
+        to={isAdmin ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`}
+        replace
+      />
+    );
+  }
+  return <Outlet />;
 }
 
 export default function InternshipApp() {

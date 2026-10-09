@@ -1,33 +1,50 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { api, clearSession, saveTokens } from "../services/api";
 const AuthContext = createContext(null);
+const getStoredCandidate = () => {
+  try {
+    const raw =
+      sessionStorage.getItem("wingroo_student_user") ||
+      localStorage.getItem("wingroo_student_user") ||
+      sessionStorage.getItem("wingroo_admin_user") ||
+      localStorage.getItem("wingroo_admin_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null),
-    [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(getStoredCandidate);
+  const [loading, setLoading] = useState(!getStoredCandidate());
+
   useEffect(() => {
     let live = true;
-    const ended = () => setUser(null);
+    const ended = () => {
+      // Only clear if no main site candidate is stored
+      const stillActive = getStoredCandidate();
+      if (!stillActive) setUser(null);
+    };
     window.addEventListener("session-ended", ended);
 
-    // Check for tokens or main website candidate session
     const savedTokens = sessionStorage.getItem("tokens") || localStorage.getItem("tokens");
-    let mainSiteCandidate = null;
-    try {
-      const rawUser = sessionStorage.getItem("wingroo_student_user") || localStorage.getItem("wingroo_student_user");
-      if (rawUser) mainSiteCandidate = JSON.parse(rawUser);
-    } catch {}
+    const mainSiteCandidate = getStoredCandidate();
 
     if (savedTokens) {
       api
         .get("/auth/me/")
         .then((r) => {
-          if (live) setUser(r.data);
+          if (live && r.data) {
+            setUser((prev) => ({ ...prev, ...r.data }));
+            // Also keep wingroo_student_user synced with backend
+            const updated = { ...(mainSiteCandidate || {}), ...r.data };
+            sessionStorage.setItem("wingroo_student_user", JSON.stringify(updated));
+            localStorage.setItem("wingroo_student_user", JSON.stringify(updated));
+          }
         })
         .catch(() => {
           if (live && mainSiteCandidate) {
             setUser(mainSiteCandidate);
-          } else {
-            clearSession();
           }
         })
         .finally(() => {

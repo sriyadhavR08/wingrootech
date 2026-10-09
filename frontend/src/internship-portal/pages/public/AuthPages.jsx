@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/Auth";
 import { api, errorText } from "../../services/api";
@@ -18,6 +18,20 @@ export function Login({ initialRole = 'student' }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
+
+  const storedStudent = (() => {
+    try {
+      const raw = sessionStorage.getItem("wingroo_student_user") || localStorage.getItem("wingroo_student_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  // If candidate is already logged in from the main website, automatically redirect to dashboard
+  useEffect(() => {
+    if (roleMode === 'student' && storedStudent) {
+      navigate(`${prefix}/student/dashboard`, { replace: true });
+    }
+  }, [roleMode, storedStudent, navigate, prefix]);
 
   const handleRoleChange = (role) => {
     setRoleMode(role);
@@ -154,48 +168,77 @@ export function Login({ initialRole = 'student' }) {
       </div>
 
       {roleMode === 'student' ? (
-        /* Candidates must login on the Wingroo main website first */
-        <div className="candidate-auth-gate text-center py-2">
-          <div 
-            className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
-            style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb' }}
-          >
-            <i className="bi bi-shield-lock-fill" style={{ fontSize: '1.65rem' }}></i>
+        storedStudent ? (
+          <div className="candidate-auth-gate text-center py-3">
+            <div 
+              className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+              style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a' }}
+            >
+              <i className="bi bi-person-check-fill" style={{ fontSize: '1.65rem' }}></i>
+            </div>
+
+            <h2 className="h4 fw-bold mb-1 text-dark">Candidate Session Active</h2>
+            <p className="text-dark fw-semibold mb-1">{storedStudent.full_name}</p>
+            <p className="text-secondary small mb-3">{storedStudent.email}</p>
+            <p className="text-muted small mb-4 mx-auto" style={{ maxWidth: '380px' }}>
+              You are signed in to the Wingroo Candidate Ecosystem. Click below to continue to your internship portal workspace.
+            </p>
+
+            <div className="d-flex flex-column gap-2 mx-auto w-100" style={{ maxWidth: '340px' }}>
+              <button
+                type="button"
+                onClick={() => navigate(`${prefix}/student/dashboard`)}
+                className="btn btn-primary rounded-pill py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
+              >
+                <span>Open Candidate Dashboard</span>
+                <i className="bi bi-arrow-right"></i>
+              </button>
+            </div>
           </div>
-
-          <h2 className="h4 fw-bold mb-2 text-dark">Wingroo Main Website Login Required</h2>
-          <p className="text-secondary small mb-4 mx-auto" style={{ maxWidth: '420px', lineHeight: 1.6 }}>
-            Candidate access to the internship portal is exclusively authorized through the <strong>Wingroo Main Website</strong>. 
-            Please sign in or register your candidate profile on the main website first to access your student internship workspace.
-          </p>
-
-          <div className="d-flex flex-column gap-2 mx-auto w-100" style={{ maxWidth: '380px' }}>
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.setItem('wingroo_open_student_portal', 'true');
-                window.location.href = '/#login';
-              }}
-              className="btn btn-primary rounded-pill py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
-              style={{ fontSize: '0.95rem' }}
+        ) : (
+          /* Candidates must login on the Wingroo main website first */
+          <div className="candidate-auth-gate text-center py-2">
+            <div 
+              className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+              style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb' }}
             >
-              <i className="bi bi-box-arrow-in-right"></i>
-              <span>Sign In on Wingroo Main Website</span>
-            </button>
+              <i className="bi bi-shield-lock-fill" style={{ fontSize: '1.65rem' }}></i>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.setItem('wingroo_open_student_portal', 'true');
-                sessionStorage.setItem('wingroo_open_register_tab', 'true');
-                window.location.href = '/#login';
-              }}
-              className="btn btn-outline-secondary rounded-pill py-2 fw-semibold d-flex align-items-center justify-content-center gap-2"
-              style={{ fontSize: '0.88rem' }}
-            >
-              <i className="bi bi-person-plus"></i>
-              <span>New Candidate? Register on Main Website</span>
-            </button>
+            <h2 className="h4 fw-bold mb-2 text-dark">Wingroo Main Website Login Required</h2>
+            <p className="text-secondary small mb-4 mx-auto" style={{ maxWidth: '420px', lineHeight: 1.6 }}>
+              Candidate access to the internship portal is exclusively authorized through the <strong>Wingroo Main Website</strong>. 
+              Please sign in or register your candidate profile on the main website first to access your student internship workspace.
+            </p>
+
+            <div className="d-flex flex-column gap-2 mx-auto w-100" style={{ maxWidth: '380px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  sessionStorage.setItem('wingroo_open_student_portal', 'true');
+                  window.location.href = '/#login';
+                }}
+                className="btn btn-primary rounded-pill py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                style={{ fontSize: '0.95rem' }}
+              >
+                <i className="bi bi-box-arrow-in-right"></i>
+                <span>Sign In on Wingroo Main Website</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  sessionStorage.setItem('wingroo_open_student_portal', 'true');
+                  sessionStorage.setItem('wingroo_open_register_tab', 'true');
+                  window.location.href = '/#login';
+                }}
+                className="btn btn-outline-secondary rounded-pill py-2 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                style={{ fontSize: '0.88rem' }}
+              >
+                <i className="bi bi-person-plus"></i>
+                <span>New Candidate? Register on Main Website</span>
+              </button>
+            </div>
 
             <div className="mt-3 pt-3 border-top">
               <button
@@ -207,7 +250,7 @@ export function Login({ initialRole = 'student' }) {
               </button>
             </div>
           </div>
-        </div>
+        )
       ) : showForgot ? (
         <div>
           <h1 className="h3">Reset Password</h1>

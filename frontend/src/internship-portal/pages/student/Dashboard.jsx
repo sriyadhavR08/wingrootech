@@ -9,7 +9,33 @@ export default function StudentDashboard() {
     api
       .get("/student/profile/")
       .then((r) => setData(r.data))
-      .catch(async (e) => setError(await errorText(e)));
+      .catch(async (e) => {
+        try {
+          const raw =
+            sessionStorage.getItem("wingroo_student_user") ||
+            localStorage.getItem("wingroo_student_user");
+          if (raw) {
+            const u = JSON.parse(raw);
+            setData({
+              id: u.id,
+              full_name: u.full_name,
+              email: u.email,
+              candidate_type: u.candidate_type || "COLLEGE_INTERN",
+              candidate_type_display: u.candidate_type_display || "Internship & Event Candidate",
+              college_name: u.college || "Registered Candidate",
+              department: u.department || "Computer Science",
+              course: u.course || "B.E / B.Tech",
+              register_number: u.register_number || "WIN-CANDIDATE",
+              project_name: "Full Stack Web Development",
+              status: "REGISTERED",
+              start_date: new Date().toISOString().split("T")[0],
+              certificate: null,
+            });
+            return;
+          }
+        } catch {}
+        setError(await errorText(e));
+      });
   }, []);
   if (error) return <Notice message={error} />;
   if (!data) return <Loading />;

@@ -7,23 +7,57 @@ export const api = axios.create({ baseURL, timeout: 20000 });
 let refreshRequest = null;
 export function clearSession() {
   sessionStorage.removeItem("tokens");
+  localStorage.removeItem("tokens");
+  sessionStorage.removeItem("wingroo_student_tokens");
+  localStorage.removeItem("wingroo_student_tokens");
+  sessionStorage.removeItem("wingroo_token");
+  localStorage.removeItem("wingroo_token");
   window.dispatchEvent(new Event("session-ended"));
 }
-export function saveTokens(tokens) {
-  sessionStorage.setItem("tokens", JSON.stringify(tokens));
-}
-function tokens() {
-  try {
-    return JSON.parse(sessionStorage.getItem("tokens") || "{}");
-  } catch {
-    return {};
+
+export function saveTokens(tokenData) {
+  if (!tokenData) return;
+  const str = typeof tokenData === "string" ? tokenData : JSON.stringify(tokenData);
+  sessionStorage.setItem("tokens", str);
+  localStorage.setItem("tokens", str);
+  sessionStorage.setItem("wingroo_student_tokens", str);
+  localStorage.setItem("wingroo_student_tokens", str);
+  if (tokenData.access) {
+    sessionStorage.setItem("wingroo_token", tokenData.access);
+    localStorage.setItem("wingroo_token", tokenData.access);
   }
 }
+
+export function getStoredTokens() {
+  try {
+    const raw =
+      sessionStorage.getItem("tokens") ||
+      localStorage.getItem("tokens") ||
+      sessionStorage.getItem("wingroo_student_tokens") ||
+      localStorage.getItem("wingroo_student_tokens");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    }
+  } catch {}
+  
+  const single = sessionStorage.getItem("wingroo_token") || localStorage.getItem("wingroo_token");
+  if (single) return { access: single };
+  return {};
+}
+
+function tokens() {
+  return getStoredTokens();
+}
+
 api.interceptors.request.use((config) => {
-  if (tokens().access)
-    config.headers.Authorization = `Bearer ${tokens().access}`;
+  const currentTokens = tokens();
+  if (currentTokens.access) {
+    config.headers.Authorization = `Bearer ${currentTokens.access}`;
+  }
   return config;
 });
+
 api.interceptors.response.use(
   (r) => r,
   async (error) => {
@@ -37,10 +71,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     original._retry = true;
     try {
-      if (!tokens().refresh) throw error;
+      const curTokens = tokens();
+      if (!curTokens.refresh) throw error;
       if (!refreshRequest)
         refreshRequest = axios
-          .post(`${baseURL}/auth/token/refresh/`, { refresh: tokens().refresh })
+          .post(`${baseURL}/auth/token/refresh/`, { refresh: curTokens.refresh })
           .then((r) => {
             saveTokens(r.data);
             return r.data.access;
@@ -48,10 +83,15 @@ api.interceptors.response.use(
           .finally(() => {
             refreshRequest = null;
           });
-      original.headers.Authorization = `Bearer ${await refreshRequest}`;
+      const newAccess = await refreshRequest;
+      original.headers.Authorization = `Bearer ${newAccess}`;
       return api(original);
     } catch (e) {
-      clearSession();
+      // Do not clear session if there is a main site candidate logged in
+      const hasMainSite = sessionStorage.getItem("wingroo_student_user") || localStorage.getItem("wingroo_student_user");
+      if (!hasMainSite && !original?.url?.includes("/auth/me")) {
+        clearSession();
+      }
       return Promise.reject(e);
     }
   },
