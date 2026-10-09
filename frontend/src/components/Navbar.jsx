@@ -20,33 +20,28 @@ const SERVICES_SECTIONS = [
       { label: 'Web Application Development', target: '#services' },
       { label: 'Mobile App Development (iOS & Android)', target: '#services' },
       { label: 'Custom Software Solutions', target: '#services' },
-      { label: 'AI & Automation Systems', target: '#services' },
-      { label: 'Cloud Infrastructure & DevOps', target: '#services' },
-      { label: 'UI / UX Product Design', target: '#services' },
+      { label: 'SEO (Search Engine Optimization)', target: '#services' },
+      { label: 'GEO (Generative Engine Optimization)', target: '#services' },
+      { label: 'Digital Marketing', target: '#services' },
     ]
   },
   {
     title: 'OUR PORTFOLIO',
     target: '#portfolio',
     items: [
-      { label: 'Live Client Deliverables', target: '#portfolio' },
-      { label: 'Enterprise Web Applications', target: '#portfolio' },
-      { label: 'Mobile Solutions Showcase', target: '#portfolio' },
-      { label: 'Cloud & AI Deployments', target: '#portfolio' },
-      { label: 'Startup MVP Products', target: '#portfolio' },
-      { label: 'Client Case Studies & Results', target: '#portfolio' },
+      { label: 'Zentime (HR & Attendance Platform)', target: '#portfolio' },
+      { label: 'IIE Pulse (Academic & Student ERP)', target: '#portfolio' },
+      { label: 'Tourists Guard (GPS SOS Safety Platform)', target: '#portfolio' },
+      { label: 'Smart AI Bot (NLP & Conversational AI)', target: '#portfolio' },
+      { label: 'VirtueHire (AI Candidate Screening)', target: '#portfolio' },
     ]
   },
   {
     title: 'INTERNSHIP',
     target: '#internship',
     items: [
-      { label: 'College Internship Programs', target: '#internship' },
-      { label: 'Virtual & Remote Tech Tracks', target: '#internship' },
-      { label: 'Live Project Experience', target: '#internship' },
-      { label: 'Verified ISO & MSME Credentials', target: '#internship' },
-      { label: 'Certificate Verification Portal', href: '/internship/verify' },
-      { label: 'Apply for Internship Program', action: 'apply' },
+      { label: 'College Internship', target: '#internship' },
+      { label: 'Live Internship', target: '#internship', action: 'apply' },
     ]
   }
 ];
