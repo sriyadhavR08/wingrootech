@@ -20,9 +20,20 @@ const SERVICES_SECTIONS = [
       { label: 'Web Application Development', target: '#services' },
       { label: 'Mobile App Development (iOS & Android)', target: '#services' },
       { label: 'Custom Software Solutions', target: '#services' },
+      { label: 'AI & Agentic Automation Systems', target: '#services' },
+      { label: 'Cloud Infrastructure & DevOps', target: '#services' },
+      { label: 'E-Commerce & Digital Commerce', target: '#services' },
+    ]
+  },
+  {
+    title: 'SEO & GEO',
+    target: '#services',
+    items: [
       { label: 'SEO (Search Engine Optimization)', target: '#services' },
       { label: 'GEO (Generative Engine Optimization)', target: '#services' },
-      { label: 'Digital Marketing', target: '#services' },
+      { label: 'AEO (Answer Engine Optimization)', target: '#services' },
+      { label: 'Digital Marketing & Growth Ads', target: '#services' },
+      { label: 'Local Search Authority & Ranking', target: '#services' },
     ]
   },
   {

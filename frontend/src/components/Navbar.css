@@ -713,8 +713,15 @@
 
 .mega-menu-grid {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 40px !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 28px !important;
+}
+
+@media (max-width: 1024px) {
+  .mega-menu-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+  }
 }
 
 .mega-menu-col {
