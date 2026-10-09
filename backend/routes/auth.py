@@ -41,28 +41,30 @@ def register():
 
     reg_no = data.get("register_number", "").strip().upper()
     if not reg_no:
-        return jsonify({"register_number": ["Register number is required."]}), 400
-
-    existing_profile_with_reg = StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first()
-    if existing_profile_with_reg and (not user or existing_profile_with_reg.user_id != user.id):
-        return jsonify({"register_number": ["Register number already registered to another candidate."]}), 400
+        import secrets
+        reg_no = f"WIN-{secrets.token_hex(4).upper()}"
+    else:
+        existing_profile_with_reg = StudentProfile.query.filter(db.func.upper(StudentProfile.register_number) == reg_no).first()
+        if existing_profile_with_reg and (not user or existing_profile_with_reg.user_id != user.id):
+            return jsonify({"register_number": ["Register number already registered to another candidate."]}), 400
 
     start_date_str = data.get("start_date")
     if not start_date_str:
-        return jsonify({"start_date": ["Start date is required."]}), 400
-    try:
-        start_date = date.fromisoformat(start_date_str)
-    except ValueError:
-        return jsonify({"start_date": ["Invalid start date format (YYYY-MM-DD)."]}), 400
+        start_date = date.today()
+    else:
+        try:
+            start_date = date.fromisoformat(start_date_str)
+        except ValueError:
+            start_date = date.today()
 
     end_date = None
     if data.get("end_date"):
         try:
             end_date = date.fromisoformat(data["end_date"])
             if end_date <= start_date:
-                return jsonify({"end_date": ["End date must be after start date."]}), 400
+                end_date = None
         except ValueError:
-            return jsonify({"end_date": ["Invalid end date format (YYYY-MM-DD)."]}), 400
+            end_date = None
 
     cand_type = data.get("candidate_type", "COLLEGE_INTERN")
 
@@ -77,6 +79,7 @@ def register():
                 email=email,
                 full_name=full_name,
                 role="STUDENT",
+                is_active=True,
             )
             user.set_password(password)
             db.session.add(user)
@@ -111,7 +114,7 @@ def register():
         if not internship:
             internship = Internship(
                 student=user,
-                project_name=data.get("project_name", ""),
+                project_name=data.get("project_name", "") or "Full Stack Web Development",
                 start_date=start_date,
                 end_date=end_date,
                 status="REGISTERED",
@@ -120,12 +123,44 @@ def register():
         else:
             internship.project_name = data.get("project_name", "") or internship.project_name
             internship.start_date = start_date
-            internship.end_date = end_date
+            if end_date:
+                internship.end_date = end_date
             internship.status = "REGISTERED"
 
+        # Record active session
+        import secrets as py_secrets, datetime
+        user.active_session_id = py_secrets.token_hex(16)
+        user.active_session_time = datetime.datetime.now(datetime.timezone.utc)
+        user.last_login = datetime.datetime.now(datetime.timezone.utc)
         db.session.commit()
 
-        return jsonify({"success": True, "message": "Registration successful! You can now sign in with your account credentials."}), 201
+        access_token, refresh_token = generate_tokens(user)
+        cand_label_map = {
+            "PROJECT_CLIENT": "Project Client Candidate",
+            "INTERNSHIP_EVENT": "Internship & Event Candidate",
+            "COLLEGE_INTERN": "College Intern",
+            "SCHOOL_STUDENT": "School Student",
+            "COLLEGE_COMPLETED": "College Completed",
+        }
+        cand_display = cand_label_map.get(cand_type, "College Intern")
+
+        return jsonify({
+            "success": True,
+            "message": "Registration successful! Welcome to Wingroo.",
+            "access": access_token,
+            "refresh": refresh_token,
+            "user": {
+                "id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role,
+                "phone": data.get("mobile_number", ""),
+                "college": profile.college_name,
+                "candidate_type": cand_type,
+                "candidate_type_display": cand_display,
+                "register_number": profile.register_number,
+            }
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"detail": f"Registration failed: {str(e)}"}), 500

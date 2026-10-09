@@ -93,7 +93,7 @@ export default function InternshipApp() {
         <Route element={<Shell />}>
           <Route index element={<Home />} />
           <Route element={<PublicOnly />}>
-            <Route path="login" element={<Navigate to="/internship" replace />} />
+            <Route path="login" element={<Login />} />
             <Route path="admin-login" element={<Login initialRole="admin" />} />
             <Route path="register" element={<Register />} />
           </Route>

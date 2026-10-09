@@ -29,10 +29,15 @@ export default function Home() {
                 <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
               </Link>
             ) : (
-              <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
-                Register now{" "}
-                <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
-              </Link>
+              <>
+                <Link to={`${prefix}/login`} className="btn btn-primary btn-lg shadow-sm">
+                  Candidate Status & Sign In{" "}
+                  <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
+                </Link>
+                <Link to={`${prefix}/register`} className="btn btn-outline-secondary btn-lg">
+                  First Time Register
+                </Link>
+              </>
             )}
             <Link to={`${prefix}/verify`} className="btn btn-outline-primary btn-lg">
               Verify certificate
