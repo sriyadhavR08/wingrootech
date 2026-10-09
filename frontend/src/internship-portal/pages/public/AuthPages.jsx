@@ -136,53 +136,93 @@ export function Login({ initialRole = 'student' }) {
       <img className="auth-logo" src={logo} alt="Wingroo" />
 
       {/* Role Toggle Switcher: Candidate vs Administrator */}
-      {!showForgot && (
-        <div className="d-flex mb-4 p-1 bg-light rounded-pill border" style={{ gap: '4px' }}>
-          <button
-            type="button"
-            className={`btn btn-sm rounded-pill flex-fill fw-semibold ${roleMode === 'student' ? 'btn-primary shadow-sm text-white' : 'btn-light border-0 text-secondary'}`}
-            onClick={() => handleRoleChange('student')}
+      <div className="d-flex mb-4 p-1 bg-light rounded-pill border" style={{ gap: '4px' }}>
+        <button
+          type="button"
+          className={`btn btn-sm rounded-pill flex-fill fw-semibold ${roleMode === 'student' ? 'btn-primary shadow-sm text-white' : 'btn-light border-0 text-secondary'}`}
+          onClick={() => handleRoleChange('student')}
+        >
+          <i className="bi bi-person me-1"></i> Candidate Sign In
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm rounded-pill flex-fill fw-semibold ${roleMode === 'admin' ? 'btn-primary shadow-sm text-white' : 'btn-light border-0 text-secondary'}`}
+          onClick={() => handleRoleChange('admin')}
+        >
+          <i className="bi bi-shield-lock me-1"></i> Admin Sign In
+        </button>
+      </div>
+
+      {roleMode === 'student' ? (
+        /* Candidates must login on the Wingroo main website first */
+        <div className="candidate-auth-gate text-center py-2">
+          <div 
+            className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+            style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#eff6ff', color: '#2563eb' }}
           >
-            <i className="bi bi-person me-1"></i> Candidate Sign In
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm rounded-pill flex-fill fw-semibold ${roleMode === 'admin' ? 'btn-primary shadow-sm text-white' : 'btn-light border-0 text-secondary'}`}
-            onClick={() => handleRoleChange('admin')}
-          >
-            <i className="bi bi-shield-lock me-1"></i> Admin Sign In
-          </button>
+            <i className="bi bi-shield-lock-fill" style={{ fontSize: '1.65rem' }}></i>
+          </div>
+
+          <h2 className="h4 fw-bold mb-2 text-dark">Wingroo Main Website Login Required</h2>
+          <p className="text-secondary small mb-4 mx-auto" style={{ maxWidth: '420px', lineHeight: 1.6 }}>
+            Candidate access to the internship portal is exclusively authorized through the <strong>Wingroo Main Website</strong>. 
+            Please sign in or register your candidate profile on the main website first to access your student internship workspace.
+          </p>
+
+          <div className="d-flex flex-column gap-2 mx-auto w-100" style={{ maxWidth: '380px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.setItem('wingroo_open_student_portal', 'true');
+                window.location.href = '/#login';
+              }}
+              className="btn btn-primary rounded-pill py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2"
+              style={{ fontSize: '0.95rem' }}
+            >
+              <i className="bi bi-box-arrow-in-right"></i>
+              <span>Sign In on Wingroo Main Website</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.setItem('wingroo_open_student_portal', 'true');
+                sessionStorage.setItem('wingroo_open_register_tab', 'true');
+                window.location.href = '/#login';
+              }}
+              className="btn btn-outline-secondary rounded-pill py-2 fw-semibold d-flex align-items-center justify-content-center gap-2"
+              style={{ fontSize: '0.88rem' }}
+            >
+              <i className="bi bi-person-plus"></i>
+              <span>New Candidate? Register on Main Website</span>
+            </button>
+
+            <div className="mt-3 pt-3 border-top">
+              <button
+                type="button"
+                onClick={() => handleRoleChange('admin')}
+                className="btn btn-link text-decoration-none text-muted small p-0"
+              >
+                Are you an administrator? Switch to Admin Sign In &rarr;
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-
-      <h1 className="h3">
-        {showForgot 
-          ? "Reset Password" 
-          : roleMode === 'admin' 
-          ? "Administrator Sign In" 
-          : "Candidate Sign In"}
-      </h1>
-      <p className="text-secondary">
-        {showForgot 
-          ? "Enter your registered email or register number to reset your password." 
-          : roleMode === 'admin'
-          ? "Sign in with administrator credentials to manage cohorts, candidates, and certificates."
-          : "Sign in with your registered email or register number to view your project or internship workspace."}
-      </p>
-
-      {showForgot ? (
+      ) : showForgot ? (
         <div>
+          <h1 className="h3">Reset Password</h1>
+          <p className="text-secondary">Enter your administrator email to reset your credentials.</p>
           {forgotMsg && <Notice type="success" message={forgotMsg} />}
           {forgotErr && <Notice message={forgotErr} />}
 
           {forgotStep === "verify" ? (
             <form onSubmit={handleForgotVerify}>
               <div className="mb-3">
-                <label className="form-label fw-semibold">Registered Email or Register Number</label>
+                <label className="form-label fw-semibold">Administrator Email</label>
                 <input
-                  type="text"
+                  type="email"
                   className="form-control"
-                  placeholder="Enter your email or register number"
+                  placeholder="Enter administrator email"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   required
@@ -233,41 +273,37 @@ export function Login({ initialRole = 'student' }) {
           </div>
         </div>
       ) : (
+        /* Administrator Direct Sign In */
         <>
+          <h1 className="h3">Administrator Sign In</h1>
+          <p className="text-secondary">
+            Sign in with administrator credentials to manage cohorts, candidates, and certificates.
+          </p>
+
           <Notice message={error} />
           <form onSubmit={submit}>
             <div className="row g-3 single-fields">
               <Field
                 name="email"
-                label={roleMode === 'admin' ? "Administrator Email" : "Candidate Email or Register No"}
-                type={roleMode === 'admin' ? "email" : "text"}
+                label="Administrator Email"
+                type="email"
                 autoComplete="username"
                 value={values.email}
-                placeholder={roleMode === 'admin' ? "Enter your administrator email" : "Enter your email or register number"}
+                placeholder="Enter your administrator email"
                 onChange={(e) => setValues({ ...values, email: e.target.value })}
               />
               <div>
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <label className="form-label mb-0 fw-semibold">
-                    {roleMode === 'admin' ? "Admin Password" : "Password"}
+                    Admin Password
                   </label>
-                  {roleMode === 'student' && (
-                    <button
-                      type="button"
-                      onClick={() => { setShowForgot(true); setForgotStep("verify"); setForgotErr(""); setForgotMsg(""); }}
-                      className="btn btn-link p-0 text-decoration-none small text-primary"
-                      style={{ fontSize: "0.82rem" }}
-                    >
-                      Forgot Password?
-                    </button>
-                  )}
                 </div>
                 <input
                   name="password"
                   type="password"
                   className="form-control"
                   autoComplete="current-password"
-                  placeholder={roleMode === 'admin' ? "Enter admin password" : "Enter your password"}
+                  placeholder="Enter admin password"
                   value={values.password || ""}
                   onChange={(e) => setValues({ ...values, password: e.target.value })}
                   required
@@ -275,133 +311,56 @@ export function Login({ initialRole = 'student' }) {
               </div>
             </div>
             <button className="btn btn-primary w-100 mt-4 rounded-pill py-2" disabled={busy}>
-              {busy 
-                ? "Signing in…" 
-                : roleMode === 'admin' 
-                ? "Unlock Admin Portal" 
-                : "Sign In as Candidate"}
+              {busy ? "Signing in…" : "Unlock Admin Portal"}
             </button>
           </form>
 
-          {roleMode === 'student' ? (
-            <div className="text-center mt-4">
-              <p className="mb-2">
-                New to Wingroo? <Link to={`${prefix}/register`} className="fw-semibold">Create an account</Link>
-              </p>
-              <button
-                type="button"
-                onClick={() => handleRoleChange('admin')}
-                className="btn btn-link text-decoration-none text-muted small p-0"
-              >
-                Are you an administrator? Switch to Admin Sign In &rarr;
-              </button>
-            </div>
-          ) : (
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => handleRoleChange('student')}
-                className="btn btn-link text-decoration-none text-primary small p-0 fw-semibold"
-              >
-                &larr; Switch to Candidate Sign In
-              </button>
-            </div>
-          )}
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => handleRoleChange('student')}
+              className="btn btn-link text-decoration-none text-primary small p-0 fw-semibold"
+            >
+              &larr; Switch to Candidate Sign In
+            </button>
+          </div>
         </>
       )}
     </section>
   );
 }
 export function Register() {
-  const location = useLocation();
-  const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
-  const [values, setValues] = useState({ candidate_type: "COLLEGE_INTERN" }),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [done, setDone] = useState(false);
-
-  async function submit(e) {
-    e.preventDefault();
-    setError("");
-    if (values.password !== values.confirm_password) {
-      setError("Passwords do not match.");
-      return;
-    }
-    const candType = values.candidate_type || "COLLEGE_INTERN";
-    if (!values.college_id_card) {
-      const docLabel =
-        candType === "SCHOOL_STUDENT"
-          ? "School ID card / Candidate ID proof"
-          : candType === "COLLEGE_COMPLETED"
-          ? "ID proof (Aadhaar / College ID / Degree Certificate / Govt ID)"
-          : "College ID card photo";
-      setError(`Please attach your ${docLabel}.`);
-      return;
-    }
-    if (!values.selfie_photo) {
-      setError("Please provide a selfie photo (Upload file or Snap Photo).");
-      return;
-    }
-    setBusy(true);
-    try {
-      await api.post("/auth/register/", {
-        ...values,
-        candidate_type: candType,
-      });
-      setDone(true);
-      window.scrollTo(0, 0);
-    } catch (e) {
-      setError(await errorText(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    <div className="registration">
-      <div className="eyebrow">PORTAL ENROLLMENT & REGISTRATION</div>
-      <h1 className="mt-2">Create Your Candidate Account</h1>
-      <p className="text-secondary">
-        Register as a School Candidate Intern, College Candidate Intern, or College Completed Candidate Intern for your verified credential.
-      </p>
-
-      {/* Unified Main Website Account Notice */}
-      <div className="alert alert-info py-2 px-3 mb-4 d-flex align-items-center gap-2" style={{ fontSize: '0.88rem', borderRadius: '12px' }}>
-        <i className="bi bi-info-circle-fill text-primary fs-5"></i>
-        <div>
-          <strong>Unified Wingroo Account:</strong> If you already created an account on the Wingroo main website, enter your <strong>same Email ID and Password</strong> in this registration form — your certificate registration will automatically link with your Wingroo profile!
-        </div>
+    <section className="card auth-card shadow-sm border-0 text-center py-4 px-3" style={{ borderRadius: '20px' }}>
+      <img className="auth-logo mx-auto mb-3" src={logo} alt="Wingroo" />
+      <div 
+        className="mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+        style={{ width: '58px', height: '58px', borderRadius: '50%', background: '#ecfdf5', color: '#059669' }}
+      >
+        <i className="bi bi-person-plus-fill" style={{ fontSize: '1.75rem' }}></i>
       </div>
-      {done ? (
-        <section className="card p-5" style={{ borderRadius: '20px' }}>
-          <Notice
-            type="success"
-            message="Registration successful! Your profile has been registered in the system."
-          />
-          <Link className="btn btn-primary rounded-pill mt-3 px-4" to={`${prefix}/login`}>
-            Continue to login
-          </Link>
-        </section>
-      ) : (
-        <form className="card registration-form shadow-sm border-0" style={{ borderRadius: '20px' }} onSubmit={submit}>
-          <StudentFields
-            values={values}
-            onChange={(e) =>
-              setValues({ ...values, [e.target.name]: e.target.value })
-            }
-            account
-          />
-          <Notice message={error} />
-          <div className="registration-bottom-bar mt-3 pt-3 border-top">
-            <span className="login-redirect-text">
-              Already registered? <Link to={`${prefix}/login`} className="fw-semibold text-primary">Login here</Link>
-            </span>
-            <button className="btn btn-primary px-4 py-2 rounded-pill shadow-sm" disabled={busy}>
-              {busy ? "Creating account…" : "Complete Registration"}
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+      <h2 className="h4 fw-bold mb-2">Register on Wingroo Main Website</h2>
+      <p className="text-secondary small mb-4 mx-auto" style={{ maxWidth: '420px', lineHeight: 1.6 }}>
+        Candidate registration is processed exclusively on the <strong>Wingroo Main Website</strong>. 
+        Please create your profile on the main website to access your internship workspace.
+      </p>
+      <div className="mx-auto w-100" style={{ maxWidth: '360px' }}>
+        <button
+          type="button"
+          onClick={() => {
+            sessionStorage.setItem('wingroo_open_student_portal', 'true');
+            sessionStorage.setItem('wingroo_open_register_tab', 'true');
+            window.location.href = '/#login';
+          }}
+          className="btn btn-primary rounded-pill py-2 fw-semibold w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
+        >
+          <i className="bi bi-box-arrow-in-right"></i>
+          <span>Create Account on Main Website</span>
+        </button>
+        <Link to="/internship/login" className="btn btn-link text-decoration-none text-muted small mt-3 d-block">
+          &larr; Back to Sign In
+        </Link>
+      </div>
+    </section>
   );
 }

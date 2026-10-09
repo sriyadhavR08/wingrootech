@@ -36,8 +36,14 @@ function LandingPage() {
   };
 
   useEffect(() => {
-    // Check URL hashes for #admin, #student, or #login
+    // Check URL hashes or session flags for #admin, #student, or #login
     const handleHashChange = () => {
+      const openPending = sessionStorage.getItem('wingroo_open_student_portal');
+      if (openPending === 'true') {
+        sessionStorage.removeItem('wingroo_open_student_portal');
+        setActivePortal('student');
+        return;
+      }
       if (window.location.hash === '#admin') {
         setActivePortal('admin');
       } else if (window.location.hash === '#student' || window.location.hash === '#student-portal' || window.location.hash === '#login') {
@@ -47,6 +53,7 @@ function LandingPage() {
 
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('wingroo_open_student_portal', handleHashChange);
 
     // Keyboard shortcuts
     const handleKeyDown = (e) => {

@@ -103,6 +103,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   // When modal opens or user logs in, automatically fetch records if user is logged in
   useEffect(() => {
     if (isOpen) {
+      if (sessionStorage.getItem('wingroo_open_register_tab') === 'true') {
+        sessionStorage.removeItem('wingroo_open_register_tab');
+        setAuthMode('register');
+      }
       try {
         const raw = sessionStorage.getItem('wingroo_pending_apply');
         setPendingApply(raw ? JSON.parse(raw) : null);
@@ -133,6 +137,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       const data = await res.json();
       if (res.ok && data.user) {
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        localStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        if (data.access && data.refresh) {
+          const tokenObj = { access: data.access, refresh: data.refresh };
+          sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
+          localStorage.setItem('tokens', JSON.stringify(tokenObj));
+          sessionStorage.setItem('wingroo_student_tokens', JSON.stringify(tokenObj));
+        }
         setCurrentUser(data.user);
         window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
         window.dispatchEvent(new Event('wingroo_auth_state_changed'));
@@ -196,6 +207,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       if (res.ok && data.user) {
         setRegisterSuccess('Account created successfully! Logging you in…');
         sessionStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        localStorage.setItem('wingroo_student_user', JSON.stringify(data.user));
+        if (data.access && data.refresh) {
+          const tokenObj = { access: data.access, refresh: data.refresh };
+          sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
+          localStorage.setItem('tokens', JSON.stringify(tokenObj));
+          sessionStorage.setItem('wingroo_student_tokens', JSON.stringify(tokenObj));
+        }
         window.dispatchEvent(new CustomEvent('wingroo_student_logged_in', { detail: data.user }));
         window.dispatchEvent(new Event('wingroo_auth_state_changed'));
         const hasPending = !!sessionStorage.getItem('wingroo_pending_apply');
@@ -275,8 +293,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
   const handleSignOut = () => {
     sessionStorage.removeItem('wingroo_student_user');
+    localStorage.removeItem('wingroo_student_user');
+    sessionStorage.removeItem('tokens');
+    localStorage.removeItem('tokens');
+    sessionStorage.removeItem('wingroo_student_tokens');
     window.dispatchEvent(new CustomEvent('wingroo_student_logged_out'));
     window.dispatchEvent(new Event('wingroo_auth_state_changed'));
+    window.dispatchEvent(new Event('session-ended'));
     setCurrentUser(null);
     setApplications([]);
     setEventRegistrations([]);
@@ -964,10 +987,35 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   </div>
                 </div>
 
-                <button type="button" onClick={handleSignOut} className="candidate-signout-btn" title="Sign out of your account">
-                  <LogOut size={14} />
-                  <span>Sign Out</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <a
+                    href="/internship/student/dashboard"
+                    className="candidate-portal-btn"
+                    title="Open your Internship Workspace"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: '#eff6ff',
+                      color: '#2563eb',
+                      border: '1px solid #bfdbfe',
+                      padding: '7px 14px',
+                      borderRadius: '10px',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <GraduationCap size={15} />
+                    <span>Internship Portal &rarr;</span>
+                  </a>
+
+                  <button type="button" onClick={handleSignOut} className="candidate-signout-btn" title="Sign out of your account">
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               </div>
 
               {/* Lookup / Search Bar for logged-in user */}
