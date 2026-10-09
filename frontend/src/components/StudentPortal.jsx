@@ -49,6 +49,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [canForceLogin, setCanForceLogin] = useState(false);
 
   // Register form state
   const [registerForm, setRegisterForm] = useState({
@@ -121,9 +122,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
     }
   }, [isOpen, currentUser]);
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
+  const handleLoginSubmit = async (e, forceLogin = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     setLoginError('');
+    setCanForceLogin(false);
     setLoginLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/auth/login/`, {
@@ -131,7 +133,8 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: loginForm.email.trim(),
-          password: loginForm.password
+          password: loginForm.password,
+          force_login: forceLogin
         })
       });
       const data = await res.json();
@@ -156,6 +159,9 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         }
       } else {
         setLoginError(data.detail || 'Invalid email or password. Please check your credentials.');
+        if (data.code === 'CONCURRENT_LOGIN_BLOCKED' || data.can_force) {
+          setCanForceLogin(true);
+        }
       }
     } catch {
       setLoginError('Unable to connect to authentication server. Please check your connection.');
@@ -632,9 +638,36 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       </p>
 
                       {loginError && (
-                        <div className="candidate-auth-error">
-                          <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                          <span>{loginError}</span>
+                        <div className="candidate-auth-error" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                            <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <span>{loginError}</span>
+                          </div>
+                          {canForceLogin && (
+                            <button
+                              type="button"
+                              onClick={() => handleLoginSubmit(null, true)}
+                              disabled={loginLoading}
+                              style={{
+                                background: '#dc2626',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '6px 14px',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                marginTop: '4px',
+                                alignSelf: 'flex-start',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <span>Sign Out Other Session & Log In Here</span>
+                              <ArrowRight size={14} />
+                            </button>
+                          )}
                         </div>
                       )}
 

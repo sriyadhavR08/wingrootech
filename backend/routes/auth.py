@@ -265,7 +265,9 @@ def login():
         return jsonify({"detail": "This account is inactive."}), 401
 
     # STRICT SINGLE LOGIN RESTRICTION (Only 1 member can be logged in at a time)
-    if user.role != "ADMIN" and getattr(user, "active_session_id", None):
+    force_login = data.get("force_login", False) or data.get("force_signout", False)
+
+    if user.role != "ADMIN" and getattr(user, "active_session_id", None) and not force_login:
         import datetime
         now = datetime.datetime.now(datetime.timezone.utc)
         session_time = getattr(user, "active_session_time", None)
@@ -276,11 +278,12 @@ def login():
         else:
             time_diff = 0
 
-        # If previous session is active within last 4 hours, strictly block second login!
-        if time_diff < 14400:
+        # If previous session was active within last 30 minutes, prompt with override option
+        if time_diff < 1800:
             return jsonify({
-                "detail": "Active session detected! This candidate account is already logged in on another device or browser. Only 1 member is permitted to be logged in at a time. Please sign out from the active session first before logging in here.",
-                "code": "CONCURRENT_LOGIN_BLOCKED"
+                "detail": "Active session detected! This candidate account was recently active on another device or browser. Only 1 member is permitted to be logged in at a time.",
+                "code": "CONCURRENT_LOGIN_BLOCKED",
+                "can_force": True
             }), 403
 
     # Generate and record new active session
