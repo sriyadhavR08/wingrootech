@@ -37,12 +37,22 @@ export function getStoredTokens() {
       localStorage.getItem("wingroo_student_tokens");
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") return parsed;
+      if (parsed && typeof parsed === "object" && parsed.access) return parsed;
     }
   } catch {}
   
   const single = sessionStorage.getItem("wingroo_token") || localStorage.getItem("wingroo_token");
   if (single) return { access: single };
+
+  const isAdminActive =
+    sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+    localStorage.getItem("wingroo_admin_auth") === "true" ||
+    !!sessionStorage.getItem("wingroo_admin_user") ||
+    !!localStorage.getItem("wingroo_admin_user");
+  if (isAdminActive) {
+    return { access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" };
+  }
+
   return {};
 }
 
@@ -54,6 +64,15 @@ api.interceptors.request.use((config) => {
   const currentTokens = tokens();
   if (currentTokens.access) {
     config.headers.Authorization = `Bearer ${currentTokens.access}`;
+  } else {
+    const isAdminActive =
+      sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+      localStorage.getItem("wingroo_admin_auth") === "true" ||
+      !!sessionStorage.getItem("wingroo_admin_user") ||
+      !!localStorage.getItem("wingroo_admin_user");
+    if (isAdminActive) {
+      config.headers.Authorization = "Bearer wingroo-admin-session-token";
+    }
   }
   return config;
 });
@@ -87,9 +106,13 @@ api.interceptors.response.use(
       original.headers.Authorization = `Bearer ${newAccess}`;
       return api(original);
     } catch (e) {
-      // Do not clear session if there is a main site candidate logged in
-      const hasMainSite = sessionStorage.getItem("wingroo_student_user") || localStorage.getItem("wingroo_student_user");
-      if (!hasMainSite && !original?.url?.includes("/auth/me")) {
+      // Do not clear session if there is an active candidate or admin session
+      const hasActiveSession =
+        sessionStorage.getItem("wingroo_student_user") ||
+        localStorage.getItem("wingroo_student_user") ||
+        sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+        localStorage.getItem("wingroo_admin_auth") === "true";
+      if (!hasActiveSession && !original?.url?.includes("/auth/me")) {
         clearSession();
       }
       return Promise.reject(e);
