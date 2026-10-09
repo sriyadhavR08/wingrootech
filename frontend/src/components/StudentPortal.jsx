@@ -23,7 +23,8 @@ import {
   User,
   KeyRound,
   UserPlus,
-  Briefcase
+  Briefcase,
+  Zap
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -572,19 +573,51 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                   {pendingApply && (
                     <div className="candidate-pending-banner">
-                      <div className="pending-banner-icon">
-                        <Lock size={18} />
-                      </div>
-                      <div className="pending-banner-body">
-                        <div className="pending-banner-heading">Login Required to Apply</div>
-                        <div className="pending-banner-text">
-                          {pendingApply.title 
-                            ? `You are applying for ${pendingApply.title}. Sign in or create an account to proceed.` 
-                            : 'Sign in or create an account to proceed with your application.'}
-                          <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px', fontSize: '0.82rem' }}>
-                            ✓ Your application form will open automatically once signed in.
-                          </div>
+                      <div className="pending-banner-top">
+                        <div className="pending-fast-badge">
+                          <Sparkles size={13} className="spin-slow" />
+                          <span>⚡ 30-SECOND FAST TRACK</span>
                         </div>
+                        <span className="pending-secure-badge">
+                          <ShieldCheck size={13} />
+                          <span>Direct Technical Review</span>
+                        </span>
+                      </div>
+
+                      <div className="pending-banner-main">
+                        <div className="pending-banner-icon">
+                          <Zap size={20} />
+                        </div>
+                        <div className="pending-banner-body">
+                          <div className="pending-banner-heading">
+                            1 Quick Sign In — Direct HR Priority & Live Tracking!
+                          </div>
+                          <p className="pending-banner-hook">
+                            {pendingApply.title 
+                              ? `Ready to apply for "${pendingApply.title}"? Sign in in 30 seconds to lock in direct priority review by our engineering leads and track your status live!` 
+                              : 'Sign in or create your candidate profile in 30 seconds to lock in direct priority review by our engineering leads and track your status live!'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Catchy Value Pillars */}
+                      <div className="pending-value-perks">
+                        <div className="pending-perk-item">
+                          <CheckCircle size={14} className="perk-check-icon" />
+                          <span><strong>Direct HR Priority:</strong> Skips generic queues straight to technical hiring leads</span>
+                        </div>
+                        <div className="pending-perk-item">
+                          <CheckCircle size={14} className="perk-check-icon" />
+                          <span><strong>24/7 Live Status Tracker:</strong> Instant real-time updates for interviews & selection</span>
+                        </div>
+                        <div className="pending-perk-item">
+                          <CheckCircle size={14} className="perk-check-icon" />
+                          <span><strong>Verified Digital Credential:</strong> Lifetime QR-verifiable certificate & official passes</span>
+                        </div>
+                      </div>
+
+                      <div className="pending-banner-reassurance">
+                        ✓ <strong>Zero Re-typing:</strong> Your application for <u>{pendingApply.title || 'your selection'}</u> opens automatically the instant you sign in!
                       </div>
                     </div>
                   )}
@@ -594,9 +627,9 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       <div className="candidate-login-icon-wrap">
                         <LogIn size={26} />
                       </div>
-                      <h3 className="candidate-login-title">Candidate Sign In</h3>
+                      <h3 className="candidate-login-title">Candidate Fast-Track Sign In</h3>
                       <p className="candidate-login-desc">
-                        Sign in to view your internship applications, review statuses, and download official event passes.
+                        ⚡ <strong>Sign in in 30 seconds</strong> to track applications live, unlock direct HR priority review, and access verified digital credentials.
                       </p>
 
                       {loginError && (
@@ -656,7 +689,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                         <button type="submit" disabled={loginLoading} className="candidate-auth-btn">
                           {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
-                          <span>{loginLoading ? 'Signing in…' : 'Sign In to Candidate Portal'}</span>
+                          <span>{loginLoading ? 'Signing in…' : (pendingApply ? 'Sign In & Continue Application →' : 'Sign In to Candidate Portal')}</span>
                         </button>
                       </form>
 
@@ -679,7 +712,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       </div>
                       <h3 className="candidate-login-title">Create Candidate Account</h3>
                       <p className="candidate-login-desc">
-                        Create your account to submit and track internships, view passes, and earn verified certificates.
+                        🚀 <strong>Join in 30 seconds</strong> — unlock direct hiring pipelines, real-time application tracking, and verifiable industry credentials.
                       </p>
 
                       {registerError && (
@@ -913,7 +946,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                         <button type="submit" disabled={registerLoading} className="candidate-auth-btn">
                           {registerLoading ? <RefreshCw size={16} className="spin-anim" /> : <UserPlus size={16} />}
-                          <span>{registerLoading ? 'Creating Account…' : 'Create Candidate Account'}</span>
+                          <span>{registerLoading ? 'Creating Account…' : (pendingApply ? 'Create Account & Continue Application →' : 'Create Candidate Account')}</span>
                         </button>
                       </form>
 
