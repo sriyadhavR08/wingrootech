@@ -23,8 +23,7 @@ import {
   User,
   KeyRound,
   UserPlus,
-  Briefcase,
-  Zap
+  Briefcase
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -572,25 +571,32 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   </div>
 
                   {pendingApply && (
-                    <div className="candidate-quick-hook">
-                      <div className="quick-hook-badge">
-                        <Zap size={13} />
-                        <span>Fast-Track Apply</span>
+                    <div className="candidate-pending-banner">
+                      <div className="pending-banner-icon">
+                        <Lock size={18} />
                       </div>
-                      <p className="quick-hook-text">
-                        ⚡ Sign in in <strong>30 seconds</strong> to get <strong>Direct HR Priority & Live Tracking</strong> for <em>{pendingApply.title || 'your application'}</em>.
-                      </p>
+                      <div className="pending-banner-body">
+                        <div className="pending-banner-heading">Login Required to Apply</div>
+                        <div className="pending-banner-text">
+                          {pendingApply.title 
+                            ? `You are applying for ${pendingApply.title}. Sign in or create an account to proceed.` 
+                            : 'Sign in or create an account to proceed with your application.'}
+                          <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px', fontSize: '0.82rem' }}>
+                            ✓ Your application form will open automatically once signed in.
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {authMode === 'login' ? (
                     <>
                       <div className="candidate-login-icon-wrap">
-                        <LogIn size={24} />
+                        <LogIn size={26} />
                       </div>
                       <h3 className="candidate-login-title">Candidate Sign In</h3>
                       <p className="candidate-login-desc">
-                        ⚡ <strong>Sign in in 30 seconds</strong> to track applications live & get direct HR updates.
+                        Sign in to view your internship applications, review statuses, and download official event passes.
                       </p>
 
                       {loginError && (
@@ -650,7 +656,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                         <button type="submit" disabled={loginLoading} className="candidate-auth-btn">
                           {loginLoading ? <RefreshCw size={16} className="spin-anim" /> : <LogIn size={16} />}
-                          <span>{loginLoading ? 'Signing in…' : (pendingApply ? 'Sign In & Continue Application →' : 'Sign In to Candidate Portal')}</span>
+                          <span>{loginLoading ? 'Signing in…' : 'Sign In to Candidate Portal'}</span>
                         </button>
                       </form>
 
@@ -673,7 +679,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       </div>
                       <h3 className="candidate-login-title">Create Candidate Account</h3>
                       <p className="candidate-login-desc">
-                        🚀 <strong>Join in 30 seconds</strong> to apply, get direct HR review & track status live.
+                        Create your account to submit and track internships, view passes, and earn verified certificates.
                       </p>
 
                       {registerError && (
@@ -907,7 +913,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
 
                         <button type="submit" disabled={registerLoading} className="candidate-auth-btn">
                           {registerLoading ? <RefreshCw size={16} className="spin-anim" /> : <UserPlus size={16} />}
-                          <span>{registerLoading ? 'Creating Account…' : (pendingApply ? 'Create Account & Continue Application →' : 'Create Candidate Account')}</span>
+                          <span>{registerLoading ? 'Creating Account…' : 'Create Candidate Account'}</span>
                         </button>
                       </form>
 

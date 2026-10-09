@@ -1030,60 +1030,56 @@
   color: #0f172a;
 }
 
-/* Candidate Quick Apply Hook (Compact & Attractive) */
-.candidate-quick-hook {
+/* Candidate Pending Apply Notice Banner */
+.candidate-pending-banner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(249, 115, 22, 0.09) 100%);
-  border: 1.5px solid rgba(2, 132, 199, 0.32);
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(241, 125, 71, 0.09) 100%);
+  border: 1.5px solid rgba(2, 132, 199, 0.35);
   border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 18px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
   text-align: left;
-  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.06);
-  animation: hookGlow 3s infinite ease-in-out;
+  animation: pendingPulse 2.5s infinite ease-in-out;
 }
 
-@keyframes hookGlow {
-  0%, 100% { border-color: rgba(2, 132, 199, 0.32); }
-  50% { border-color: rgba(249, 115, 22, 0.5); }
+@keyframes pendingPulse {
+  0%, 100% { border-color: rgba(2, 132, 199, 0.35); box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06); }
+  50% { border-color: rgba(241, 125, 71, 0.5); box-shadow: 0 4px 14px rgba(241, 125, 71, 0.12); }
 }
 
-.quick-hook-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.pending-banner-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
 }
 
-.quick-hook-text {
-  margin: 0;
-  font-size: 0.84rem;
-  color: #1e293b;
-  line-height: 1.42;
+.pending-banner-body {
   flex: 1;
 }
 
-.quick-hook-text strong {
-  color: #0284c7;
+.pending-banner-heading {
+  font-size: 0.92rem;
   font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.quick-hook-text em {
-  font-style: normal;
-  color: #f97316;
-  font-weight: 700;
+.pending-banner-text {
+  font-size: 0.83rem;
+  color: #475569;
+  line-height: 1.45;
 }
 
 /* Verification Workspace */
