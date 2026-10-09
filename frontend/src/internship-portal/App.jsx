@@ -35,7 +35,7 @@ function Protected({ role }) {
   const effectiveUser = getEffectiveUser(user);
 
   if (loading && !effectiveUser) return <Loading />;
-  if (!effectiveUser) return <Navigate to={`${prefix}/login`} replace />;
+  if (!effectiveUser) return <Navigate to="/internship" replace />;
 
   const normUserRole = (effectiveUser.role || "").toUpperCase();
   const targetRole = (role || "").toUpperCase();
@@ -93,7 +93,7 @@ export default function InternshipApp() {
         <Route element={<Shell />}>
           <Route index element={<Home />} />
           <Route element={<PublicOnly />}>
-            <Route path="login" element={<Navigate to={`${prefix}/register`} replace />} />
+            <Route path="login" element={<Navigate to="/internship" replace />} />
             <Route path="admin-login" element={<Login initialRole="admin" />} />
             <Route path="register" element={<Register />} />
           </Route>

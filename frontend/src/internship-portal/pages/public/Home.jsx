@@ -1,7 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/Auth";
+
 export default function Home() {
+  const { user } = useAuth();
   const location = useLocation();
   const prefix = location.pathname.startsWith('/internship') ? '/internship' : '';
+  const admin = user?.role === 'ADMIN';
+  const targetDashboard = admin ? `${prefix}/admin/dashboard` : `${prefix}/student/dashboard`;
 
   return (
     <>
@@ -18,10 +23,17 @@ export default function Home() {
             Portal for college interns, school interns, and graduate candidates. Complete your internship milestones, access official verified credentials, and authenticate certificates instantly.
           </p>
           <div className="d-flex flex-wrap gap-3 mt-4">
-            <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
-              Register now{" "}
-              <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
-            </Link>
+            {user ? (
+              <Link to={targetDashboard} className="btn btn-primary btn-lg shadow-sm">
+                Open {admin ? 'Admin' : 'Candidate'} Dashboard{" "}
+                <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
+              </Link>
+            ) : (
+              <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
+                Register now{" "}
+                <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
+              </Link>
+            )}
             <Link to={`${prefix}/verify`} className="btn btn-outline-primary btn-lg">
               Verify certificate
             </Link>
