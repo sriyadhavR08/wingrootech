@@ -5,11 +5,50 @@ import './Navbar.css';
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'About', href: '#about' },
-  { label: 'Services', href: '#services' },
+  { label: 'Services', href: '#services', hasDropdown: true },
   { label: 'Events', href: '#events' },
   { label: 'FAQs', href: '#faq-knowledge-hub' },
   { label: 'Careers', href: '#careers' },
   { label: 'Contact', href: '#contact' }
+];
+
+const SERVICES_SECTIONS = [
+  {
+    title: 'DEVELOPMENT',
+    target: '#services',
+    items: [
+      { label: 'Web Application Development', target: '#services' },
+      { label: 'Mobile App Development (iOS & Android)', target: '#services' },
+      { label: 'Custom Software Solutions', target: '#services' },
+      { label: 'AI & Automation Systems', target: '#services' },
+      { label: 'Cloud Infrastructure & DevOps', target: '#services' },
+      { label: 'UI / UX Product Design', target: '#services' },
+    ]
+  },
+  {
+    title: 'OUR PORTFOLIO',
+    target: '#portfolio',
+    items: [
+      { label: 'Live Client Deliverables', target: '#portfolio' },
+      { label: 'Enterprise Web Applications', target: '#portfolio' },
+      { label: 'Mobile Solutions Showcase', target: '#portfolio' },
+      { label: 'Cloud & AI Deployments', target: '#portfolio' },
+      { label: 'Startup MVP Products', target: '#portfolio' },
+      { label: 'Client Case Studies & Results', target: '#portfolio' },
+    ]
+  },
+  {
+    title: 'INTERNSHIP',
+    target: '#internship',
+    items: [
+      { label: 'College Internship Programs', target: '#internship' },
+      { label: 'Virtual & Remote Tech Tracks', target: '#internship' },
+      { label: 'Live Project Experience', target: '#internship' },
+      { label: 'Verified ISO & MSME Credentials', target: '#internship' },
+      { label: 'Certificate Verification Portal', href: '/internship/verify' },
+      { label: 'Apply for Internship Program', action: 'apply' },
+    ]
+  }
 ];
 
 export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }) {
@@ -20,6 +59,11 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
   const [userRole, setUserRole] = useState(null); // 'student' | 'admin' | null
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileRef = useRef(null);
+
+  // Services Mega Menu state
+  const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
+  const [mobileServicesExpanded, setMobileServicesExpanded] = useState(false);
+  const servicesTimeoutRef = useRef(null);
 
   const syncUser = () => {
     try {
@@ -79,6 +123,65 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
     }
     return () => document.removeEventListener('click', handleOutsideClick);
   }, [profileDropdownOpen]);
+
+  // Close services mega dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.nav-item-dropdown-wrap') && !e.target.closest('.navbar-mega-menu')) {
+        setServicesMenuOpen(false);
+      }
+    };
+    if (servicesMenuOpen) {
+      document.addEventListener('click', handleOutsideClick);
+    }
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [servicesMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (servicesTimeoutRef.current) {
+        clearTimeout(servicesTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleServicesMouseEnter = () => {
+    if (servicesTimeoutRef.current) {
+      clearTimeout(servicesTimeoutRef.current);
+    }
+    setServicesMenuOpen(true);
+  };
+
+  const handleServicesMouseLeave = () => {
+    servicesTimeoutRef.current = setTimeout(() => {
+      setServicesMenuOpen(false);
+    }, 220);
+  };
+
+  const handleMegaItemClick = (e, item) => {
+    setServicesMenuOpen(false);
+    setMobileMenuOpen(false);
+    if (item.action === 'apply') {
+      e.preventDefault();
+      if (typeof onOpenStudentPortal === 'function') {
+        onOpenStudentPortal();
+      } else {
+        const el = document.querySelector('#internship');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+    if (item.href && item.href.startsWith('/')) {
+      return;
+    }
+    if (item.target) {
+      e.preventDefault();
+      const element = document.querySelector(item.target);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -156,6 +259,33 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
           {NAV_LINKS.map((link) => {
             const id = link.href.substring(1);
             const isActive = activeSection === id;
+            const isServices = link.label === 'Services';
+
+            if (isServices) {
+              return (
+                <div
+                  key={link.href}
+                  className="nav-item-dropdown-wrap"
+                  onMouseEnter={handleServicesMouseEnter}
+                  onMouseLeave={handleServicesMouseLeave}
+                >
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleLinkClick(e, link.href)}
+                    className={`nav-link-item nav-link-services ${isActive ? 'nav-link-item-active' : ''} ${servicesMenuOpen ? 'menu-expanded' : ''}`}
+                    aria-expanded={servicesMenuOpen}
+                  >
+                    <span>{link.label}</span>
+                    <ChevronDown
+                      size={14}
+                      className={`services-chevron-arrow ${servicesMenuOpen ? 'rotated' : ''}`}
+                    />
+                    {isActive && <span className="nav-indicator" />}
+                  </a>
+                </div>
+              );
+            }
+
             return (
               <a
                 key={link.href}
@@ -313,6 +443,41 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
         </div>
       </div>
 
+      {/* Desktop Services Mega Dropdown Menu (3 Dedicated Sections: Development, Our Portfolio, Internship) */}
+      {servicesMenuOpen && (
+        <div 
+          className="navbar-mega-menu animate-fade-in"
+          onMouseEnter={handleServicesMouseEnter}
+          onMouseLeave={handleServicesMouseLeave}
+        >
+          <div className="container mega-menu-container">
+            <div className="mega-menu-grid">
+              {SERVICES_SECTIONS.map((sec, idx) => (
+                <div key={idx} className="mega-menu-col">
+                  <div className="mega-menu-col-header">
+                    <span className="mega-menu-col-title">{sec.title}</span>
+                  </div>
+                  <ul className="mega-menu-list">
+                    {sec.items.map((item, itemIdx) => (
+                      <li key={itemIdx} className="mega-menu-item">
+                        <a
+                          href={item.href || item.target}
+                          onClick={(e) => handleMegaItemClick(e, item)}
+                          className="mega-menu-link"
+                        >
+                          <span className="mega-menu-bullet">&rsaquo;</span>
+                          <span className="mega-menu-text">{item.label}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Drawer */}
       <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'mobile-nav-open' : ''}`}>
         <div className="mobile-nav-inner">
@@ -380,6 +545,46 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
           {NAV_LINKS.map((link) => {
             const id = link.href.substring(1);
             const isActive = activeSection === id;
+            const isServices = link.label === 'Services';
+
+            if (isServices) {
+              return (
+                <div key={link.href} className="mobile-services-accordion">
+                  <div
+                    className={`mobile-nav-link ${isActive ? 'mobile-nav-link-active' : ''}`}
+                    onClick={() => setMobileServicesExpanded(!mobileServicesExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                  >
+                    <span>{link.label}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`mobile-services-chevron ${mobileServicesExpanded ? 'rotated' : ''}`}
+                    />
+                  </div>
+                  {mobileServicesExpanded && (
+                    <div className="mobile-mega-sublist">
+                      {SERVICES_SECTIONS.map((sec, idx) => (
+                        <div key={idx} className="mobile-mega-sec">
+                          <div className="mobile-mega-sec-title">{sec.title}</div>
+                          {sec.items.map((item, itemIdx) => (
+                            <a
+                              key={itemIdx}
+                              href={item.href || item.target}
+                              onClick={(e) => handleMegaItemClick(e, item)}
+                              className="mobile-mega-item"
+                            >
+                              <span className="mobile-mega-bullet">&rsaquo;</span>
+                              <span>{item.label}</span>
+                            </a>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <a
                 key={link.href}
