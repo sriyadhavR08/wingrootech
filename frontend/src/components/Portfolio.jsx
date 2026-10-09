@@ -50,9 +50,9 @@ export default function Portfolio() {
                   : (p.demoUrl || p.project_url || '');
 
             const image = isZ
-              ? (p.image || '/zentime-preview.png')
+              ? '/zentime-preview.png'
               : isI 
-                ? (p.image || '/iiepulse-preview.png') 
+                ? '/iiepulse-preview.png' 
                 : p.image;
 
             const tag = isCandidateWork 
@@ -284,9 +284,13 @@ export default function Portfolio() {
                             style={{ display: 'block', cursor: 'pointer' }}
                           >
                             <img 
-                              src={project.image || (isZentime ? '/zentime-preview.png' : '')} 
+                              src={project.image || (isZentime ? '/zentime-preview.png' : isIIE ? '/iiepulse-preview.png' : '')} 
                               alt={project.title} 
                               className={`project-media-img ${isZentime ? 'img-contain' : ''}`} 
+                              onError={(e) => {
+                                if (isZentime) e.currentTarget.src = '/zentime-preview.png';
+                                else if (isIIE) e.currentTarget.src = '/iiepulse-preview.png';
+                              }}
                             />
                           </a>
                         )}
