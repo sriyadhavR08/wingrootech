@@ -26,6 +26,8 @@ class User(db.Model):
     is_staff = db.Column(db.Boolean, default=False)
     is_superuser = db.Column(db.Boolean, default=False)
     last_login = db.Column(db.DateTime, nullable=True)
+    active_session_id = db.Column(db.String(100), nullable=True, default=None)
+    active_session_time = db.Column(db.DateTime, nullable=True, default=None)
     date_joined = db.Column(db.DateTime, default=utcnow)
     created_at = db.Column(db.DateTime, default=utcnow)
     updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)

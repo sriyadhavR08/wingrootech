@@ -69,6 +69,13 @@ def create_app():
             print(f"[Database warning] init_mysql_tables_if_needed: {e}")
         try:
             db.create_all()
+            with db.engine.connect() as conn:
+                for col_def in ["active_session_id VARCHAR(100) DEFAULT NULL", "active_session_time DATETIME DEFAULT NULL"]:
+                    try:
+                        conn.execute(db.text(f"ALTER TABLE accounts_user ADD COLUMN {col_def}"))
+                        conn.commit()
+                    except Exception:
+                        pass
             # Ensure default administrator exists
             admin_user = User.query.filter_by(role='ADMIN').first()
             if not admin_user:

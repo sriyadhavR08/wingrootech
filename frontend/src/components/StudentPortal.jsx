@@ -292,6 +292,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   };
 
   const handleSignOut = () => {
+    try {
+      if (currentUser?.email) {
+        fetch(`${API_BASE}/api/auth/logout/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentUser.email })
+        }).catch(() => {});
+      }
+    } catch {}
     sessionStorage.removeItem('wingroo_student_user');
     localStorage.removeItem('wingroo_student_user');
     sessionStorage.removeItem('tokens');

@@ -264,6 +264,35 @@ def login():
     if not user.is_active:
         return jsonify({"detail": "This account is inactive."}), 401
 
+    # STRICT SINGLE LOGIN RESTRICTION (Only 1 member can be logged in at a time)
+    if user.role != "ADMIN" and getattr(user, "active_session_id", None):
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        session_time = getattr(user, "active_session_time", None)
+        if session_time:
+            if session_time.tzinfo is None:
+                session_time = session_time.replace(tzinfo=datetime.timezone.utc)
+            time_diff = (now - session_time).total_seconds()
+        else:
+            time_diff = 0
+
+        # If previous session is active within last 4 hours, strictly block second login!
+        if time_diff < 14400:
+            return jsonify({
+                "detail": "Active session detected! This candidate account is already logged in on another device or browser. Only 1 member is permitted to be logged in at a time. Please sign out from the active session first before logging in here.",
+                "code": "CONCURRENT_LOGIN_BLOCKED"
+            }), 403
+
+    # Generate and record new active session
+    import secrets, datetime
+    try:
+        user.active_session_id = secrets.token_hex(16)
+        user.active_session_time = datetime.datetime.now(datetime.timezone.utc)
+        user.last_login = datetime.datetime.now(datetime.timezone.utc)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+
     if user.role == "STUDENT":
         ensure_student_records(user)
 
@@ -312,7 +341,55 @@ def me():
 
 @auth_bp.route("/api/auth/logout/", methods=["POST"])
 def logout():
-    return jsonify({"message": "Signed out."}), 200
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "").strip().lower()
+
+    user = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        import jwt
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
+            user = User.query.get(payload.get("user_id"))
+        except Exception:
+            pass
+
+    if not user and email:
+        user = User.query.filter(db.func.lower(User.email) == email).first()
+
+    if user:
+        try:
+            user.active_session_id = None
+            user.active_session_time = None
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    return jsonify({"success": True, "message": "Successfully signed out."}), 200
+
+
+@auth_bp.route("/api/auth/reset-session/", methods=["POST"])
+def reset_session():
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"detail": "Please provide your email and password to clear the active session."}), 400
+
+    user = User.query.filter(db.func.lower(User.email) == email).first()
+    if not user or not user.check_password(password):
+        return jsonify({"detail": "Invalid credentials. Unable to reset session."}), 401
+
+    try:
+        user.active_session_id = None
+        user.active_session_time = None
+        db.session.commit()
+        return jsonify({"success": True, "message": "Active session cleared successfully! You can now sign in."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"detail": f"Failed to reset session: {str(e)}"}), 500
 
 
 @auth_bp.route("/api/auth/token/refresh/", methods=["POST"])
