@@ -203,28 +203,17 @@ export default function Services() {
           </p>
         </div>
 
-        {/* Clubbed Navigation Hub: Development, SEO & GEO, Our Portfolio & Internship */}
+        {/* Clubbed Navigation Hub: Development, Our Portfolio & Internship */}
         <div className="services-hub-switcher">
           <button 
             type="button" 
-            className={`hub-nav-btn ${activeServiceIndex !== 5 ? 'active' : ''}`}
-            onClick={() => scrollToServiceIndex(0)}
+            className="hub-nav-btn active"
+            onClick={() => scrollToSection('#services')}
             title="Software, Web & Mobile Development Services"
           >
             <Code2 size={16} />
             <span>Development</span>
-            {activeServiceIndex !== 5 && <span className="hub-active-dot" />}
-          </button>
-
-          <button 
-            type="button" 
-            className={`hub-nav-btn ${activeServiceIndex === 5 ? 'active' : ''}`}
-            onClick={() => scrollToServiceIndex(5)}
-            title="Search Engine & Generative Engine Optimization"
-          >
-            <Sparkles size={16} />
-            <span>SEO & GEO</span>
-            {activeServiceIndex === 5 && <span className="hub-active-dot" />}
+            <span className="hub-active-dot" />
           </button>
 
           <button 
