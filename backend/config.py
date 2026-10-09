@@ -17,11 +17,12 @@ class Config:
     MYSQL_DB = os.getenv("MYSQL_DB", "wingrootech_db")
     
     # SQLAlchemy database connection
-    # If MYSQL_PASSWORD is set or DB_USER configured, use MySQL; otherwise local SQLite fallback
-    if MYSQL_PASSWORD:
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
-    elif os.getenv("DATABASE_URL"):
+    # Connect to MySQL wingrootech_db (supporting empty password on XAMPP)
+    if os.getenv("DATABASE_URL"):
         SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    elif MYSQL_USER and MYSQL_DB:
+        pw_part = f":{MYSQL_PASSWORD}" if MYSQL_PASSWORD else ""
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}{pw_part}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
     else:
         instance_dir = BASE_DIR / "instance"
         instance_dir.mkdir(parents=True, exist_ok=True)
