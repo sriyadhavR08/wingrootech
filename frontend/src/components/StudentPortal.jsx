@@ -575,10 +575,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                     <div className="candidate-quick-hook">
                       <div className="quick-hook-badge">
                         <Zap size={13} />
-                        <span>One-Click Apply</span>
+                        <span>Fast-Track Apply</span>
                       </div>
                       <p className="quick-hook-text">
-                        🎯 <strong>Sign in</strong> to submit your profile directly to <strong>technical leads</strong> for <em>{pendingApply.title || 'your application'}</em>.
+                        ⚡ Sign in in <strong>30 seconds</strong> to get <strong>Direct HR Priority & Live Tracking</strong> for <em>{pendingApply.title || 'your application'}</em>.
                       </p>
                     </div>
                   )}
@@ -590,7 +590,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       </div>
                       <h3 className="candidate-login-title">Candidate Sign In</h3>
                       <p className="candidate-login-desc">
-                        🎯 Sign in to submit your profile directly to technical leads & track status live.
+                        ⚡ <strong>Sign in in 30 seconds</strong> to track applications live & get direct HR updates.
                       </p>
 
                       {loginError && (
@@ -673,7 +673,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       </div>
                       <h3 className="candidate-login-title">Create Candidate Account</h3>
                       <p className="candidate-login-desc">
-                        🎯 Create a free account in 30s to submit your profile directly to technical leads.
+                        🚀 <strong>Join in 30 seconds</strong> to apply, get direct HR review & track status live.
                       </p>
 
                       {registerError && (
