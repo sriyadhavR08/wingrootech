@@ -1,6 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
+
 const baseURL =
-  import.meta.env.VITE_API_BASE_URL || "/api";
+  import.meta.env.VITE_API_BASE_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : "/api");
 export const api = axios.create({ baseURL, timeout: 20000 });
 let refreshRequest = null;
 export function clearSession() {
