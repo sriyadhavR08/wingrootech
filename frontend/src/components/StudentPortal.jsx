@@ -578,10 +578,10 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       <div className="pending-banner-body">
                         <div className="pending-banner-heading">Login Required to Apply</div>
                         <div className="pending-banner-text">
-                          {pendingApply.title 
-                            ? `You are applying for ${pendingApply.title}. Sign in or create an account to proceed.` 
-                            : 'Sign in or create an account to proceed with your application.'}
-                          <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px', fontSize: '0.82rem' }}>
+                          <div style={{ color: '#1e293b', fontWeight: 600, fontSize: '0.85rem' }}>
+                            ⚡ Sign in in 30 seconds to get direct HR priority review & live tracking for {pendingApply.title || 'your application'}!
+                          </div>
+                          <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px', fontSize: '0.81rem' }}>
                             ✓ Your application form will open automatically once signed in.
                           </div>
                         </div>
