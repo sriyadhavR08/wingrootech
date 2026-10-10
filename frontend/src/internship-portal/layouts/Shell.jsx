@@ -107,95 +107,95 @@ export default function Shell() {
             </div>
           )}
         </nav>
-
-        {/* Mobile Navigation Drawer / Dropdown */}
-        <nav
-          className={`mobile-nav-drawer ${open ? "is-open" : ""}`}
-          aria-label="Mobile navigation"
-        >
-          <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
-            <span className="small fw-bold text-uppercase text-secondary">Menu</span>
-            <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={() => setOpen(false)}
-            />
-          </div>
-
-          <div className="mobile-nav-content p-3">
-            <a href="/" className="btn btn-outline-secondary btn-sm w-100 mb-3 text-start">
-              <i className="bi bi-arrow-left me-2"></i> Return to Main Website
-            </a>
-            {!user ? (
-              <div className="d-flex flex-column gap-2">
-                <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
-                  <i className="bi bi-house me-2"></i> Home
-                </NavLink>
-                <NavLink to={`${prefix}/verify`} className="mobile-nav-link" onClick={() => setOpen(false)}>
-                  <i className="bi bi-qr-code-scan me-2"></i> Verify Certificate
-                </NavLink>
-              </div>
-            ) : (
-              <div className="d-flex flex-column gap-2">
-                <div className="p-2 mb-2 bg-light rounded border">
-                  <div className="fw-bold text-dark">{user.full_name}</div>
-                  <small className="text-muted d-block">{user.email}</small>
-                  <span className="badge text-bg-primary mt-1">{user.role}</span>
-                </div>
-
-                <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
-                  <i className="bi bi-house me-2"></i> Home
-                </NavLink>
-
-                {admin ? (
-                  <>
-                    <div className="eyebrow my-2 px-1">WORKSPACE</div>
-                    {adminLinks.map(([to, icon, label]) => (
-                      <NavLink
-                        key={to}
-                        to={to}
-                        className="mobile-nav-link"
-                        onClick={() => setOpen(false)}
-                      >
-                        <i className={`bi bi-${icon} me-2`}></i> {label}
-                      </NavLink>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <NavLink
-                      to={`${prefix}/student/dashboard`}
-                      className="mobile-nav-link"
-                      onClick={() => setOpen(false)}
-                    >
-                      <i className="bi bi-grid me-2"></i> Candidate Dashboard
-                    </NavLink>
-                    <NavLink
-                      to={`${prefix}/verify`}
-                      className="mobile-nav-link"
-                      onClick={() => setOpen(false)}
-                    >
-                      <i className="bi bi-qr-code-scan me-2"></i> Verify Certificate
-                    </NavLink>
-                  </>
-                )}
-
-                <hr className="my-2" />
-                <button
-                  className="btn btn-outline-danger w-100 mt-1 d-flex align-items-center justify-content-center gap-2"
-                  onClick={() => {
-                    setOpen(false);
-                    leave();
-                  }}
-                >
-                  <i className="bi bi-box-arrow-right"></i> Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </nav>
       </header>
+
+      {/* Mobile Navigation Drawer / Dropdown */}
+      <nav
+        className={`portal-mobile-drawer ${open ? "is-open" : ""}`}
+        aria-label="Mobile navigation"
+      >
+        <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+          <span className="small fw-bold text-uppercase text-secondary">Menu</span>
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+          />
+        </div>
+
+        <div className="mobile-nav-content p-3">
+          <a href="/" className="btn btn-outline-secondary btn-sm w-100 mb-3 text-start">
+            <i className="bi bi-arrow-left me-2"></i> Return to Main Website
+          </a>
+          {!user ? (
+            <div className="d-flex flex-column gap-2">
+              <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
+                <i className="bi bi-house me-2"></i> Home
+              </NavLink>
+              <NavLink to={`${prefix}/verify`} className="mobile-nav-link" onClick={() => setOpen(false)}>
+                <i className="bi bi-qr-code-scan me-2"></i> Verify Certificate
+              </NavLink>
+            </div>
+          ) : (
+            <div className="d-flex flex-column gap-2">
+              <div className="p-2 mb-2 bg-light rounded border">
+                <div className="fw-bold text-dark">{user.full_name}</div>
+                <small className="text-muted d-block">{user.email}</small>
+                <span className="badge text-bg-primary mt-1">{user.role}</span>
+              </div>
+
+              <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
+                <i className="bi bi-house me-2"></i> Home
+              </NavLink>
+
+              {admin ? (
+                <>
+                  <div className="eyebrow my-2 px-1">WORKSPACE</div>
+                  {adminLinks.map(([to, icon, label]) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      className="mobile-nav-link"
+                      onClick={() => setOpen(false)}
+                    >
+                      <i className={`bi bi-${icon} me-2`}></i> {label}
+                    </NavLink>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <NavLink
+                    to={`${prefix}/student/dashboard`}
+                    className="mobile-nav-link"
+                    onClick={() => setOpen(false)}
+                  >
+                    <i className="bi bi-grid me-2"></i> Candidate Dashboard
+                  </NavLink>
+                  <NavLink
+                    to={`${prefix}/verify`}
+                    className="mobile-nav-link"
+                    onClick={() => setOpen(false)}
+                  >
+                    <i className="bi bi-qr-code-scan me-2"></i> Verify Certificate
+                  </NavLink>
+                </>
+              )}
+
+              <hr className="my-2" />
+              <button
+                className="btn btn-outline-danger w-100 mt-1 d-flex align-items-center justify-content-center gap-2"
+                onClick={() => {
+                  setOpen(false);
+                  leave();
+                }}
+              >
+                <i className="bi bi-box-arrow-right"></i> Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </nav>
 
       {/* Desktop Admin Sidebar (Visible only on desktop screens) */}
       {admin && (

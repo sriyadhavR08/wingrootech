@@ -60,7 +60,7 @@ a {
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
   position: sticky;
   top: 0;
-  z-index: 1020;
+  z-index: 1050;
 }
 .shell-brand,
 .brand {
@@ -236,8 +236,8 @@ a {
   backdrop-filter: blur(2px);
   z-index: 1040;
 }
-.mobile-nav-drawer {
-  display: none;
+.portal-mobile-drawer {
+  display: none !important;
 }
 
 .page-main {
@@ -660,23 +660,25 @@ a:focus-visible {
     border: 1px solid #dce2ed;
     border-radius: 8px;
   }
-  .mobile-nav-drawer {
-    display: block;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 300px;
-    max-width: 85vw;
-    background: #ffffff;
-    z-index: 1050;
-    box-shadow: -6px 0 28px rgba(20, 35, 65, 0.16);
-    transform: translateX(100%);
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow-y: auto;
+  .portal-mobile-drawer {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 300px !important;
+    max-width: 85vw !important;
+    background: #ffffff !important;
+    z-index: 1060 !important;
+    box-shadow: -6px 0 28px rgba(20, 35, 65, 0.16) !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow-y: auto !important;
+    max-height: none !important;
+    opacity: 1 !important;
   }
-  .mobile-nav-drawer.is-open {
-    transform: translateX(0);
+  .portal-mobile-drawer.is-open {
+    transform: translateX(0) !important;
   }
   .mobile-nav-link {
     display: flex;
