@@ -37,7 +37,7 @@ class User(db.Model):
     internship = db.relationship("Internship", backref="student", uselist=False, cascade="all, delete-orphan")
 
     def set_password(self, raw_password):
-        self.password = generate_password_hash(raw_password)
+        self.password = generate_password_hash(raw_password, method="pbkdf2:sha256")
 
     def check_password(self, raw_password):
         # Support both Werkzeug hashes and Django PBKDF2 hashes
