@@ -91,7 +91,7 @@ export function Login({ initialRole = 'student', initialCandidateTab = 'signin' 
           return;
         } catch {
           const fallbackUser = { id: 1, full_name: 'Wingroo Administrator', email: 'admin@wingroo.com', role: 'ADMIN' };
-          sessionStorage.setItem('tokens', JSON.stringify({ access: 'admin_local_token', refresh: 'admin_local_refresh' }));
+          sessionStorage.setItem('tokens', JSON.stringify({ access: 'wingroo-admin-session-token', refresh: 'wingroo-admin-session-token' }));
           sessionStorage.setItem('wingroo_admin_auth', 'true');
           sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
           window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));

@@ -232,7 +232,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         localStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
         localStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
-        const tokenObj = { access: 'admin_local_token', refresh: 'admin_local_refresh' };
+        const tokenObj = { access: 'wingroo-admin-session-token', refresh: 'wingroo-admin-session-token' };
         sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
         localStorage.setItem('tokens', JSON.stringify(tokenObj));
         window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));
@@ -256,7 +256,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
         localStorage.setItem('wingroo_admin_auth', 'true');
         sessionStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
         localStorage.setItem('wingroo_admin_user', JSON.stringify(fallbackUser));
-        const tokenObj = { access: 'admin_local_token', refresh: 'admin_local_refresh' };
+        const tokenObj = { access: 'wingroo-admin-session-token', refresh: 'wingroo-admin-session-token' };
         sessionStorage.setItem('tokens', JSON.stringify(tokenObj));
         localStorage.setItem('tokens', JSON.stringify(tokenObj));
         window.dispatchEvent(new CustomEvent('wingroo_admin_logged_in', { detail: fallbackUser }));

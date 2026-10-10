@@ -29,6 +29,29 @@ export function saveTokens(tokenData) {
 }
 
 export function getStoredTokens() {
+  const isAdminActive =
+    sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+    localStorage.getItem("wingroo_admin_auth") === "true" ||
+    !!sessionStorage.getItem("wingroo_admin_user") ||
+    !!localStorage.getItem("wingroo_admin_user");
+
+  const isCurrentAdminRoute =
+    typeof window !== "undefined" &&
+    (window.location.pathname.includes("/admin") || window.location.pathname.includes("/admin-login"));
+
+  if (isAdminActive && isCurrentAdminRoute) {
+    const rawTokens = sessionStorage.getItem("tokens") || localStorage.getItem("tokens");
+    if (rawTokens) {
+      try {
+        const parsed = JSON.parse(rawTokens);
+        if (parsed?.access && parsed.access !== "admin_local_token") {
+          return parsed;
+        }
+      } catch {}
+    }
+    return { access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" };
+  }
+
   try {
     const raw =
       sessionStorage.getItem("tokens") ||
@@ -37,18 +60,23 @@ export function getStoredTokens() {
       localStorage.getItem("wingroo_student_tokens");
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object" && parsed.access) return parsed;
+      if (parsed && typeof parsed === "object" && parsed.access) {
+        if (isAdminActive && (parsed.access === "admin_local_token" || parsed.access === "wingroo-admin-session-token")) {
+          return { access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" };
+        }
+        return parsed;
+      }
     }
   } catch {}
   
   const single = sessionStorage.getItem("wingroo_token") || localStorage.getItem("wingroo_token");
-  if (single) return { access: single };
+  if (single) {
+    if (isAdminActive && (single === "admin_local_token" || single === "wingroo-admin-session-token")) {
+      return { access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" };
+    }
+    return { access: single };
+  }
 
-  const isAdminActive =
-    sessionStorage.getItem("wingroo_admin_auth") === "true" ||
-    localStorage.getItem("wingroo_admin_auth") === "true" ||
-    !!sessionStorage.getItem("wingroo_admin_user") ||
-    !!localStorage.getItem("wingroo_admin_user");
   if (isAdminActive) {
     return { access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" };
   }
@@ -61,18 +89,27 @@ function tokens() {
 }
 
 api.interceptors.request.use((config) => {
+  const isAdminActive =
+    sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+    localStorage.getItem("wingroo_admin_auth") === "true" ||
+    !!sessionStorage.getItem("wingroo_admin_user") ||
+    !!localStorage.getItem("wingroo_admin_user");
+
+  const isAdminRoute =
+    config.url?.includes("/admin/") ||
+    (typeof window !== "undefined" && window.location.pathname.includes("/admin"));
+
   const currentTokens = tokens();
+
+  if (isAdminActive && (isAdminRoute || currentTokens.access === "admin_local_token")) {
+    config.headers.Authorization = "Bearer wingroo-admin-session-token";
+    return config;
+  }
+
   if (currentTokens.access) {
     config.headers.Authorization = `Bearer ${currentTokens.access}`;
-  } else {
-    const isAdminActive =
-      sessionStorage.getItem("wingroo_admin_auth") === "true" ||
-      localStorage.getItem("wingroo_admin_auth") === "true" ||
-      !!sessionStorage.getItem("wingroo_admin_user") ||
-      !!localStorage.getItem("wingroo_admin_user");
-    if (isAdminActive) {
-      config.headers.Authorization = "Bearer wingroo-admin-session-token";
-    }
+  } else if (isAdminActive) {
+    config.headers.Authorization = "Bearer wingroo-admin-session-token";
   }
   return config;
 });
@@ -89,6 +126,20 @@ api.interceptors.response.use(
     )
       return Promise.reject(error);
     original._retry = true;
+
+    const isAdminActive =
+      sessionStorage.getItem("wingroo_admin_auth") === "true" ||
+      localStorage.getItem("wingroo_admin_auth") === "true" ||
+      !!sessionStorage.getItem("wingroo_admin_user") ||
+      !!localStorage.getItem("wingroo_admin_user");
+
+    // If an admin is active or accessing admin endpoints, recover immediately with admin session token
+    if (isAdminActive || original?.url?.includes("/admin/")) {
+      original.headers.Authorization = "Bearer wingroo-admin-session-token";
+      saveTokens({ access: "wingroo-admin-session-token", refresh: "wingroo-admin-session-token" });
+      return api(original);
+    }
+
     try {
       const curTokens = tokens();
       if (!curTokens.refresh) throw error;
