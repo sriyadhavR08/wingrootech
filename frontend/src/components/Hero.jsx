@@ -62,7 +62,7 @@ export default function Hero() {
               </button>
 
               <a 
-                href="https://wa.me/918124779111?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20project%20consultation." 
+                href="https://wa.me/919626779608?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20project%20consultation." 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="btn btn-secondary hero-btn hero-whatsapp-btn"

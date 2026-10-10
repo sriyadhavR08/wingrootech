@@ -175,7 +175,7 @@ export default function HowWeWork() {
               <ArrowRight size={16} />
             </button>
             <a 
-              href="https://wa.me/918124779111?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20our%20project%20requirements." 
+              href="https://wa.me/919626779608?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20our%20project%20requirements." 
               target="_blank" 
               rel="noopener noreferrer" 
               className="btn btn-secondary process-whatsapp-btn"

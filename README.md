@@ -232,6 +232,6 @@ The application is built with resilience:
 
 - **Company**: Wingroo Technologies
 - **Location**: Coimbatore, Tamil Nadu, India
-- **Phone**: +91 81247 79111
+- **Phone**: +91 96267 79608
 - **Email**: [info@wingrootechnologies.com](mailto:info@wingrootechnologies.com)
 - **Website**: [wingrootechnologies.com](https://wingrootechnologies.com/)

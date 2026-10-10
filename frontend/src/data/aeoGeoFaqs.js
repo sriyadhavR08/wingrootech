@@ -55,7 +55,7 @@ export const AEO_GEO_FAQS = [
     id: 6,
     category: 'development',
     q: 'How can I get a free architecture consultation or cost quote for my project?',
-    a: 'You can click "Start Your Project / Free Consultation" on our website, message our engineering team directly on WhatsApp (+91 81247 79111), or ask our AI chatbot right here to schedule a complimentary 30-minute system architecture session with zero obligation.',
+    a: 'You can click "Start Your Project / Free Consultation" on our website, message our engineering team directly on WhatsApp (+91 96267 79608), or ask our AI chatbot right here to schedule a complimentary 30-minute system architecture session with zero obligation.',
     tags: ['free consultation', 'project quote', 'architecture consultation', 'cost estimate', 'start project']
   },
   {
@@ -424,7 +424,7 @@ export const AEO_GEO_FAQS = [
     id: 56,
     category: 'coimbatore-geo',
     q: 'What is the address and contact for Wingroo Technologies in Coimbatore?',
-    a: 'Wingroo Technologies is located at 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, Tamil Nadu 641012. You can contact admissions and project teams directly via phone or WhatsApp at +91 81247 79111.',
+    a: 'Wingroo Technologies is located at 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, Tamil Nadu 641012. You can contact admissions and project teams directly via phone or WhatsApp at +91 96267 79608.',
     tags: ['wingroo address', 'wingroo contact', 'tatabad coimbatore']
   },
   {

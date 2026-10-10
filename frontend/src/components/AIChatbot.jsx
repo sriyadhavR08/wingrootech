@@ -35,7 +35,7 @@ const QUICK_PROMPTS = [
     id: 'join_team', 
     label: '🤝 How to join your team?', 
     icon: <Sparkles size={14} />,
-    reply: '🤝 **How to Join the Wingroo Technologies Team:**\n\nWe are always looking for passionate builders, designers, and AI engineers!\n\n• 💼 **Explore Current Openings:**\nCheck our **Careers** section on this website for active roles in Full-Stack Web Development, Mobile Apps (Flutter/React Native), UI/UX, and AI Agents.\n\n• 🎓 **Students & Freshers:**\nJoin our **College Internship or Live Project Internship** program. Outstanding performers receive direct Pre-Placement Offers (PPOs) and full-time hiring opportunities.\n\n• 📩 **Direct Application:**\nApply directly via the Careers form on this page or send your Resume, GitHub link, and portfolio to:\n📧 **careers@wingrootechnologies.com**\n📞 WhatsApp: **+91 81247 79111**\n\n• ⚡ **Our Culture:**\nWe value **Proof of Work** (live deployed apps, GitHub commits, problem solving) over degrees.\n\n👇 *Interested in joining or collaborating? Drop your details below!*',
+    reply: '🤝 **How to Join the Wingroo Technologies Team:**\n\nWe are always looking for passionate builders, designers, and AI engineers!\n\n• 💼 **Explore Current Openings:**\nCheck our **Careers** section on this website for active roles in Full-Stack Web Development, Mobile Apps (Flutter/React Native), UI/UX, and AI Agents.\n\n• 🎓 **Students & Freshers:**\nJoin our **College Internship or Live Project Internship** program. Outstanding performers receive direct Pre-Placement Offers (PPOs) and full-time hiring opportunities.\n\n• 📩 **Direct Application:**\nApply directly via the Careers form on this page or send your Resume, GitHub link, and portfolio to:\n📧 **careers@wingrootechnologies.com**\n📞 WhatsApp: **+91 96267 79608**\n\n• ⚡ **Our Culture:**\nWe value **Proof of Work** (live deployed apps, GitHub commits, problem solving) over degrees.\n\n👇 *Interested in joining or collaborating? Drop your details below!*',
     isDev: false,
     defaultType: 'Careers / Team Joining Inquiry'
   },
@@ -184,7 +184,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
     } else if (lower.includes('where to start') || lower.includes('fresher') || lower.includes('beginner') || lower.includes('roadmap')) {
       botReplyText = "🎓 **As a Fresher, Where Should You Start?**\n1. Master Web Fundamentals (HTML, CSS, JavaScript) & REST APIs.\n2. Pick a specialization: Full-Stack React/Next.js or Python for Backend/AI.\n3. Learn Git & push every project to GitHub.\n4. Complete a structured 15-20 Days Internship with live mentors at Wingroo to get certified proof-of-work!";
     } else if (lower.includes('coimbatore') || lower.includes('tatabad') || lower.includes('address') || lower.includes('location')) {
-      botReplyText = "📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012. We are situated right in Coimbatore's innovation district near Gandhipuram. Call or WhatsApp us at +91 81247 79111.";
+      botReplyText = "📍 **Wingroo Technologies Coimbatore Hub:**\n2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, TN 641012. We are situated right in Coimbatore's innovation district near Gandhipuram. Call or WhatsApp us at +91 96267 79608.";
     } else if (lower.includes('intern') || lower.includes('college') || lower.includes('fee') || lower.includes('scholarship')) {
       botReplyText = "🎓 Our College Internship runs for 15 to 20 working days with daily structured timetable slots. We provide Up to 100% Merit Scholarships based on an online 20-minute screening test. Certificates are ISO 9001:2015 & MSME certified.";
     } else if (lower.includes('live') || lower.includes('stipend')) {
@@ -242,7 +242,7 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
       ...prev,
       {
         sender: 'bot',
-        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! We have received your project inquiry for **${leadContact.projectType}**.\n\nOur senior engineering lead will review your requirements and reach out to you on **${leadContact.phone}** to schedule your free 30-minute architecture consultation.\n\n👉 Need an immediate response? Message us directly on WhatsApp at **+91 81247 79111**!`,
+        text: `🎉 Thank you${leadContact.name ? ', ' + leadContact.name : ''}! We have received your project inquiry for **${leadContact.projectType}**.\n\nOur senior engineering lead will review your requirements and reach out to you on **${leadContact.phone}** to schedule your free 30-minute architecture consultation.\n\n👉 Need an immediate response? Message us directly on WhatsApp at **+91 96267 79608**!`,
         time: 'Just now'
       }
     ]);
@@ -398,12 +398,12 @@ export default function AIChatbot({ onOpenSchedule, onOpenStudentPortal }) {
                     </button>
                   </div>
                   <a 
-                    href="https://wa.me/918124779111?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20new%20project" 
+                    href="https://wa.me/919626779608?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20new%20project" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="lead-whatsapp-direct"
                   >
-                    <span>Or Chat on WhatsApp: +91 81247 79111 ↗</span>
+                    <span>Or Chat on WhatsApp: +91 96267 79608 ↗</span>
                   </a>
                 </form>
               </div>

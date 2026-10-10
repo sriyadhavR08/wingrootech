@@ -112,7 +112,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                 <FacebookIcon />
               </a>
               <a 
-                href="https://wa.me/918124779111" 
+                href="https://wa.me/919626779608" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="social-btn" 
@@ -173,7 +173,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
             <h4 className="footer-col-title">Headquarters</h4>
             <div className="footer-contact-info">
               <p><MapPin size={16} className="contact-icon" /> Coimbatore, Tamil Nadu, India</p>
-              <p><Phone size={16} className="contact-icon" /> +91 81247 79111</p>
+              <p><Phone size={16} className="contact-icon" /> +91 96267 79608</p>
               <p><Mail size={16} className="contact-icon" /> info@wingrootechnologies.com</p>
             </div>
             <button onClick={scrollToTop} className="scroll-top-btn" title="Back to top">
@@ -308,7 +308,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                       <br />
                       <strong>Wingroo Technologies</strong>, Coimbatore, Tamil Nadu, India.
                       <br />
-                      Email: <code>info@wingrootechnologies.com</code> | Phone: <code>+91 81247 79111</code>
+                      Email: <code>info@wingrootechnologies.com</code> | Phone: <code>+91 96267 79608</code>
                     </p>
                   </section>
                 </div>
