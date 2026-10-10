@@ -26,6 +26,23 @@ export default function Contact() {
   const [status, setStatus] = useState(null); // { success: boolean, message: string }
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('wingroo_student_user') || sessionStorage.getItem('wingroo_candidate_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u) {
+          setFormData(prev => ({
+            ...prev,
+            name: prev.name || u.full_name || '',
+            email: prev.email || u.email || '',
+            phone: prev.phone || u.phone || ''
+          }));
+        }
+      }
+    } catch {}
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -36,6 +53,8 @@ export default function Contact() {
     setLoading(true);
     setStatus(null);
 
+    const submittedEmail = formData.email;
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
@@ -45,10 +64,15 @@ export default function Contact() {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        const refMsg = data.request_no ? ` (Ref: ${data.request_no})` : '';
         setStatus({
           success: true,
-          message: data.message || "Thanks for reaching out. We'll get back to you soon."
+          message: (data.message || "Thanks for reaching out. We'll get back to you soon.") + refMsg
         });
+        if (submittedEmail) {
+          sessionStorage.setItem('wingroo_student_lookup', submittedEmail);
+        }
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
         setFormData({
           name: '',
           email: '',

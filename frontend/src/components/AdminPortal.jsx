@@ -819,6 +819,26 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   };
 
   // --- DELETE HANDLERS ---
+  const handleUpdateContactStatus = async (id, newStatus) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/contacts/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.message || 'Failed to update contact status');
+      }
+    } catch (err) {
+      alert('Status update error: ' + err.message);
+    }
+  };
+
   const handleDeleteContact = async (id, e) => {
     e.stopPropagation();
     if (!window.confirm(`Are you sure you want to delete inquiry #${id}?`)) return;
@@ -1684,7 +1704,8 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                       <tr>
                         <th>ID</th>
                         <th>Sender Name & Contact</th>
-                        <th>Subject</th>
+                        <th>Subject / Domain</th>
+                        <th>Status / Lifecycle</th>
                         <th>Message Preview</th>
                         <th>Received On</th>
                         <th>Actions</th>
@@ -1703,6 +1724,29 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                             </td>
                             <td>
                               <span className="admin-badge badge-inquiry">{c.subject || 'General'}</span>
+                            </td>
+                            <td>
+                              <select 
+                                value={c.status || 'Under Review'}
+                                onChange={(e) => handleUpdateContactStatus(c.id, e.target.value)}
+                                style={{
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  padding: '4px 8px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #cbd5e1',
+                                  background: c.status === 'Completed' ? '#dcfce7' : c.status === 'In Progress' ? '#f3e8ff' : '#eff6ff',
+                                  color: c.status === 'Completed' ? '#15803d' : c.status === 'In Progress' ? '#7c3aed' : '#2563eb',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <option value="Under Review">Under Review</option>
+                                <option value="In Discussion">In Discussion</option>
+                                <option value="Proposal Sent">Proposal Sent</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                              </select>
                             </td>
                             <td>
                               <div className="message-preview-cell" title={c.message}>
@@ -1753,7 +1797,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6">
+                          <td colSpan="7">
                             <div className="admin-empty-state">
                               <MessageSquare className="admin-empty-icon" />
                               <p>No contact inquiries found.</p>

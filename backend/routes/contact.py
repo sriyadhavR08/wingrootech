@@ -35,10 +35,13 @@ def submit_contact():
             """
             cursor.execute(sql, (name, email, phone, subject, message))
             
+        new_id = cursor.lastrowid
         conn.commit()
         return jsonify({
             'success': True,
-            'message': "Thanks for reaching out. We'll get back to you soon."
+            'message': "Thanks for reaching out. We'll get back to you soon.",
+            'request_id': new_id,
+            'request_no': f"WINGROO-PRJ-{new_id:04d}" if new_id else None
         }), 201
     except Exception as e:
         print(f"[Error saving contact message to wingroo_technologies_db] {e}")

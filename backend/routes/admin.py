@@ -152,6 +152,34 @@ def delete_contact(contact_id):
     finally:
         conn.close()
 
+@admin_bp.route('/api/admin/contacts/<int:contact_id>/status', methods=['PUT', 'OPTIONS'])
+def update_contact_status(contact_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    data = request.get_json() or {}
+    new_status = data.get('status', 'Under Review').strip()
+    notes = data.get('notes', '').strip()
+
+    valid_statuses = ['Under Review', 'In Discussion', 'Proposal Sent', 'In Progress', 'Completed', 'Cancelled']
+    if new_status not in valid_statuses:
+        new_status = 'Under Review'
+
+    conn, db_type = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        if db_type == "mysql":
+            cursor.execute("UPDATE contacts SET status = %s, notes = %s WHERE id = %s", (new_status, notes, contact_id))
+        else:
+            cursor.execute("UPDATE contacts SET status = ?, notes = ? WHERE id = ?", (new_status, notes, contact_id))
+        conn.commit()
+        return jsonify({'success': True, 'message': f'Contact request #{contact_id} status updated to {new_status}.'})
+    except Exception as e:
+        print(f"[Admin Update Contact Status Error] {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+
 @admin_bp.route('/api/admin/internships', methods=['GET'])
 def get_all_internships():
     conn, db_type = get_db_connection()

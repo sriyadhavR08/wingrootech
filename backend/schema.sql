@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS contacts (
     phone VARCHAR(30),
     subject VARCHAR(100) DEFAULT 'General Inquiry',
     message TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'Under Review',
+    notes TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

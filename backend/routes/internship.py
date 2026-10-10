@@ -198,16 +198,88 @@ def student_lookup():
         except Exception as ev_err:
             print(f"[Error querying event registrations in student lookup] {ev_err}")
 
-        total_records = len(applications) + len(event_registrations)
+        # Also lookup project inquiries / client requests matching query
+        project_requests = []
+        try:
+            req_id_match = None
+            if query.upper().startswith('WINGROO-PRJ-'):
+                num_part = query.upper().replace('WINGROO-PRJ-', '').strip()
+                if num_part.isdigit():
+                    req_id_match = int(num_part)
+
+            if db_type == "mysql":
+                if req_id_match is not None:
+                    prj_sql = """
+                    SELECT id, name, email, phone, subject, message, 
+                           COALESCE(status, 'Under Review') as status, 
+                           COALESCE(notes, '') as notes, created_at
+                    FROM contacts
+                    WHERE id = %s OR email = %s OR phone = %s OR name LIKE %s OR subject LIKE %s
+                    ORDER BY id DESC
+                    """
+                    cursor.execute(prj_sql, (req_id_match, query, query, search_pattern, search_pattern))
+                else:
+                    prj_sql = """
+                    SELECT id, name, email, phone, subject, message, 
+                           COALESCE(status, 'Under Review') as status, 
+                           COALESCE(notes, '') as notes, created_at
+                    FROM contacts
+                    WHERE email = %s OR phone = %s OR name LIKE %s OR subject LIKE %s
+                    ORDER BY id DESC
+                    """
+                    cursor.execute(prj_sql, (query, query, search_pattern, search_pattern))
+            else:
+                if req_id_match is not None:
+                    prj_sql = """
+                    SELECT id, name, email, phone, subject, message, 
+                           COALESCE(status, 'Under Review') as status, 
+                           COALESCE(notes, '') as notes, created_at
+                    FROM contacts
+                    WHERE id = ? OR email = ? OR phone = ? OR name LIKE ? OR subject LIKE ?
+                    ORDER BY id DESC
+                    """
+                    cursor.execute(prj_sql, (req_id_match, query, query, search_pattern, search_pattern))
+                else:
+                    prj_sql = """
+                    SELECT id, name, email, phone, subject, message, 
+                           COALESCE(status, 'Under Review') as status, 
+                           COALESCE(notes, '') as notes, created_at
+                    FROM contacts
+                    WHERE email = ? OR phone = ? OR name LIKE ? OR subject LIKE ?
+                    ORDER BY id DESC
+                    """
+                    cursor.execute(prj_sql, (query, query, search_pattern, search_pattern))
+
+            prj_rows = cursor.fetchall()
+            if prj_rows:
+                for pr in prj_rows:
+                    item = dict(pr)
+                    project_requests.append({
+                        'id': item['id'],
+                        'request_no': f"WINGROO-PRJ-{item['id']:04d}",
+                        'name': item.get('name'),
+                        'email': item.get('email'),
+                        'phone': item.get('phone'),
+                        'subject': item.get('subject') or 'Project Inquiry',
+                        'message': item.get('message'),
+                        'status': item.get('status') or 'Under Review',
+                        'notes': item.get('notes') or '',
+                        'created_at': str(item.get('created_at', ''))
+                    })
+        except Exception as prj_err:
+            print(f"[Error querying project requests in student lookup] {prj_err}")
+
+        total_records = len(applications) + len(event_registrations) + len(project_requests)
         return jsonify({
             'success': True,
             'applications': applications,
             'event_registrations': event_registrations,
+            'project_requests': project_requests,
             'count': total_records
         })
     except Exception as e:
         print(f"[Error in student_lookup] {e}")
-        return jsonify({'success': False, 'message': str(e), 'applications': [], 'event_registrations': []}), 500
+        return jsonify({'success': False, 'message': str(e), 'applications': [], 'event_registrations': [], 'project_requests': []}), 500
     finally:
         conn.close()
 

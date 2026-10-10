@@ -50,9 +50,19 @@ def init_mysql_tables_if_needed():
                 phone VARCHAR(30),
                 subject VARCHAR(100) DEFAULT 'General Inquiry',
                 message TEXT NOT NULL,
+                status VARCHAR(50) DEFAULT 'Under Review',
+                notes TEXT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
+            try:
+                cursor.execute("ALTER TABLE contacts ADD COLUMN status VARCHAR(50) DEFAULT 'Under Review';")
+            except Exception:
+                pass
+            try:
+                cursor.execute("ALTER TABLE contacts ADD COLUMN notes TEXT DEFAULT NULL;")
+            except Exception:
+                pass
             
             # 2. Internship Applications Table
             cursor.execute("""
@@ -232,9 +242,19 @@ def init_sqlite_tables(conn):
         phone TEXT,
         subject TEXT,
         message TEXT NOT NULL,
+        status TEXT DEFAULT 'Under Review',
+        notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    try:
+        cursor.execute("ALTER TABLE contacts ADD COLUMN status TEXT DEFAULT 'Under Review';")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE contacts ADD COLUMN notes TEXT;")
+    except Exception:
+        pass
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS internship_applications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

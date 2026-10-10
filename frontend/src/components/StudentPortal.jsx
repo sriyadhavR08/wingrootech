@@ -23,7 +23,10 @@ import {
   User,
   KeyRound,
   UserPlus,
-  Briefcase
+  Briefcase,
+  PlusCircle,
+  Send,
+  PhoneCall
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -78,7 +81,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   const [forgotErr, setForgotErr] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // Tabs: 'internship' (Internship Apply) | 'events' (Events Apply)
+  // Tabs: 'internship' (Internship Apply) | 'events' (Events Apply) | 'projects' (Project Client Requests) | 'new_project'
   const [activeTab, setActiveTab] = useState('internship');
 
   const [searchQuery, setSearchQuery] = useState(() => {
@@ -86,6 +89,15 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
   });
   const [applications, setApplications] = useState([]);
   const [eventRegistrations, setEventRegistrations] = useState([]);
+  const [projectRequests, setProjectRequests] = useState([]);
+  const [newProjectForm, setNewProjectForm] = useState({ subject: 'Web Application Development', message: '', phone: '' });
+  const [newProjectSubmitting, setNewProjectSubmitting] = useState(false);
+  const [newProjectSuccess, setNewProjectSuccess] = useState('');
+  const [newProjectError, setNewProjectError] = useState('');
+  const [selectedProjectSlip, setSelectedProjectSlip] = useState(null);
+
+  const isProjectClient = currentUser?.candidate_type === 'PROJECT_CLIENT';
+
   const [trackLoading, setTrackLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [trackErrorMsg, setTrackErrorMsg] = useState('');
@@ -100,6 +112,26 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       return null;
     }
   });
+
+  // Switch tab automatically based on candidate type
+  useEffect(() => {
+    if (currentUser?.candidate_type === 'PROJECT_CLIENT') {
+      setActiveTab('projects');
+    } else {
+      setActiveTab('internship');
+    }
+  }, [currentUser?.candidate_type]);
+
+  // Live reload whenever contact or project inquiry is submitted anywhere
+  useEffect(() => {
+    const handleDataChange = () => {
+      if (currentUser?.email) {
+        fetchStudentApplications(currentUser.email);
+      }
+    };
+    window.addEventListener('wingroo_data_changed', handleDataChange);
+    return () => window.removeEventListener('wingroo_data_changed', handleDataChange);
+  }, [currentUser?.email]);
 
   // When modal opens or user logs in, automatically fetch records if user is logged in
   useEffect(() => {
@@ -318,6 +350,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
     setCurrentUser(null);
     setApplications([]);
     setEventRegistrations([]);
+    setProjectRequests([]);
     setSearched(false);
     setLoginForm({ email: '', password: '' });
   };
@@ -338,34 +371,98 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
       if (data.success) {
         const apps = Array.isArray(data.applications) ? data.applications : [];
         const evRegs = Array.isArray(data.event_registrations) ? data.event_registrations : [];
+        const prjReqs = Array.isArray(data.project_requests) ? data.project_requests : [];
         setApplications(apps);
         setEventRegistrations(evRegs);
-        if (apps.length > 0 || evRegs.length > 0) {
+        setProjectRequests(prjReqs);
+        if (apps.length > 0 || evRegs.length > 0 || prjReqs.length > 0) {
           sessionStorage.setItem('wingroo_student_lookup', q);
-          if (apps.length === 0 && evRegs.length > 0) {
+          if (currentUser?.candidate_type === 'PROJECT_CLIENT') {
+            setActiveTab('projects');
+          } else if (apps.length === 0 && evRegs.length > 0) {
             setActiveTab('events');
           } else if (apps.length > 0) {
             setActiveTab('internship');
           }
         } else {
-          setTrackErrorMsg(data.message || 'No applications or event registrations found for this account.');
+          setTrackErrorMsg(
+            currentUser?.candidate_type === 'PROJECT_CLIENT'
+              ? 'No project requests found for this account.'
+              : (data.message || 'No applications or event registrations found for this account.')
+          );
         }
       } else {
         setApplications([]);
         setEventRegistrations([]);
-        setTrackErrorMsg(data.message || 'No applications or event registrations found.');
+        setProjectRequests([]);
+        setTrackErrorMsg(data.message || 'No records found.');
       }
     } catch {
       setSearched(true);
       setTrackErrorMsg('Failed to connect to candidate server. Please check your connection.');
       setApplications([]);
       setEventRegistrations([]);
+      setProjectRequests([]);
     } finally {
       setTrackLoading(false);
     }
   };
 
+  const handleNewProjectSubmit = async (e) => {
+    e.preventDefault();
+    if (!newProjectForm.message.trim()) {
+      setNewProjectError('Please describe your project requirements.');
+      return;
+    }
+
+    setNewProjectSubmitting(true);
+    setNewProjectError('');
+    setNewProjectSuccess('');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: currentUser?.full_name || 'Project Client',
+          email: currentUser?.email || '',
+          phone: newProjectForm.phone || currentUser?.phone || '',
+          subject: newProjectForm.subject || 'Project Inquiry',
+          message: newProjectForm.message
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewProjectSuccess(`Project request submitted successfully! Ref: ${data.request_no || 'Recorded'}`);
+        setNewProjectForm({ subject: 'Web Application Development', message: '', phone: '' });
+        window.dispatchEvent(new CustomEvent('wingroo_data_changed'));
+        if (currentUser?.email) {
+          fetchStudentApplications(currentUser.email);
+        }
+        setTimeout(() => {
+          setActiveTab('projects');
+          setNewProjectSuccess('');
+        }, 1200);
+      } else {
+        setNewProjectError(data.message || 'Failed to submit request.');
+      }
+    } catch {
+      setNewProjectError('Failed to connect to server. Please try again.');
+    } finally {
+      setNewProjectSubmitting(false);
+    }
+  };
+
   const getApplicantProfile = () => {
+    if (isProjectClient) {
+      return {
+        name: currentUser?.full_name || (projectRequests[0]?.name) || 'Project Client',
+        email: currentUser?.email || (projectRequests[0]?.email) || '',
+        phone: currentUser?.phone || (projectRequests[0]?.phone) || '',
+        college: 'Project Client Partner',
+        course: 'Custom Software & Web Engineering'
+      };
+    }
     if (applications.length > 0) {
       return {
         name: applications[0].name,
@@ -450,33 +547,62 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
         {/* Feature Navigation Bar: Only when candidate is logged in */}
         {currentUser && (
           <div className="student-nav-tabs-bar">
-            <button 
-              type="button"
-              className={`student-nav-tab ${activeTab === 'internship' ? 'active' : ''}`}
-              onClick={() => setActiveTab('internship')}
-            >
-              <GraduationCap size={16} />
-              <span>Internship Apply</span>
-              {applications.length > 0 && (
-                <span className="live-pill" style={{ background: '#0284c7', color: '#fff' }}>
-                  {applications.length}
-                </span>
-              )}
-            </button>
+            {isProjectClient ? (
+              <>
+                <button 
+                  type="button"
+                  className={`student-nav-tab ${activeTab === 'projects' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('projects')}
+                >
+                  <Briefcase size={16} />
+                  <span>Project Requests</span>
+                  {projectRequests.length > 0 && (
+                    <span className="live-pill" style={{ background: '#7c3aed', color: '#fff' }}>
+                      {projectRequests.length}
+                    </span>
+                  )}
+                </button>
 
-            <button 
-              type="button"
-              className={`student-nav-tab ${activeTab === 'events' ? 'active' : ''}`}
-              onClick={() => setActiveTab('events')}
-            >
-              <Calendar size={16} />
-              <span>Events Apply</span>
-              {eventRegistrations.length > 0 && (
-                <span className="live-pill" style={{ background: '#0ea5e9', color: '#fff' }}>
-                  {eventRegistrations.length}
-                </span>
-              )}
-            </button>
+                <button 
+                  type="button"
+                  className={`student-nav-tab ${activeTab === 'new_project' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('new_project')}
+                >
+                  <PlusCircle size={16} />
+                  <span>Submit Project Request</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  type="button"
+                  className={`student-nav-tab ${activeTab === 'internship' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('internship')}
+                >
+                  <GraduationCap size={16} />
+                  <span>Internship Apply</span>
+                  {applications.length > 0 && (
+                    <span className="live-pill" style={{ background: '#0284c7', color: '#fff' }}>
+                      {applications.length}
+                    </span>
+                  )}
+                </button>
+
+                <button 
+                  type="button"
+                  className={`student-nav-tab ${activeTab === 'events' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('events')}
+                >
+                  <Calendar size={16} />
+                  <span>Events Apply</span>
+                  {eventRegistrations.length > 0 && (
+                    <span className="live-pill" style={{ background: '#0ea5e9', color: '#fff' }}>
+                      {eventRegistrations.length}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -1030,28 +1156,54 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <a
-                    href="/internship/student/dashboard"
-                    className="candidate-portal-btn"
-                    title="Open your Internship Workspace"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: '#eff6ff',
-                      color: '#2563eb',
-                      border: '1px solid #bfdbfe',
-                      padding: '7px 14px',
-                      borderRadius: '10px',
-                      fontSize: '0.82rem',
-                      fontWeight: 700,
-                      textDecoration: 'none',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <GraduationCap size={15} />
-                    <span>Internship Portal &rarr;</span>
-                  </a>
+                  {isProjectClient ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('new_project')}
+                      className="candidate-portal-btn"
+                      title="Submit a new project inquiry or requirement"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#f3e8ff',
+                        color: '#7c3aed',
+                        border: '1px solid #d8b4fe',
+                        padding: '7px 14px',
+                        borderRadius: '10px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <PlusCircle size={15} />
+                      <span>Request New Project</span>
+                    </button>
+                  ) : (
+                    <a
+                      href="/internship/student/dashboard"
+                      className="candidate-portal-btn"
+                      title="Open your Internship Workspace"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#eff6ff',
+                        color: '#2563eb',
+                        border: '1px solid #bfdbfe',
+                        padding: '7px 14px',
+                        borderRadius: '10px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <GraduationCap size={15} />
+                      <span>Internship Portal &rarr;</span>
+                    </a>
+                  )}
 
                   <button type="button" onClick={handleSignOut} className="candidate-signout-btn" title="Sign out of your account">
                     <LogOut size={14} />
@@ -1063,11 +1215,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               {/* Lookup / Search Bar for logged-in user */}
               <div className="student-search-card">
                 <div className="search-caption">
-                  <Sparkles size={16} style={{ color: '#0284c7' }} />
+                  <Sparkles size={16} style={{ color: isProjectClient ? '#7c3aed' : '#0284c7' }} />
                   <span>
-                    {activeTab === 'internship'
-                      ? 'Track Internship Application Status & Download Official Slip'
-                      : 'Track Event Registration Status & Download Verified Entry Pass'}
+                    {isProjectClient
+                      ? 'Track Client Project Requests, Requirements & Development Status'
+                      : activeTab === 'internship'
+                        ? 'Track Internship Application Status & Download Official Slip'
+                        : 'Track Event Registration Status & Download Verified Entry Pass'}
                   </span>
                 </div>
                 <form onSubmit={(e) => { e.preventDefault(); fetchStudentApplications(searchQuery); }} className="student-search-form">
@@ -1077,7 +1231,11 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                       type="text" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Lookup by Email, Phone, or Application / Registration #"
+                      placeholder={
+                        isProjectClient 
+                          ? "Lookup by Email, Phone, or Project Request Ref # (e.g. WINGROO-PRJ-0001)" 
+                          : "Lookup by Email, Phone, or Application / Registration #"
+                      }
                       className="student-search-input"
                     />
                   </div>
@@ -1098,7 +1256,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
               {trackLoading && (
                 <div className="student-loading-state">
                   <RefreshCw size={28} className="spin-anim" />
-                  <p>Fetching your application details and real-time review status…</p>
+                  <p>{isProjectClient ? 'Fetching your project requests and development status…' : 'Fetching your application details and real-time review status…'}</p>
                 </div>
               )}
 
@@ -1108,13 +1266,13 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                   {/* Profile Summary Strip */}
                   {applicantProfile && (
                     <div className="student-profile-strip">
-                      <div className="student-avatar-big">
-                        {applicantProfile.name?.slice(0, 2).toUpperCase() || 'CD'}
+                      <div className="student-avatar-big" style={isProjectClient ? { background: 'linear-gradient(135deg, #7c3aed, #a855f7)' } : {}}>
+                        {applicantProfile.name?.slice(0, 2).toUpperCase() || (isProjectClient ? 'PC' : 'CD')}
                       </div>
                       <div className="student-profile-info">
                         <div className="student-full-name">{applicantProfile.name}</div>
                         <div className="student-sub-detail">
-                          {applicantProfile.college || 'Candidate'} {applicantProfile.course ? `• ${applicantProfile.course}` : ''}
+                          {applicantProfile.college || (isProjectClient ? 'Project Client Partner' : 'Candidate')} {applicantProfile.course ? `• ${applicantProfile.course}` : ''}
                         </div>
                         <div className="student-contact-chips">
                           {applicantProfile.email && (
@@ -1132,176 +1290,437 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                         </div>
                       </div>
                       <div className="student-apps-count">
-                        <span className="count-num">
-                          {activeTab === 'internship' ? applications.length : eventRegistrations.length}
+                        <span className="count-num" style={isProjectClient ? { color: '#7c3aed' } : {}}>
+                          {isProjectClient ? projectRequests.length : (activeTab === 'internship' ? applications.length : eventRegistrations.length)}
                         </span>
                         <span className="count-text">
-                          {activeTab === 'internship' ? 'Applications' : 'Registrations'}
+                          {isProjectClient ? 'Project Requests' : (activeTab === 'internship' ? 'Applications' : 'Registrations')}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  {/* 1. Internship Apply Results */}
-                  {activeTab === 'internship' && (
-                    <div>
-                      {applications.length > 0 ? (
-                        <div className="student-apps-list">
-                          {applications.map((app) => (
-                            <div key={app.id} className="student-app-card">
-                              <div className="app-card-top">
-                                <div className="app-id-pill">
-                                  <FileText size={14} />
-                                  <span>{app.application_no}</span>
-                                </div>
-                                <div className="app-date-meta">
-                                  <Calendar size={13} />
-                                  <span>Applied on {app.created_at ? app.created_at.slice(0, 10) : 'Recently'}</span>
-                                </div>
-                                <span className={`status-pill ${
-                                  app.status === 'Approved' || app.status === 'Selected' ? 'badge-selected' :
-                                  app.status === 'Shortlisted' ? 'badge-shortlist' :
-                                  app.status === 'Rejected' ? 'badge-rejected' : 'badge-review'
-                                }`}>
-                                  {app.status || 'Under Review'}
-                                </span>
-                              </div>
+                  {/* ========================================================= */}
+                  {/* A. PROJECT CLIENT VIEWS (PROJECTS & NEW PROJECT REQUEST)  */}
+                  {/* ========================================================= */}
+                  {isProjectClient && (
+                    <>
+                      {/* 1. Projects Request List View */}
+                      {activeTab === 'projects' && (
+                        <div>
+                          {projectRequests.length > 0 ? (
+                            <div className="student-apps-list">
+                              {projectRequests.map((req) => (
+                                <div key={req.id} className="student-app-card" style={{ borderLeft: '4px solid #7c3aed' }}>
+                                  <div className="app-card-top">
+                                    <div className="app-id-pill" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed', borderColor: '#d8b4fe' }}>
+                                      <Briefcase size={14} />
+                                      <span>{req.request_no}</span>
+                                    </div>
+                                    <div className="app-date-meta">
+                                      <Calendar size={13} />
+                                      <span>Submitted on {req.created_at ? req.created_at.slice(0, 10) : 'Recently'}</span>
+                                    </div>
+                                    <span className="status-pill" style={{
+                                      background: req.status === 'Completed' ? '#dcfce7' : req.status === 'In Progress' ? '#f3e8ff' : '#eff6ff',
+                                      color: req.status === 'Completed' ? '#15803d' : req.status === 'In Progress' ? '#7c3aed' : '#2563eb',
+                                      borderColor: req.status === 'Completed' ? '#86efac' : req.status === 'In Progress' ? '#d8b4fe' : '#bfdbfe'
+                                    }}>
+                                      {req.status || 'Under Review'}
+                                    </span>
+                                  </div>
 
-                              <div className="app-program-row">
-                                <div>
-                                  <div className="program-title">{app.technology || 'Full Stack Development'}</div>
-                                  <div className="program-type">{app.internship_type || 'Internship'} • {app.college}</div>
-                                </div>
-                                <button 
-                                  type="button"
-                                  onClick={() => setActiveSlip(app)} 
-                                  className="btn-print-slip"
-                                  title="Print Official Slip"
-                                >
-                                  <Printer size={15} />
-                                  <span>Print Application Slip</span>
-                                </button>
-                              </div>
+                                  <div className="app-program-row">
+                                    <div>
+                                      <div className="program-title" style={{ color: '#1e293b', fontSize: '1.1rem', fontWeight: 700 }}>
+                                        {req.subject || 'Custom Project Inquiry'}
+                                      </div>
+                                      <div className="program-type" style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '2px' }}>
+                                        Client: {req.name} {req.phone ? `• ${req.phone}` : ''}
+                                      </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                      <a
+                                        href={`https://wa.me/917418579998?text=Hello%20Wingroo%20Team%2C%20following%20up%20on%20Project%20Request%20${encodeURIComponent(req.request_no)}%20(${encodeURIComponent(req.subject || 'Project')})`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn-print-slip"
+                                        style={{ color: '#16a34a', borderColor: '#bbf7d0', background: '#f0fdf4' }}
+                                      >
+                                        <span>Chat with Lead Engineer</span>
+                                      </a>
+                                      <button 
+                                        type="button"
+                                        onClick={() => setSelectedProjectSlip(req)} 
+                                        className="btn-print-slip"
+                                        title="Print Project Request Receipt"
+                                      >
+                                        <Printer size={15} />
+                                        <span>Print Project Slip</span>
+                                      </button>
+                                    </div>
+                                  </div>
 
-                              {/* 4-Stage Stepper */}
-                              <div className="app-stepper-wrap">
-                                <div className="stepper-title">Application Progress Tracking</div>
-                                <div className="app-stepper">
-                                  {[
-                                    { key: 'Submitted', label: 'Submitted' },
-                                    { key: 'Review', label: 'Under Review' },
-                                    { key: 'Shortlisted', label: 'Shortlisted' },
-                                    { key: 'Approved', label: 'Offer Confirmed' }
-                                  ].map((step, idx) => {
-                                    const currentStatus = app.status || 'Under Review';
-                                    const isDone = 
-                                      idx === 0 || 
-                                      (idx === 1 && currentStatus !== 'Rejected') ||
-                                      (idx === 2 && (currentStatus === 'Shortlisted' || currentStatus === 'Approved' || currentStatus === 'Selected')) ||
-                                      (idx === 3 && (currentStatus === 'Approved' || currentStatus === 'Selected'));
+                                  {/* Project Scope / Description */}
+                                  <div style={{
+                                    background: '#f8fafc',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '10px',
+                                    padding: '14px 16px',
+                                    marginTop: '12px',
+                                    fontSize: '0.88rem',
+                                    color: '#334155',
+                                    lineHeight: '1.6'
+                                  }}>
+                                    <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                      Project Requirements & Specifications:
+                                    </strong>
+                                    {req.message}
+                                  </div>
 
-                                    return (
-                                      <React.Fragment key={step.key}>
-                                        <div className={`step-node ${isDone ? 'step-done' : ''}`}>
-                                          <div className="step-circle">{isDone ? <Check size={13} /> : idx + 1}</div>
-                                          <div className="step-label">{step.label}</div>
-                                        </div>
-                                        {idx < 3 && <div className={`step-line ${isDone ? 'line-done' : ''}`} />}
-                                      </React.Fragment>
-                                    );
-                                  })}
+                                  {/* 5-Stage Stepper for Client Projects */}
+                                  <div className="app-stepper-wrap" style={{ marginTop: '18px' }}>
+                                    <div className="stepper-title">Development & Lifecycle Tracking</div>
+                                    <div className="app-stepper">
+                                      {[
+                                        { key: 'Received', label: 'Inquiry Received' },
+                                        { key: 'Review', label: 'Tech Review' },
+                                        { key: 'Discussion', label: 'Scope & Proposal' },
+                                        { key: 'Development', label: 'In Development' },
+                                        { key: 'Delivered', label: 'Delivered' }
+                                      ].map((step, idx) => {
+                                        const st = req.status || 'Under Review';
+                                        const isDone = 
+                                          idx === 0 ||
+                                          (idx === 1 && st !== 'Cancelled') ||
+                                          (idx === 2 && (st === 'In Discussion' || st === 'Proposal Sent' || st === 'In Progress' || st === 'Completed')) ||
+                                          (idx === 3 && (st === 'In Progress' || st === 'Completed')) ||
+                                          (idx === 4 && st === 'Completed');
+
+                                        return (
+                                          <React.Fragment key={step.key}>
+                                            <div className={`step-node ${isDone ? 'step-done' : ''}`}>
+                                              <div className="step-circle" style={isDone ? { background: '#7c3aed', color: '#fff' } : {}}>
+                                                {isDone ? <Check size={13} /> : idx + 1}
+                                              </div>
+                                              <div className="step-label">{step.label}</div>
+                                            </div>
+                                            {idx < 4 && <div className={`step-line ${isDone ? 'line-done' : ''}`} style={isDone ? { borderColor: '#7c3aed' } : {}} />}
+                                          </React.Fragment>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="student-not-found-card">
-                          <GraduationCap size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
-                          <h4>No Internship Applications Found</h4>
-                          <p>
-                            We could not find any internship applications registered with your account.
-                            If you registered for an event instead, check the <strong>Events Apply</strong> tab above.
-                          </p>
+                          ) : (
+                            <div className="student-not-found-card" style={{ borderColor: '#e9d5ff', background: '#faf5ff' }}>
+                              <Briefcase size={38} style={{ color: '#a855f7', margin: '0 auto 12px auto' }} />
+                              <h4 style={{ color: '#581c87' }}>No Project Requests Found Yet</h4>
+                              <p style={{ color: '#7e22ce' }}>
+                                You haven't submitted any client project inquiries yet. You can submit your requirements right here or through the main website contact form!
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab('new_project')}
+                                className="btn btn-primary"
+                                style={{ margin: '14px auto 0 auto', background: '#7c3aed', borderColor: '#7c3aed' }}
+                              >
+                                <PlusCircle size={16} />
+                                <span>Submit Your Project Requirements</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
+
+                      {/* 2. Submit New Project Request Tab View */}
+                      {activeTab === 'new_project' && (
+                        <div className="student-app-card" style={{ border: '1px solid #e9d5ff', background: '#ffffff', padding: '24px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#f3e8ff', color: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Briefcase size={20} />
+                            </div>
+                            <div>
+                              <h4 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a', fontWeight: 700 }}>Submit New Project Request</h4>
+                              <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>Provide your technical specifications or project idea. Our lead engineers will review and reach out.</p>
+                            </div>
+                          </div>
+
+                          {newProjectSuccess && (
+                            <div className="candidate-auth-success" style={{ marginBottom: '16px' }}>
+                              <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                              <span>{newProjectSuccess}</span>
+                            </div>
+                          )}
+
+                          {newProjectError && (
+                            <div className="candidate-auth-error" style={{ marginBottom: '16px' }}>
+                              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                              <span>{newProjectError}</span>
+                            </div>
+                          )}
+
+                          <form onSubmit={handleNewProjectSubmit}>
+                            <div className="candidate-form-group">
+                              <label className="candidate-form-label">Project Domain / Service Type *</label>
+                              <select 
+                                value={newProjectForm.subject}
+                                onChange={(e) => setNewProjectForm(prev => ({ ...prev, subject: e.target.value }))}
+                                className="candidate-input"
+                                style={{ marginTop: '6px' }}
+                                required
+                              >
+                                <option value="Web Application Development">Full Stack Web Application</option>
+                                <option value="Mobile App Development">Mobile App (iOS / Android / Flutter)</option>
+                                <option value="Enterprise Software Solution">Enterprise Software Solution</option>
+                                <option value="AI & Machine Learning Solution">AI & Machine Learning Solution</option>
+                                <option value="Cloud Architecture & API">Cloud Architecture & Custom API</option>
+                                <option value="UI/UX & Frontend Engineering">UI/UX Design & Frontend Engineering</option>
+                                <option value="Other Project Inquiry">Other Custom Project</option>
+                              </select>
+                            </div>
+
+                            <div className="candidate-form-group" style={{ marginTop: '14px' }}>
+                              <label className="candidate-form-label">Contact Mobile / WhatsApp Number *</label>
+                              <input 
+                                type="tel"
+                                value={newProjectForm.phone}
+                                onChange={(e) => setNewProjectForm(prev => ({ ...prev, phone: e.target.value }))}
+                                placeholder="e.g. +91 9876543210"
+                                className="candidate-input"
+                                style={{ marginTop: '6px' }}
+                                required
+                              />
+                            </div>
+
+                            <div className="candidate-form-group" style={{ marginTop: '14px' }}>
+                              <label className="candidate-form-label">Project Overview & Requirements *</label>
+                              <textarea 
+                                rows={4}
+                                value={newProjectForm.message}
+                                onChange={(e) => setNewProjectForm(prev => ({ ...prev, message: e.target.value }))}
+                                placeholder="Describe your project goal, expected features, tech preferences, timeline, and deliverables…"
+                                className="candidate-input"
+                                style={{ marginTop: '6px', resize: 'vertical' }}
+                                required
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                              <button 
+                                type="submit" 
+                                disabled={newProjectSubmitting}
+                                className="candidate-auth-btn"
+                                style={{ background: '#7c3aed', flex: 1 }}
+                              >
+                                {newProjectSubmitting ? <RefreshCw size={16} className="spin-anim" /> : <Send size={16} />}
+                                <span>{newProjectSubmitting ? 'Submitting Request…' : 'Submit Project Request'}</span>
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => setActiveTab('projects')}
+                                className="candidate-back-btn"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+                    </>
                   )}
 
-                  {/* 2. Events Apply Results */}
-                  {activeTab === 'events' && (
-                    <div>
-                      {eventRegistrations.length > 0 ? (
-                        <div className="student-apps-list">
-                          {eventRegistrations.map((ev) => (
-                            <div key={ev.id} className="student-app-card" style={{ borderLeft: '4px solid #0284c7' }}>
-                              <div className="app-card-top">
-                                <div className="app-id-pill" style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', borderColor: '#bae6fd' }}>
-                                  <Award size={14} />
-                                  <span>{ev.registration_no}</span>
-                                </div>
-                                <div className="app-date-meta">
-                                  <Calendar size={13} />
-                                  <span>Registered on {ev.created_at ? ev.created_at.slice(0, 10) : 'Recently'}</span>
-                                </div>
-                                <span className="status-pill badge-selected">
-                                  {ev.status || 'Confirmed'}
-                                </span>
-                              </div>
+                  {/* ========================================================= */}
+                  {/* B. INTERNSHIP & EVENT CANDIDATE VIEWS                     */}
+                  {/* ========================================================= */}
+                  {!isProjectClient && (
+                    <>
+                      {/* 1. Internship Apply Results */}
+                      {activeTab === 'internship' && (
+                        <div>
+                          {applications.length > 0 ? (
+                            <div className="student-apps-list">
+                              {applications.map((app) => (
+                                <div key={app.id} className="student-app-card">
+                                  <div className="app-card-top">
+                                    <div className="app-id-pill">
+                                      <FileText size={14} />
+                                      <span>{app.application_no}</span>
+                                    </div>
+                                    <div className="app-date-meta">
+                                      <Calendar size={13} />
+                                      <span>Applied on {app.created_at ? app.created_at.slice(0, 10) : 'Recently'}</span>
+                                    </div>
+                                    <span className={`status-pill ${
+                                      app.status === 'Approved' || app.status === 'Selected' ? 'badge-selected' :
+                                      app.status === 'Shortlisted' ? 'badge-shortlist' :
+                                      app.status === 'Rejected' ? 'badge-rejected' : 'badge-review'
+                                    }`}>
+                                      {app.status || 'Under Review'}
+                                    </span>
+                                  </div>
 
-                              <div className="app-program-row">
-                                <div>
-                                  <div className="program-title">{ev.event_title}</div>
-                                  <div className="program-type">Attendee: {ev.name} • {ev.college} {ev.year ? `(${ev.year})` : ''}</div>
+                                  <div className="app-program-row">
+                                    <div>
+                                      <div className="program-title">{app.technology || 'Full Stack Development'}</div>
+                                      <div className="program-type">{app.internship_type || 'Internship'} • {app.college}</div>
+                                    </div>
+                                    <button 
+                                      type="button"
+                                      onClick={() => setActiveSlip(app)} 
+                                      className="btn-print-slip"
+                                      title="Print Official Slip"
+                                    >
+                                      <Printer size={15} />
+                                      <span>Print Application Slip</span>
+                                    </button>
+                                  </div>
+
+                                  {/* 4-Stage Stepper */}
+                                  <div className="app-stepper-wrap">
+                                    <div className="stepper-title">Application Progress Tracking</div>
+                                    <div className="app-stepper">
+                                      {[
+                                        { key: 'Submitted', label: 'Submitted' },
+                                        { key: 'Review', label: 'Under Review' },
+                                        { key: 'Shortlisted', label: 'Shortlisted' },
+                                        { key: 'Approved', label: 'Offer Confirmed' }
+                                      ].map((step, idx) => {
+                                        const currentStatus = app.status || 'Under Review';
+                                        const isDone = 
+                                          idx === 0 || 
+                                          (idx === 1 && currentStatus !== 'Rejected') ||
+                                          (idx === 2 && (currentStatus === 'Shortlisted' || currentStatus === 'Approved' || currentStatus === 'Selected')) ||
+                                          (idx === 3 && (currentStatus === 'Approved' || currentStatus === 'Selected'));
+
+                                        return (
+                                          <React.Fragment key={step.key}>
+                                            <div className={`step-node ${isDone ? 'step-done' : ''}`}>
+                                              <div className="step-circle">{isDone ? <Check size={13} /> : idx + 1}</div>
+                                              <div className="step-label">{step.label}</div>
+                                            </div>
+                                            {idx < 3 && <div className={`step-line ${isDone ? 'line-done' : ''}`} />}
+                                          </React.Fragment>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
                                 </div>
-                                <button 
-                                  type="button"
-                                  onClick={() => setActivePass(ev)} 
-                                  className="btn-print-slip"
-                                  style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff', borderColor: 'transparent' }}
-                                  title="View & Print Official Event Pass"
-                                >
-                                  <Award size={15} />
-                                  <span>View & Print Pass</span>
-                                </button>
-                              </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="student-not-found-card">
-                          <Calendar size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
-                          <h4>No Event Registrations Found</h4>
-                          <p>
-                            We could not find any event passes registered with your account.
-                            If you submitted an internship application instead, check the <strong>Internship Apply</strong> tab above.
-                          </p>
+                          ) : (
+                            <div className="student-not-found-card">
+                              <GraduationCap size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
+                              <h4>No Internship Applications Found</h4>
+                              <p>
+                                We could not find any internship applications registered with your account.
+                                If you registered for an event instead, check the <strong>Events Apply</strong> tab above.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
+
+                      {/* 2. Events Apply Results */}
+                      {activeTab === 'events' && (
+                        <div>
+                          {eventRegistrations.length > 0 ? (
+                            <div className="student-apps-list">
+                              {eventRegistrations.map((ev) => (
+                                <div key={ev.id} className="student-app-card" style={{ borderLeft: '4px solid #0284c7' }}>
+                                  <div className="app-card-top">
+                                    <div className="app-id-pill" style={{ background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', borderColor: '#bae6fd' }}>
+                                      <Award size={14} />
+                                      <span>{ev.registration_no}</span>
+                                    </div>
+                                    <div className="app-date-meta">
+                                      <Calendar size={13} />
+                                      <span>Registered on {ev.created_at ? ev.created_at.slice(0, 10) : 'Recently'}</span>
+                                    </div>
+                                    <span className="status-pill badge-selected">
+                                      {ev.status || 'Confirmed'}
+                                    </span>
+                                  </div>
+
+                                  <div className="app-program-row">
+                                    <div>
+                                      <div className="program-title">{ev.event_title}</div>
+                                      <div className="program-type">Attendee: {ev.name} • {ev.college} {ev.year ? `(${ev.year})` : ''}</div>
+                                    </div>
+                                    <button 
+                                      type="button"
+                                      onClick={() => setActivePass(ev)} 
+                                      className="btn-print-slip"
+                                      style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff', borderColor: 'transparent' }}
+                                      title="View & Print Official Event Pass"
+                                    >
+                                      <Award size={15} />
+                                      <span>View & Print Pass</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="student-not-found-card">
+                              <Calendar size={36} style={{ color: '#94a3b8', margin: '0 auto 12px auto' }} />
+                              <h4>No Event Registrations Found</h4>
+                              <p>
+                                We could not find any event passes registered with your account.
+                                If you submitted an internship application instead, check the <strong>Internship Apply</strong> tab above.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
             </>
           )}
 
-          {/* Certificate & Verification Portal Redirect Banner */}
-          <div className="portal-redirect-banner">
-            <div className="portal-redirect-left">
-              <ShieldCheck size={22} style={{ color: '#0284c7', flexShrink: 0 }} />
-              <div>
-                <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>Looking for Certificate Verification or Candidate Credential Account?</strong>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Certificate verification, candidate login & credential registration are hosted in the Certification Portal.</div>
+          {/* Bottom Redirect Banner: Differentiated for Project Client vs Intern */}
+          {isProjectClient ? (
+            <div className="portal-redirect-banner" style={{ background: '#faf5ff', borderColor: '#e9d5ff' }}>
+              <div className="portal-redirect-left">
+                <PhoneCall size={22} style={{ color: '#7c3aed', flexShrink: 0 }} />
+                <div>
+                  <strong style={{ fontSize: '0.88rem', color: '#581c87' }}>Need Direct Architecture Consultation with our Lead Engineers?</strong>
+                  <div style={{ fontSize: '0.8rem', color: '#7e22ce' }}>Have custom tech specifications or urgent delivery milestones? Connect directly with our solutions architect.</div>
+                </div>
               </div>
+              <a 
+                href="https://wa.me/917418579998?text=Hello%20Wingroo%20Technologies%2C%20I%20would%20like%20to%20discuss%20a%20software%20project%20scope." 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="portal-redirect-btn"
+                style={{ background: '#7c3aed', color: '#ffffff', borderColor: '#7c3aed' }}
+              >
+                <span>WhatsApp Solutions Desk</span>
+                <ExternalLink size={13} />
+              </a>
             </div>
-            <a 
-              href="/internship/login" 
-              className="portal-redirect-btn"
-            >
-              <span>Go to Certificate & Verification Portal</span>
-              <ExternalLink size={13} />
-            </a>
-          </div>
+          ) : (
+            <div className="portal-redirect-banner">
+              <div className="portal-redirect-left">
+                <ShieldCheck size={22} style={{ color: '#0284c7', flexShrink: 0 }} />
+                <div>
+                  <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>Looking for Certificate Verification or Candidate Credential Account?</strong>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Certificate verification, candidate login & credential registration are hosted in the Certification Portal.</div>
+                </div>
+              </div>
+              <a 
+                href="/internship/login" 
+                className="portal-redirect-btn"
+              >
+                <span>Go to Certificate & Verification Portal</span>
+                <ExternalLink size={13} />
+              </a>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1469,6 +1888,95 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 <div className="doc-sign-area">
                   <div className="sign-line" />
                   <div className="sign-title">Event Operations Desk</div>
+                  <div className="sign-sub">Wingroo Technologies</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Printable Slip Popup Modal for Project Request */}
+      {selectedProjectSlip && (
+        <div className="slip-modal-overlay" onClick={() => setSelectedProjectSlip(null)}>
+          <div className="slip-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="slip-modal-header no-print">
+              <span>Official Project Request & Scope Summary</span>
+              <div className="slip-header-actions">
+                <button 
+                  type="button" 
+                  onClick={() => window.print()} 
+                  className="slip-print-btn"
+                >
+                  <Printer size={14} />
+                  <span>Print Slip</span>
+                </button>
+                <button type="button" onClick={() => setSelectedProjectSlip(null)} className="slip-close-btn">
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="slip-document-sheet" id="printable-project-slip">
+              <div className="slip-doc-header">
+                <div>
+                  <div className="doc-brand">WINGROO TECHNOLOGIES</div>
+                  <div className="doc-sub">Software Engineering • Custom Web & Mobile Solutions</div>
+                  <div className="doc-sub">Coimbatore, Tamil Nadu, India • contact@wingrootech.com</div>
+                </div>
+                <div className="doc-app-stamp" style={{ borderColor: '#7c3aed', background: '#faf5ff' }}>
+                  <div className="doc-stamp-title" style={{ color: '#7c3aed' }}>PROJECT INQUIRY REF</div>
+                  <div className="doc-stamp-no" style={{ color: '#6b21a8' }}>{selectedProjectSlip.request_no}</div>
+                </div>
+              </div>
+
+              <div className="doc-divider" />
+
+              <div className="doc-grid-info">
+                <div className="doc-info-item">
+                  <span className="doc-info-label">Client Name</span>
+                  <span className="doc-info-val">{selectedProjectSlip.name}</span>
+                </div>
+                <div className="doc-info-item">
+                  <span className="doc-info-label">Current Status</span>
+                  <span className="doc-info-val" style={{ color: '#7c3aed', fontWeight: 700 }}>
+                    {selectedProjectSlip.status || 'Under Review'}
+                  </span>
+                </div>
+                <div className="doc-info-item">
+                  <span className="doc-info-label">Client Email</span>
+                  <span className="doc-info-val">{selectedProjectSlip.email}</span>
+                </div>
+                <div className="doc-info-item">
+                  <span className="doc-info-label">Client Mobile</span>
+                  <span className="doc-info-val">{selectedProjectSlip.phone || 'N/A'}</span>
+                </div>
+                <div className="doc-info-item" style={{ gridColumn: 'span 2' }}>
+                  <span className="doc-info-label">Project Domain / Service</span>
+                  <span className="doc-info-val">{selectedProjectSlip.subject || 'Custom Project Inquiry'}</span>
+                </div>
+                <div className="doc-info-item" style={{ gridColumn: 'span 2' }}>
+                  <span className="doc-info-label">Date Submitted</span>
+                  <span className="doc-info-val">{selectedProjectSlip.created_at || 'Recently'}</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px', padding: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <span className="doc-info-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', color: '#64748b' }}>Project Overview & Scope Description:</span>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b', lineHeight: 1.6 }}>{selectedProjectSlip.message}</p>
+              </div>
+
+              <div className="doc-verification-seal-row" style={{ marginTop: '28px' }}>
+                <div className="doc-seal-box">
+                  <ShieldCheck size={28} style={{ color: '#7c3aed' }} />
+                  <div>
+                    <div className="seal-title" style={{ color: '#6b21a8' }}>CONFIRMED CLIENT PROJECT INQUIRY</div>
+                    <div className="seal-sub">Directly assigned for engineering review at Wingroo Technologies</div>
+                  </div>
+                </div>
+                <div className="doc-sign-area">
+                  <div className="sign-line" />
+                  <div className="sign-title">Lead Solutions Architect</div>
                   <div className="sign-sub">Wingroo Technologies</div>
                 </div>
               </div>
