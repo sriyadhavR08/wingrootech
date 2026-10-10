@@ -48,12 +48,12 @@ export function Login({ initialRole = 'student', initialCandidateTab = 'signin' 
     } catch { return null; }
   })();
 
-  // If candidate is already logged in, automatically redirect to dashboard to view status directly
+  // If candidate is already logged in and on sign in tab, redirect to dashboard to view status
   useEffect(() => {
-    if (roleMode === 'student' && storedStudent) {
+    if (roleMode === 'student' && storedStudent && candidateTab === 'signin') {
       navigate(`${prefix}/student/dashboard`, { replace: true });
     }
-  }, [roleMode, storedStudent, navigate, prefix]);
+  }, [roleMode, storedStudent, candidateTab, navigate, prefix]);
 
   const handleRoleChange = (role) => {
     setRoleMode(role);
