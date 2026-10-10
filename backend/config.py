@@ -31,7 +31,14 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Media folder for uploads & generated certificate PDFs
-    MEDIA_FOLDER = os.getenv("MEDIA_FOLDER") or str(BASE_DIR / "uploads")
+    # If /var/app_media exists on Linux (persistent folder outside /var/app/current), use it
+    if os.getenv("MEDIA_FOLDER"):
+        MEDIA_FOLDER = os.getenv("MEDIA_FOLDER")
+    elif os.name != "nt" and os.path.exists("/var/app_media"):
+        MEDIA_FOLDER = "/var/app_media"
+    else:
+        MEDIA_FOLDER = str(BASE_DIR / "uploads")
+
     ASSETS_FOLDER = os.getenv("ASSETS_FOLDER") or str(BASE_DIR / "assets")
 
     FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")

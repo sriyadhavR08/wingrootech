@@ -124,15 +124,32 @@ def download_certificate(pk):
 
 
 @public_bp.route("/media/<path:filename>", methods=["GET"])
+@public_bp.route("/api/media/<path:filename>", methods=["GET"])
 def serve_media(filename):
-    return send_from_directory(current_app.config["MEDIA_FOLDER"], filename)
+    # 1. Primary MEDIA_FOLDER
+    primary = current_app.config.get("MEDIA_FOLDER", "uploads")
+    if os.path.exists(os.path.join(primary, filename)):
+        return send_from_directory(primary, filename)
+
+    # 2. Check /var/app_media if on Linux
+    if os.path.exists(os.path.join("/var/app_media", filename)):
+        return send_from_directory("/var/app_media", filename)
+
+    # 3. Fallback to app directory uploads folder
+    app_uploads = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
+    if os.path.exists(os.path.join(app_uploads, filename)):
+        return send_from_directory(app_uploads, filename)
+
+    return jsonify({"error": "Media file not found"}), 404
 
 
 @public_bp.route("/selfies/<path:filename>", methods=["GET"])
+@public_bp.route("/api/selfies/<path:filename>", methods=["GET"])
 def serve_selfies(filename):
-    return send_from_directory(os.path.join(current_app.config["MEDIA_FOLDER"], "selfies"), filename)
+    return serve_media(f"selfies/{filename}")
 
 
 @public_bp.route("/college_ids/<path:filename>", methods=["GET"])
+@public_bp.route("/api/college_ids/<path:filename>", methods=["GET"])
 def serve_college_ids(filename):
-    return send_from_directory(os.path.join(current_app.config["MEDIA_FOLDER"], "college_ids"), filename)
+    return serve_media(f"college_ids/{filename}")

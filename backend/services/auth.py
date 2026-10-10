@@ -275,10 +275,16 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
     def format_media_url(file_path):
         if not file_path:
             return None
+        if file_path.startswith("http://backend.wingrootechnologies.com"):
+            return file_path.replace("http://", "https://")
         if file_path.startswith("http://") or file_path.startswith("https://"):
             return file_path
         clean_path = file_path.lstrip("/")
-        return f"{request_host_url}/media/{clean_path}"
+        host = request_host_url
+        if "wingrootechnologies.com" in host or (not ("localhost" in host or "127.0.0.1" in host)):
+            if host.startswith("http://"):
+                host = host.replace("http://", "https://")
+        return f"{host}/media/{clean_path}"
 
     duration = (i.end_date - i.start_date).days + 1 if (i and i.end_date and i.start_date) else None
     cand_type = getattr(p, "candidate_type", "COLLEGE_INTERN") if p else "COLLEGE_INTERN"

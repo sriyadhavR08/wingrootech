@@ -18,7 +18,9 @@ export default function StudentDetail() {
     [preview, setPreview] = useState(""),
     [confirm, setConfirm] = useState(false),
     [endDateInput, setEndDateInput] = useState(""),
-    [viewDoc, setViewDoc] = useState(null);
+    [viewDoc, setViewDoc] = useState(null),
+    [idImgError, setIdImgError] = useState(false),
+    [selfieImgError, setSelfieImgError] = useState(false);
 
 
   async function load() {
@@ -199,18 +201,16 @@ export default function StudentDetail() {
       {/* Action Buttons */}
       <section className="card p-4 mb-4">
         <div className="d-flex flex-wrap gap-2">
-          {!data.certificate && (
-            <button
-              className="btn btn-outline-primary"
-              disabled={busy}
-              onClick={() => {
-                setEditing(!editing);
-                setPreview("");
-              }}
-            >
-              {editing ? "Cancel editing" : "Edit candidate details"}
-            </button>
-          )}
+          <button
+            className="btn btn-outline-primary"
+            disabled={busy}
+            onClick={() => {
+              setEditing(!editing);
+              setPreview("");
+            }}
+          >
+            {editing ? "Cancel editing" : "Edit candidate details / documents"}
+          </button>
 
           {data.status === "REGISTERED" && (
             <button
@@ -424,31 +424,42 @@ export default function StudentDetail() {
                                   }
                                   title="Click to view full image"
                                 >
-                                  <img
-                                    src={collegeIdUrl}
-                                    alt="College ID Card"
-                                    style={{
-                                      maxHeight: "180px",
-                                      maxWidth: "100%",
-                                      objectFit: "contain",
-                                      borderRadius: "4px",
-                                    }}
-                                  />
+                                  {idImgError ? (
+                                    <div className="p-3 bg-light text-center border rounded">
+                                      <i className="bi bi-exclamation-triangle text-warning fs-3 d-block mb-1"></i>
+                                      <span className="small text-danger fw-semibold d-block">Document file not found on server (404)</span>
+                                      <small className="text-muted d-block">File may have been moved or removed during redeployment.</small>
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={collegeIdUrl}
+                                      alt="College ID Card"
+                                      onError={() => setIdImgError(true)}
+                                      style={{
+                                        maxHeight: "180px",
+                                        maxWidth: "100%",
+                                        objectFit: "contain",
+                                        borderRadius: "4px",
+                                      }}
+                                    />
+                                  )}
                                 </div>
                                 <div className="d-flex gap-2">
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() =>
-                                      setViewDoc({
-                                        title: "College ID Card",
-                                        url: collegeIdUrl,
-                                        isPdf: false,
-                                      })
-                                    }
-                                  >
-                                    <i className="bi bi-arrows-fullscreen me-1"></i> Enlarge ID
-                                  </button>
+                                  {!idImgError && (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-outline-primary"
+                                      onClick={() =>
+                                        setViewDoc({
+                                          title: "College ID Card",
+                                          url: collegeIdUrl,
+                                          isPdf: false,
+                                        })
+                                      }
+                                    >
+                                      <i className="bi bi-arrows-fullscreen me-1"></i> Enlarge ID
+                                    </button>
+                                  )}
                                   <a
                                     href={collegeIdUrl}
                                     target="_blank"
@@ -488,27 +499,51 @@ export default function StudentDetail() {
                           <div className="d-flex align-items-center gap-3">
                             <div
                               style={{ cursor: "pointer" }}
-                              onClick={() =>
-                                setViewDoc({
-                                  title: `${data.full_name} - Selfie Photo`,
-                                  url: selfieUrl,
-                                  isPdf: false,
-                                })
-                              }
-                              title="Click to enlarge"
+                              onClick={() => {
+                                if (!selfieImgError) {
+                                  setViewDoc({
+                                    title: `${data.full_name} - Selfie Photo`,
+                                    url: selfieUrl,
+                                    isPdf: false,
+                                  });
+                                }
+                              }}
+                              title={selfieImgError ? "Selfie not found on server" : "Click to enlarge"}
                             >
-                              <img
-                                src={selfieUrl}
-                                alt="Candidate Selfie"
-                                style={{
-                                  width: "110px",
-                                  height: "110px",
-                                  objectFit: "cover",
-                                  borderRadius: "50%",
-                                  border: "4px solid #198754",
-                                  boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                                }}
-                              />
+                              {selfieImgError ? (
+                                <div
+                                  style={{
+                                    width: "100px",
+                                    height: "100px",
+                                    borderRadius: "50%",
+                                    background: "#fff3cd",
+                                    border: "3px dashed #ffc107",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#856404",
+                                  }}
+                                  title="Selfie photo not found on server (404)"
+                                >
+                                  <i className="bi bi-person-x fs-2"></i>
+                                  <span style={{ fontSize: "10px", fontWeight: "bold" }}>Not found</span>
+                                </div>
+                              ) : (
+                                <img
+                                  src={selfieUrl}
+                                  alt="Candidate Selfie"
+                                  onError={() => setSelfieImgError(true)}
+                                  style={{
+                                    width: "110px",
+                                    height: "110px",
+                                    objectFit: "cover",
+                                    borderRadius: "50%",
+                                    border: "4px solid #198754",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                                  }}
+                                />
+                              )}
                             </div>
                             <div>
                               <h3 className="h6 mb-1 text-dark">{data.full_name}</h3>

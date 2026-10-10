@@ -22,11 +22,22 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Enable ProxyFix to respect X-Forwarded-Proto (HTTPS) from AWS ALB / Nginx
+    try:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+    except Exception:
+        pass
+
     # Initialize SQLAlchemy database
     db.init_app(app)
 
     # Ensure uploads and media folders exist
-    os.makedirs(app.config.get("MEDIA_FOLDER", "uploads"), exist_ok=True)
+    media_dir = app.config.get("MEDIA_FOLDER", "uploads")
+    os.makedirs(media_dir, exist_ok=True)
+    os.makedirs(os.path.join(media_dir, "college_ids"), exist_ok=True)
+    os.makedirs(os.path.join(media_dir, "selfies"), exist_ok=True)
+    os.makedirs(os.path.join(media_dir, "certificates"), exist_ok=True)
     os.makedirs(app.config.get("ASSETS_FOLDER", "assets"), exist_ok=True)
 
     # Enable CORS for frontend development and production

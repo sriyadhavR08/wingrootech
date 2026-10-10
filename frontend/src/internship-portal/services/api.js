@@ -226,12 +226,17 @@ export async function downloadCertificate(cert) {
 }
 export function resolveMediaUrl(path) {
   if (!path) return "";
-  if (
-    path.startsWith("data:") ||
-    path.startsWith("blob:") ||
-    path.startsWith("http://") ||
-    path.startsWith("https://")
-  ) {
+  if (path.startsWith("data:") || path.startsWith("blob:")) {
+    return path;
+  }
+  // Prevent Mixed Content warnings: upgrade insecure http URLs to https
+  if (path.startsWith("http://backend.wingrootechnologies.com")) {
+    return path.replace("http://", "https://");
+  }
+  if (typeof window !== "undefined" && window.location.protocol === "https:" && path.startsWith("http://")) {
+    return path.replace("http://", "https://");
+  }
+  if (path.startsWith("https://")) {
     return path;
   }
   let clean = path.startsWith("/") ? path : `/${path}`;
