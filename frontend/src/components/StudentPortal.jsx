@@ -1713,7 +1713,7 @@ export default function StudentPortal({ isOpen, onClose, initialQuery = '', onSw
                 </div>
               </div>
               <a 
-                href="/internship/login" 
+                href="/internship" 
                 className="portal-redirect-btn"
               >
                 <span>Go to Certificate & Verification Portal</span>

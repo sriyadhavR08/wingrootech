@@ -309,13 +309,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
         {/* Action Buttons */}
         <div className="navbar-actions">
           <a
-            href={
-              currentUser && (currentUser.role === 'STUDENT' || currentUser.role === 'student' || currentUser.role === 'CANDIDATE')
-                ? "/internship/student/dashboard"
-                : currentUser && currentUser.role === 'admin'
-                ? "/internship/admin/dashboard"
-                : "/internship/login"
-            }
+            href="/internship"
             className="nav-verify-btn"
             title="Certificate & Verification Portal"
           >

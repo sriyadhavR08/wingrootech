@@ -79,11 +79,12 @@ export default function Shell() {
           </a>
           {!user ? (
             <>
-              <NavLink to={prefix || "/internship"} className="shell-nav-link">Home</NavLink>
+              <NavLink to={prefix || "/internship"} end className="shell-nav-link">Home</NavLink>
               <NavLink to={`${prefix}/verify`} className="shell-nav-link">Verify certificate</NavLink>
             </>
           ) : (
             <div className="d-flex align-items-center gap-3">
+              <NavLink to={prefix || "/internship"} end className="shell-nav-link">Home</NavLink>
               <div className="shell-user-pill">
                 <div className={`shell-user-avatar ${admin ? 'avatar-admin' : 'avatar-student'}`}>
                   {userInitial}
@@ -128,7 +129,7 @@ export default function Shell() {
             </a>
             {!user ? (
               <div className="d-flex flex-column gap-2">
-                <NavLink to={prefix || "/internship"} className="mobile-nav-link" onClick={() => setOpen(false)}>
+                <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
                   <i className="bi bi-house me-2"></i> Home
                 </NavLink>
                 <NavLink to={`${prefix}/verify`} className="mobile-nav-link" onClick={() => setOpen(false)}>
@@ -142,6 +143,10 @@ export default function Shell() {
                   <small className="text-muted d-block">{user.email}</small>
                   <span className="badge text-bg-primary mt-1">{user.role}</span>
                 </div>
+
+                <NavLink to={prefix || "/internship"} end className="mobile-nav-link" onClick={() => setOpen(false)}>
+                  <i className="bi bi-house me-2"></i> Home
+                </NavLink>
 
                 {admin ? (
                   <>
