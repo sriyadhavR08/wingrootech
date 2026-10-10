@@ -237,6 +237,8 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
   const userEmail = currentUser?.email || (userRole === 'admin' ? 'admin@wingroo.com' : '');
   const userInitial = (userName || userEmail || 'U')[0].toUpperCase();
   const userPhoto = currentUser?.photo_url || currentUser?.photo || currentUser?.profile_photo || null;
+  const isProjectClient = currentUser?.candidate_type === 'PROJECT_CLIENT' ||
+    (currentUser?.candidate_type_display || '').toLowerCase().includes('project client');
 
   return (
     <header className={`navbar-header ${isScrolled ? 'navbar-scrolled' : ''}`}>
@@ -356,8 +358,8 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                     <div className="profile-dropdown-user-info">
                       <div className="profile-dropdown-name">{userName}</div>
                       <div className="profile-dropdown-email">{userEmail}</div>
-                      <span className={`profile-dropdown-role-badge ${userRole === 'admin' ? 'role-admin' : 'role-student'}`}>
-                        {userRole === 'admin' ? 'Administrator' : 'Candidate'}
+                      <span className={`profile-dropdown-role-badge ${userRole === 'admin' ? 'role-admin' : isProjectClient ? 'role-client' : 'role-student'}`}>
+                        {userRole === 'admin' ? 'Administrator' : isProjectClient ? 'Project Client' : 'Candidate'}
                       </span>
                     </div>
                   </div>
@@ -400,16 +402,18 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                           }}
                         >
                           <User size={16} />
-                          <span>My Applications & Status</span>
+                          <span>{isProjectClient ? 'My Project Requests & Status' : 'My Applications & Status'}</span>
                         </button>
-                        <a
-                          href="/internship/student/dashboard"
-                          className="profile-action-btn"
-                          onClick={() => setProfileDropdownOpen(false)}
-                        >
-                          <GraduationCap size={16} />
-                          <span>Internship Candidate Portal</span>
-                        </a>
+                        {!isProjectClient && (
+                          <a
+                            href="/internship/student/dashboard"
+                            className="profile-action-btn"
+                            onClick={() => setProfileDropdownOpen(false)}
+                          >
+                            <GraduationCap size={16} />
+                            <span>Internship Candidate Portal</span>
+                          </a>
+                        )}
                       </>
                     )}
                   </div>
@@ -504,8 +508,8 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                 <div>
                   <div className="mobile-profile-name">{userName}</div>
                   <div className="mobile-profile-email">{userEmail}</div>
-                  <span className={`mobile-role-pill ${userRole === 'admin' ? 'role-admin' : 'role-student'}`}>
-                    {userRole === 'admin' ? 'Administrator' : 'Candidate'}
+                  <span className={`mobile-role-pill ${userRole === 'admin' ? 'role-admin' : isProjectClient ? 'role-client' : 'role-student'}`}>
+                    {userRole === 'admin' ? 'Administrator' : isProjectClient ? 'Project Client' : 'Candidate'}
                   </span>
                 </div>
               </div>
@@ -534,7 +538,7 @@ export default function Navbar({ onOpenLogin, onOpenAdmin, onOpenStudentPortal }
                     }}
                   >
                     <User size={16} />
-                    <span>My Applications & Status</span>
+                    <span>{isProjectClient ? 'My Project Requests & Status' : 'My Applications & Status'}</span>
                   </button>
                 )}
                 <button
