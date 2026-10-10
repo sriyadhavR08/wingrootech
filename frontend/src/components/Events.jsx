@@ -5,7 +5,6 @@ import {
   Trophy, 
   Briefcase, 
   Calendar, 
-  MapPin, 
   ArrowRight, 
   Sparkles,
   CheckCircle,
@@ -321,24 +320,14 @@ export default function Events({ onOpenStudentPortal }) {
                         <p className="event-desc">{ev.description}</p>
                       </div>
 
-                      <div className="event-card-meta">
-                        <div className="meta-item">
-                          <Calendar size={15} className="meta-icon" />
-                          <span>{ev.event_date}</span>
+                      {ev.event_date && (
+                        <div className="event-card-meta">
+                          <div className="meta-item">
+                            <Calendar size={15} className="meta-icon" />
+                            <span>{ev.event_date}</span>
+                          </div>
                         </div>
-                        <div className="meta-item">
-                          <MapPin size={15} className="meta-icon" />
-                          <span>{ev.location}</span>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => handleRegisterClick(ev)} 
-                        className="btn btn-outline event-action-btn"
-                      >
-                        <span>Register Interest</span>
-                        <ArrowRight size={15} />
-                      </button>
+                      )}
                     </div>
                   </div>
                 ))}
