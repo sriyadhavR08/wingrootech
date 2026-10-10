@@ -824,6 +824,17 @@ a:focus-visible {
   .card {
     border-radius: 10px;
   }
+  .hero .d-flex.flex-wrap {
+    flex-direction: column !important;
+  }
+  .hero .d-flex.flex-wrap .btn {
+    width: 100% !important;
+    text-align: center;
+    justify-content: center;
+  }
+  .shell-brand-logo {
+    height: 40px !important;
+  }
 }
 
 /* Security OTP Verification Styling */

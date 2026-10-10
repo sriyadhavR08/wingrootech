@@ -319,6 +319,53 @@
   .btn-block {
     width: 100%;
   }
+
+  .nav-verify-btn {
+    padding: 7px 14px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-container {
+    gap: 8px !important;
+  }
+  .navbar-actions {
+    gap: 6px !important;
+  }
+  .nav-verify-btn span {
+    display: none !important;
+  }
+  .nav-verify-btn {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  .nav-login-btn {
+    padding: 7px 14px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-brand-logo {
+    height: 38px !important;
+  }
+  .brand-title {
+    font-size: 0.95rem !important;
+  }
+  .brand-subtitle {
+    font-size: 0.6rem !important;
+  }
+  .nav-login-btn {
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+  }
 }
 
 /* ==========================================================================

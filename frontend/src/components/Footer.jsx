@@ -134,6 +134,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
               <li><a href="#events" onClick={(e) => { e.preventDefault(); scrollTo('#events'); }}>Events</a></li>
               <li><a href="#faq-knowledge-hub" onClick={(e) => { e.preventDefault(); scrollTo('#faq-knowledge-hub'); }}>FAQs</a></li>
               <li><a href="#careers" onClick={(e) => { e.preventDefault(); scrollTo('#careers'); }}>Careers</a></li>
+              <li><a href="/internship">Internship & Verification</a></li>
               <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollTo('#contact'); }}>Contact</a></li>
             </ul>
           </div>

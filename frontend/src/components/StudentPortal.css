@@ -2455,6 +2455,20 @@
   border-color: #0284c7;
 }
 
+@media (max-width: 600px) {
+  .portal-redirect-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 14px 16px !important;
+  }
+  .portal-redirect-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 10px 14px !important;
+  }
+}
+
 /* Candidate Login & Forgot Password Views */
 .candidate-login-container {
   max-width: 480px;
