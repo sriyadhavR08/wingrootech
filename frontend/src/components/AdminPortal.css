@@ -778,6 +778,17 @@
   color: #ffffff;
 }
 
+.action-edit {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.action-edit:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
 /* Empty State */
 .admin-empty-state {
   text-align: center;

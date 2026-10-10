@@ -32,7 +32,8 @@ import {
   AlertCircle,
   LogIn,
   LogOut,
-  KeyRound 
+  KeyRound,
+  Pencil
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import './AdminPortal.css';
@@ -91,6 +92,12 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   const [studentDocModal, setStudentDocModal] = useState(null);
   const [endDateModal, setEndDateModal] = useState(null);
   const [newEndDate, setNewEndDate] = useState('');
+  const [editStudentModal, setEditStudentModal] = useState(null);
+  const [editStudentForm, setEditStudentForm] = useState({});
+  const [editStudentLoading, setEditStudentLoading] = useState(false);
+  const [editCertModal, setEditCertModal] = useState(null);
+  const [editCertForm, setEditCertForm] = useState({});
+  const [editCertLoading, setEditCertLoading] = useState(false);
   const [certActionLoading, setCertActionLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -586,6 +593,145 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch (err) {
       alert('Download error: ' + err.message);
+    }
+  };
+
+  // --- CANDIDATE EDIT & DELETE HANDLERS ---
+  const handleOpenEditStudent = (st) => {
+    setEditStudentModal(st);
+    setEditStudentForm({
+      full_name: st.full_name || '',
+      email: st.email || '',
+      mobile_number: st.mobile_number || '',
+      candidate_type: st.candidate_type || 'COLLEGE_INTERN',
+      college_name: st.college_name || '',
+      department: st.department || '',
+      course: st.course || '',
+      register_number: st.register_number || '',
+      project_name: st.project_name || '',
+      status: st.status || 'REGISTERED',
+      start_date: st.start_date ? st.start_date.slice(0, 10) : '',
+      end_date: st.end_date ? st.end_date.slice(0, 10) : ''
+    });
+  };
+
+  const handleSaveEditStudent = async (e) => {
+    e.preventDefault();
+    if (!editStudentModal) return;
+    setEditStudentLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/students/${editStudentModal.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        },
+        body: JSON.stringify(editStudentForm)
+      });
+      if (res.ok) {
+        alert(`Candidate #${editStudentModal.id} (${editStudentForm.full_name}) updated successfully!`);
+        setEditStudentModal(null);
+        loadAllData();
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to update candidate record');
+      }
+    } catch (err) {
+      alert('Error updating candidate: ' + err.message);
+    } finally {
+      setEditStudentLoading(false);
+    }
+  };
+
+  const handleDeleteStudent = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to completely DELETE candidate account "${name}" (ID #${id})?\n\nThis will remove their profile, internship, and any generated certificates permanently.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/students/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Candidate "${name}" (ID #${id}) was successfully deleted.`);
+        setStudentsList(prev => prev.filter(s => s.id !== id));
+        loadAllData();
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.detail || 'Failed to delete candidate.');
+      }
+    } catch (err) {
+      alert('Error deleting candidate: ' + err.message);
+    }
+  };
+
+  // --- CERTIFICATE EDIT & DELETE HANDLERS ---
+  const handleOpenEditCertificate = (cert) => {
+    setEditCertModal(cert);
+    setEditCertForm({
+      certificate_id: cert.certificate_id || '',
+      student_name: cert.student_name || '',
+      project_name: cert.project_name || '',
+      issue_date: cert.issue_date ? cert.issue_date.slice(0, 10) : '',
+      status: cert.status || 'VALID'
+    });
+  };
+
+  const handleSaveEditCertificate = async (e) => {
+    e.preventDefault();
+    if (!editCertModal) return;
+    setEditCertLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/certificates/${editCertModal.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        },
+        body: JSON.stringify(editCertForm)
+      });
+      if (res.ok) {
+        alert(`Certificate "${editCertForm.certificate_id}" updated successfully!`);
+        setEditCertModal(null);
+        loadAllData();
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to update certificate');
+      }
+    } catch (err) {
+      alert('Error updating certificate: ' + err.message);
+    } finally {
+      setEditCertLoading(false);
+    }
+  };
+
+  const handleDeleteCertificate = async (id, certSerial) => {
+    if (!window.confirm(`Are you sure you want to completely DELETE certificate "${certSerial}" (ID #${id}) from the registry?\n\nThis will remove the verification record completely.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/certificates/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer wingroo-admin-session-token'
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Certificate "${certSerial}" was successfully deleted from the registry.`);
+        setCertificatesList(prev => prev.filter(c => c.id !== id));
+        loadAllData();
+        if (typeof onDataChanged === 'function') onDataChanged();
+      } else {
+        alert(data.detail || 'Failed to delete certificate.');
+      }
+    } catch (err) {
+      alert('Error deleting certificate: ' + err.message);
     }
   };
 
@@ -1766,6 +1912,7 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                         <th>Proof & Selfie</th>
                         <th>Workflow Status</th>
                         <th>Certificate Action</th>
+                        <th>Manage</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1928,12 +2075,36 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                                     <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Complete internship first</span>
                                   )}
                                 </td>
+                                <td>
+                                  <div className="table-actions-cell" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleOpenEditStudent(st)}
+                                      className="action-pill-btn action-edit"
+                                      style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      title="Update Candidate Account"
+                                    >
+                                      <Pencil size={11} />
+                                      <span>Update</span>
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleDeleteStudent(st.id, st.full_name)}
+                                      className="action-pill-btn action-delete"
+                                      style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      title="Delete Candidate Account"
+                                    >
+                                      <Trash2 size={11} />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                </td>
                               </tr>
                             );
                           })
                       ) : (
                         <tr>
-                          <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                          <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                             No registered student interns found.
                           </td>
                         </tr>
@@ -2018,27 +2189,37 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                                   </a>
                                 </td>
                                 <td>
-                                  <div className="table-actions-cell">
+                                  <div className="table-actions-cell" style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                                     <button 
                                       type="button" 
                                       onClick={() => handleDownloadIssuedPdf(cert.id, cert.certificate_id)}
                                       className="action-pill-btn action-email"
+                                      style={{ fontSize: '0.72rem', padding: '3px 8px' }}
                                       title="Download PDF"
                                     >
-                                      <Download size={13} />
+                                      <Download size={11} />
                                       <span>PDF</span>
                                     </button>
-                                    {isValid && (
-                                      <button 
-                                        type="button" 
-                                        onClick={() => handleRevokeCertificate(cert.id, cert.certificate_id)}
-                                        className="action-pill-btn action-delete"
-                                        title="Revoke Certificate"
-                                      >
-                                        <Trash2 size={13} />
-                                        <span>Revoke</span>
-                                      </button>
-                                    )}
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleOpenEditCertificate(cert)}
+                                      className="action-pill-btn action-edit"
+                                      style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      title="Update Certificate Record"
+                                    >
+                                      <Pencil size={11} />
+                                      <span>Update</span>
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleDeleteCertificate(cert.id, cert.certificate_id)}
+                                      className="action-pill-btn action-delete"
+                                      style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                                      title="Delete Certificate Record"
+                                    >
+                                      <Trash2 size={11} />
+                                      <span>Delete</span>
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -3222,6 +3403,288 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
                   {certActionLoading ? 'Saving...' : 'Save End Date'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: EDIT CANDIDATE ACCOUNT */}
+        {editStudentModal && (
+          <div className="modal-overlay" onClick={() => setEditStudentModal(null)}>
+            <div className="modal-content" style={{ maxWidth: '680px', width: '95vw', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#1e293b' }}>
+                    Update Candidate Account (#{editStudentModal.id})
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Edit personal details, academic information, assigned project, and workflow status.
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setEditStudentModal(null)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditStudent}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '18px' }}>
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Full Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={editStudentForm.full_name || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, full_name: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Email Address *</label>
+                    <input 
+                      type="email" 
+                      required
+                      value={editStudentForm.email || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, email: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Mobile Phone Number</label>
+                    <input 
+                      type="tel" 
+                      value={editStudentForm.mobile_number || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, mobile_number: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Candidate Category</label>
+                    <select 
+                      value={editStudentForm.candidate_type || 'COLLEGE_INTERN'}
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, candidate_type: e.target.value })}
+                      className="admin-select"
+                    >
+                      <option value="COLLEGE_INTERN">College Intern (B.E, B.Tech, Arts, Science, Diploma)</option>
+                      <option value="SCHOOL_STUDENT">School Student Intern</option>
+                      <option value="COLLEGE_COMPLETED">College Completed / Graduate Candidate</option>
+                      <option value="PROJECT_CLIENT">Project Client Candidate</option>
+                      <option value="INTERNSHIP_EVENT">Internship & Event Candidate</option>
+                    </select>
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Institution / College Name</label>
+                    <input 
+                      type="text" 
+                      value={editStudentForm.college_name || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, college_name: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Department / Stream</label>
+                    <input 
+                      type="text" 
+                      value={editStudentForm.department || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, department: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Course / Degree</label>
+                    <input 
+                      type="text" 
+                      value={editStudentForm.course || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, course: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Register / Roll Number</label>
+                    <input 
+                      type="text" 
+                      value={editStudentForm.register_number || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, register_number: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field admin-form-full">
+                    <label className="admin-form-label">Assigned Project Title</label>
+                    <input 
+                      type="text" 
+                      value={editStudentForm.project_name || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, project_name: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Internship Workflow Status</label>
+                    <select 
+                      value={editStudentForm.status || 'REGISTERED'}
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, status: e.target.value })}
+                      className="admin-select"
+                    >
+                      <option value="REGISTERED">Registered</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="CERTIFICATE_ISSUED">Certificate Issued</option>
+                    </select>
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Start Date</label>
+                    <input 
+                      type="date" 
+                      value={editStudentForm.start_date || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, start_date: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">End Date</label>
+                    <input 
+                      type="date" 
+                      value={editStudentForm.end_date || ''} 
+                      onChange={(e) => setEditStudentForm({ ...editStudentForm, end_date: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setEditStudentModal(null)} 
+                    style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 18px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={editStudentLoading}
+                    style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '8px 22px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    {editStudentLoading ? <RefreshCw size={14} className="spin-anim" /> : <Check size={14} />}
+                    <span>{editStudentLoading ? 'Saving...' : 'Update Candidate'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: EDIT CERTIFICATE REGISTRY RECORD */}
+        {editCertModal && (
+          <div className="modal-overlay" onClick={() => setEditCertModal(null)}>
+            <div className="modal-content" style={{ maxWidth: '580px', width: '95vw', padding: '24px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#1e293b' }}>
+                    Update Certificate Record ({editCertModal.certificate_id})
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    Modify official certificate serial, recipient name, project title, issue date, or validity status.
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setEditCertModal(null)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditCertificate}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '18px' }}>
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Certificate Serial ID *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={editCertForm.certificate_id || ''} 
+                      onChange={(e) => setEditCertForm({ ...editCertForm, certificate_id: e.target.value })}
+                      className="admin-input"
+                      placeholder="e.g. WIN-2026-0007"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Recipient Student Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={editCertForm.student_name || ''} 
+                      onChange={(e) => setEditCertForm({ ...editCertForm, student_name: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">Project Title</label>
+                    <input 
+                      type="text" 
+                      value={editCertForm.project_name || ''} 
+                      onChange={(e) => setEditCertForm({ ...editCertForm, project_name: e.target.value })}
+                      className="admin-input"
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Official Issue Date</label>
+                      <input 
+                        type="date" 
+                        value={editCertForm.issue_date || ''} 
+                        onChange={(e) => setEditCertForm({ ...editCertForm, issue_date: e.target.value })}
+                        className="admin-input"
+                      />
+                    </div>
+
+                    <div className="admin-form-field">
+                      <label className="admin-form-label">Registry Validity Status</label>
+                      <select 
+                        value={editCertForm.status || 'VALID'}
+                        onChange={(e) => setEditCertForm({ ...editCertForm, status: e.target.value })}
+                        className="admin-select"
+                      >
+                        <option value="VALID">VALID (Verified Authentic)</option>
+                        <option value="REVOKED">REVOKED (Invalidated)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setEditCertModal(null)} 
+                    style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 18px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={editCertLoading}
+                    style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '8px 22px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    {editCertLoading ? <RefreshCw size={14} className="spin-anim" /> : <Check size={14} />}
+                    <span>{editCertLoading ? 'Saving...' : 'Update Certificate'}</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

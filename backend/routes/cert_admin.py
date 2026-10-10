@@ -84,7 +84,8 @@ def students():
     })
 
 
-@cert_admin_bp.route("/api/admin/students/<int:pk>/", methods=["GET", "PUT"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/", methods=["GET", "PUT", "DELETE"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>", methods=["GET", "PUT", "DELETE"])
 @admin_required
 def student_detail(pk):
     host_url = request.host_url.rstrip("/")
@@ -92,26 +93,37 @@ def student_detail(pk):
     if not user:
         return jsonify({"detail": "Student not found."}), 404
 
+    if request.method == "DELETE":
+        try:
+            if user.internship:
+                if user.internship.certificate:
+                    db.session.delete(user.internship.certificate)
+                db.session.delete(user.internship)
+            if user.profile:
+                db.session.delete(user.profile)
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({"success": True, "message": f"Candidate #{pk} successfully deleted."}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"detail": f"Failed to delete candidate: {str(e)}"}), 500
+
     ensure_student_records(user)
 
     if request.method == "PUT":
-        internship = user.internship
-        if internship and internship.certificate:
-            return jsonify({"detail": "Issued certificate details are immutable. Revoke the certificate if it is incorrect."}), 400
-
         data = request.get_json() or {}
         media_folder = current_app.config["MEDIA_FOLDER"]
 
-        if "full_name" in data:
-            user.full_name = data["full_name"]
-        if "email" in data:
+        if "full_name" in data and data["full_name"]:
+            user.full_name = data["full_name"].strip()
+        if "email" in data and data["email"]:
             user.email = data["email"].strip().lower()
 
         profile = user.profile
         if profile:
             for field in ["candidate_type", "gender", "mobile_number", "college_name", "department", "course", "register_number"]:
-                if field in data:
-                    setattr(profile, field, data[field])
+                if field in data and data[field] is not None:
+                    setattr(profile, field, str(data[field]).strip())
 
             if "college_id_card" in data and data["college_id_card"]:
                 saved = save_base64_file(data["college_id_card"], media_folder, "college_ids", "id_doc")
@@ -122,13 +134,34 @@ def student_detail(pk):
                 if saved:
                     profile.selfie_photo = saved
 
+        internship = user.internship
         if internship:
-            if "project_name" in data:
-                internship.project_name = data["project_name"]
+            if "project_name" in data and data["project_name"]:
+                internship.project_name = data["project_name"].strip()
+            if "status" in data and data["status"]:
+                internship.status = data["status"].strip()
             if "start_date" in data and data["start_date"]:
-                internship.start_date = date.fromisoformat(data["start_date"])
-            if "end_date" in data and data["end_date"]:
-                internship.end_date = date.fromisoformat(data["end_date"])
+                try:
+                    internship.start_date = date.fromisoformat(str(data["start_date"]).split("T")[0])
+                except Exception:
+                    pass
+            if "end_date" in data:
+                if data["end_date"]:
+                    try:
+                        internship.end_date = date.fromisoformat(str(data["end_date"]).split("T")[0])
+                    except Exception:
+                        pass
+                else:
+                    internship.end_date = None
+
+            # Sync certificate snapshot if already issued
+            if internship.certificate:
+                snap = dict(internship.certificate.snapshot or {})
+                if "full_name" in data:
+                    snap["student_name"] = data["full_name"]
+                if "project_name" in data:
+                    snap["project_name"] = data["project_name"]
+                internship.certificate.snapshot = snap
 
         db.session.commit()
 
@@ -249,3 +282,61 @@ def revoke(pk):
         cert.revoked_at = datetime.now(timezone.utc)
         db.session.commit()
     return jsonify(certificate_data(cert))
+
+
+@cert_admin_bp.route("/api/admin/certificates/<int:pk>/", methods=["GET", "PUT", "DELETE"])
+@cert_admin_bp.route("/api/admin/certificates/<int:pk>", methods=["GET", "PUT", "DELETE"])
+@admin_required
+def certificate_detail(pk):
+    cert = Certificate.query.get(pk)
+    if not cert:
+        return jsonify({"detail": "Certificate not found."}), 404
+
+    if request.method == "DELETE":
+        try:
+            if cert.internship:
+                if cert.internship.status == "CERTIFICATE_ISSUED":
+                    cert.internship.status = "COMPLETED"
+            db.session.delete(cert)
+            db.session.commit()
+            return jsonify({"success": True, "message": f"Certificate #{pk} successfully deleted from registry."}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"detail": f"Failed to delete certificate: {str(e)}"}), 500
+
+    if request.method == "PUT":
+        data = request.get_json() or {}
+        if "certificate_id" in data and data["certificate_id"]:
+            cid = str(data["certificate_id"]).strip()
+            existing = Certificate.query.filter(Certificate.certificate_id == cid, Certificate.id != pk).first()
+            if existing:
+                return jsonify({"detail": f"Certificate ID '{cid}' is already in use by another certificate."}), 400
+            cert.certificate_id = cid
+
+        if "issue_date" in data and data["issue_date"]:
+            try:
+                cert.issue_date = date.fromisoformat(str(data["issue_date"]).split("T")[0])
+            except Exception:
+                pass
+
+        if "status" in data and data["status"]:
+            new_st = str(data["status"]).strip().upper()
+            if new_st in ["VALID", "REVOKED"]:
+                cert.status = new_st
+                if new_st == "REVOKED" and not cert.revoked_at:
+                    cert.revoked_at = datetime.now(timezone.utc)
+                elif new_st == "VALID":
+                    cert.revoked_at = None
+
+        # Update snapshot student_name and project_name
+        snap = dict(cert.snapshot or {})
+        if "student_name" in data and data["student_name"]:
+            snap["student_name"] = str(data["student_name"]).strip()
+        if "project_name" in data and data["project_name"]:
+            snap["project_name"] = str(data["project_name"]).strip()
+        cert.snapshot = snap
+
+        db.session.commit()
+
+    return jsonify(certificate_data(cert))
+
