@@ -20,27 +20,30 @@ export default function Home() {
           </h1>
           <p className="lead mt-4 fw-semibold text-dark">Wingroo Technologies Verified Internship Portal</p>
           <p className="text-secondary hero-copy">
-            Portal for college interns, school interns, and graduate candidates. Complete your internship milestones, access official verified credentials, and authenticate certificates instantly.
+            New candidate? Click <strong>First Time Register</strong> to create your profile and enroll. Once registered, sign in to track your candidate approval status and download your verified certificate.
           </p>
           <div className="d-flex flex-wrap gap-3 mt-4">
+            <Link to={`${prefix}/register`} className="btn btn-primary btn-lg shadow-sm">
+              <i aria-hidden="true" className="bi bi-person-plus-fill me-2" />
+              First Time Register
+            </Link>
+
             {user ? (
-              <Link to={targetDashboard} className="btn btn-primary btn-lg shadow-sm">
-                Open {admin ? 'Admin' : 'Candidate'} Dashboard{" "}
+              <Link to={targetDashboard} className="btn btn-outline-primary btn-lg">
+                <i aria-hidden="true" className="bi bi-person-check-fill me-2" />
+                View Registered Status ({user.full_name?.split(' ')[0] || (admin ? 'Admin' : 'Candidate')}){" "}
                 <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
               </Link>
             ) : (
-              <>
-                <Link to={`${prefix}/login`} className="btn btn-primary btn-lg shadow-sm">
-                  Candidate Status & Sign In{" "}
-                  <i aria-hidden="true" className="bi bi-arrow-right ms-2" />
-                </Link>
-                <Link to={`${prefix}/register`} className="btn btn-outline-secondary btn-lg">
-                  First Time Register
-                </Link>
-              </>
+              <Link to={`${prefix}/login`} className="btn btn-outline-secondary btn-lg">
+                <i aria-hidden="true" className="bi bi-box-arrow-in-right me-2" />
+                Already Registered? View Status & Sign In
+              </Link>
             )}
-            <Link to={`${prefix}/verify`} className="btn btn-outline-primary btn-lg">
-              Verify certificate
+
+            <Link to={`${prefix}/verify`} className="btn btn-outline-secondary btn-lg">
+              <i aria-hidden="true" className="bi bi-qr-code-scan me-2" />
+              Verify Certificate
             </Link>
           </div>
         </div>

@@ -30,15 +30,29 @@ def create_app():
     os.makedirs(app.config.get("ASSETS_FOLDER", "assets"), exist_ok=True)
 
     # Enable CORS for frontend development and production
-    cors_origins = app.config.get('CORS_ORIGINS', '*')
-    if cors_origins != '*' and ',' in cors_origins:
-        cors_origins = [o.strip() for o in cors_origins.split(',') if o.strip()]
+    raw_origins = app.config.get('CORS_ORIGINS', '*')
+    if raw_origins == '*':
+        cors_origins = '*'
+    else:
+        if isinstance(raw_origins, str):
+            cors_origins = [o.strip().rstrip('/') for o in raw_origins.split(',') if o.strip()]
+        else:
+            cors_origins = [str(o).strip().rstrip('/') for o in raw_origins]
+        
+        # Guarantee both local dev ports and production domains are allowed
+        for origin in [
+            'http://localhost:5173', 'http://127.0.0.1:5173',
+            'http://localhost:3000', 'http://127.0.0.1:3000',
+            'https://wingrootechnologies.com', 'https://www.wingrootechnologies.com'
+        ]:
+            if origin not in cors_origins:
+                cors_origins.append(origin)
 
     CORS(app, resources={
         r"/api/*": {"origins": cors_origins},
         r"/uploads/*": {"origins": cors_origins},
         r"/media/*": {"origins": cors_origins}
-    }, methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
+    }, methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], supports_credentials=True)
 
     # Register Blueprints
     app.register_blueprint(contact_bp)

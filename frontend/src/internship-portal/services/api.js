@@ -1,8 +1,13 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config/api";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : "/api");
+const isLocal =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+const baseURL = isLocal
+  ? "/api"
+  : (import.meta.env.VITE_API_BASE_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : "https://backend.wingrootechnologies.com/api"));
 export const api = axios.create({ baseURL, timeout: 20000 });
 let refreshRequest = null;
 export function clearSession() {
