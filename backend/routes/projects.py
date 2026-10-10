@@ -4,6 +4,7 @@ from database import get_db_connection
 projects_bp = Blueprint('projects', __name__)
 
 @projects_bp.route('/api/projects', methods=['GET'])
+@projects_bp.route('/api/projects/', methods=['GET'])
 def get_projects():
     try:
         conn, db_type = get_db_connection()

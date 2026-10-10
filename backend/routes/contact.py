@@ -4,6 +4,7 @@ from database import get_db_connection
 contact_bp = Blueprint('contact', __name__)
 
 @contact_bp.route('/api/contact', methods=['POST'])
+@contact_bp.route('/api/contact/', methods=['POST'])
 def submit_contact():
     data = request.get_json() or {}
     

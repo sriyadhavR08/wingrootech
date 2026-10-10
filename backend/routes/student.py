@@ -5,6 +5,7 @@ student_bp = Blueprint("student", __name__)
 
 
 @student_bp.route("/api/student/profile/", methods=["GET"])
+@student_bp.route("/api/student/profile", methods=["GET"])
 @student_required
 def profile():
     host_url = request.host_url.rstrip("/")
@@ -12,6 +13,7 @@ def profile():
 
 
 @student_bp.route("/api/student/internship/", methods=["GET"])
+@student_bp.route("/api/student/internship", methods=["GET"])
 @student_required
 def internship():
     host_url = request.host_url.rstrip("/")
@@ -19,6 +21,7 @@ def internship():
 
 
 @student_bp.route("/api/student/certificate/", methods=["GET"])
+@student_bp.route("/api/student/certificate", methods=["GET"])
 @student_required
 def my_certificate():
     cert = getattr(g.current_user.internship, "certificate", None)

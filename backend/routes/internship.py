@@ -4,6 +4,7 @@ from database import get_db_connection
 internship_bp = Blueprint('internship', __name__)
 
 @internship_bp.route('/api/internship', methods=['POST'])
+@internship_bp.route('/api/internship/', methods=['POST'])
 def submit_internship():
     data = request.get_json() or {}
     

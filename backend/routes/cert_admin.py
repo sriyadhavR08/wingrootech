@@ -10,6 +10,7 @@ cert_admin_bp = Blueprint("cert_admin", __name__)
 
 
 @cert_admin_bp.route("/api/admin/dashboard/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/dashboard", methods=["GET"])
 @admin_required
 def dashboard():
     host_url = request.host_url.rstrip("/")
@@ -35,6 +36,9 @@ def dashboard():
 
 
 @cert_admin_bp.route("/api/admin/students/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/students", methods=["GET"])
+@cert_admin_bp.route("/api/admin/internships/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/internships", methods=["GET"])
 @admin_required
 def students():
     host_url = request.host_url.rstrip("/")
@@ -215,6 +219,7 @@ def set_end_date(pk):
 
 
 @cert_admin_bp.route("/api/admin/certificates/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/certificates", methods=["GET"])
 @admin_required
 def certificates():
     query = Certificate.query.order_by(Certificate.created_at.desc())

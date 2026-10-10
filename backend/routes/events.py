@@ -4,6 +4,7 @@ from database import get_db_connection
 events_bp = Blueprint('events', __name__)
 
 @events_bp.route('/api/events', methods=['GET'])
+@events_bp.route('/api/events/', methods=['GET'])
 def get_events():
     try:
         conn, db_type = get_db_connection()
