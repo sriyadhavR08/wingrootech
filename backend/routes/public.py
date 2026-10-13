@@ -9,6 +9,9 @@ public_bp = Blueprint("public", __name__)
 
 
 @public_bp.route("/api/public/captcha/", methods=["GET"])
+@public_bp.route("/api/public/captcha", methods=["GET"])
+@public_bp.route("/public/captcha/", methods=["GET"])
+@public_bp.route("/public/captcha", methods=["GET"])
 def get_captcha():
     return jsonify(make_captcha())
 
@@ -68,6 +71,9 @@ def _verify_certificate(cert):
 
 
 @public_bp.route("/api/public/verify/token/<token>/", methods=["GET", "POST"])
+@public_bp.route("/api/public/verify/token/<token>", methods=["GET", "POST"])
+@public_bp.route("/public/verify/token/<token>/", methods=["GET", "POST"])
+@public_bp.route("/public/verify/token/<token>", methods=["GET", "POST"])
 def verify_token(token):
     data = request.get_json(silent=True) or {} if request.method == "POST" else request.args
     captcha_token = data.get("captcha_token")
@@ -81,6 +87,9 @@ def verify_token(token):
 
 
 @public_bp.route("/api/public/verify/id/<certificate_id>/", methods=["GET", "POST"])
+@public_bp.route("/api/public/verify/id/<certificate_id>", methods=["GET", "POST"])
+@public_bp.route("/public/verify/id/<certificate_id>/", methods=["GET", "POST"])
+@public_bp.route("/public/verify/id/<certificate_id>", methods=["GET", "POST"])
 def verify_id(certificate_id):
     data = request.get_json(silent=True) or {} if request.method == "POST" else request.args
     captcha_token = data.get("captcha_token")

@@ -23,7 +23,7 @@ export default function Verify() {
     setOtpDigits(["", "", "", "", "", ""]);
     setCaptchaAnswer("");
     try {
-      const { data } = await api.get("/public/captcha/");
+      const { data } = await api.get("/api/public/captcha/");
       setCaptcha(data);
     } catch {
       // Fallback 6-digit numeric OTP if network issue
@@ -111,7 +111,7 @@ export default function Verify() {
       };
 
       if (token) {
-        res = await api.get(`/public/verify/token/${encodeURIComponent(token)}/`, { params });
+        res = await api.get(`/api/public/verify/token/${encodeURIComponent(token)}/`, { params });
       } else {
         if (!id.trim()) {
           setError("Please enter a Certificate ID.");
@@ -119,7 +119,7 @@ export default function Verify() {
           return;
         }
         res = await api.get(
-          `/public/verify/id/${encodeURIComponent(id.trim().toUpperCase())}/`,
+          `/api/public/verify/id/${encodeURIComponent(id.trim().toUpperCase())}/`,
           { params },
         );
       }

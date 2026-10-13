@@ -41,7 +41,7 @@ class Config:
 
     ASSETS_FOLDER = os.getenv("ASSETS_FOLDER") or str(BASE_DIR / "assets")
 
-    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+    FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://wingrootechnologies.com")
     JWT_EXPIRATION_HOURS = 24
     
     # Frontend Origin for CORS
