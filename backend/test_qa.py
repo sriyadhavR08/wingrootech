@@ -6,8 +6,14 @@ or:
     pytest test_qa.py
 """
 
+import os
 import sys
 import unittest
+
+# If DATABASE_URL is not provided, use an in-memory or file SQLite database for isolated QA testing
+if not os.getenv("DATABASE_URL") and os.getenv("GITHUB_ACTIONS"):
+    os.environ["DATABASE_URL"] = "sqlite:///ci_test_db.db"
+
 from app import create_app
 from models import db, User, StudentProfile, Internship, Certificate
 from services.captcha import make_captcha, validate_captcha
@@ -20,6 +26,8 @@ class BackendQATestCase(unittest.TestCase):
         cls.app = create_app()
         cls.app.config["TESTING"] = True
         cls.client = cls.app.test_client()
+        with cls.app.app_context():
+            db.create_all()
 
     def test_01_health_check(self):
         """QA Test: /api/health must return 200 and healthy status"""

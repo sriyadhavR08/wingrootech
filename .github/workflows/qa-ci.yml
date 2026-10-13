@@ -64,5 +64,8 @@ jobs:
 
       - name: Run Backend QA Test Suite
         working-directory: ./backend
+        env:
+          DATABASE_URL: sqlite:///ci_qa_test.db
+          SECRET_KEY: wingroo-ci-test-key-2026
         run: |
           python test_qa.py
