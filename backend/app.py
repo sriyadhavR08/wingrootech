@@ -17,6 +17,9 @@ from routes.student import student_bp
 from routes.cert_admin import cert_admin_bp
 from routes.public import public_bp
 from models import db, User
+from flask_migrate import Migrate
+
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
@@ -29,8 +32,9 @@ def create_app():
     except Exception:
         pass
 
-    # Initialize SQLAlchemy database
+    # Initialize SQLAlchemy database and Flask-Migrate
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Ensure uploads and media folders exist
     media_dir = app.config.get("MEDIA_FOLDER", "uploads")

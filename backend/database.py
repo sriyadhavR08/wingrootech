@@ -9,6 +9,8 @@ def get_db_connection():
     Falls back to SQLite if MySQL is unreachable.
     """
     try:
+        if os.getenv("DATABASE_URL", "").startswith("sqlite"):
+            raise Exception("Using SQLite configured in DATABASE_URL")
         connection = pymysql.connect(
             host=Config.MYSQL_HOST,
             port=Config.MYSQL_PORT,
@@ -16,11 +18,12 @@ def get_db_connection():
             password=Config.MYSQL_PASSWORD,
             database=Config.MYSQL_DB,
             cursorclass=pymysql.cursors.DictCursor,
-            connect_timeout=10
+            connect_timeout=3
         )
         return connection, "mysql"
     except Exception as e:
-        print(f"[Database Warning] MySQL connection to '{Config.MYSQL_DB}' failed ({e}). Using local SQLite fallback.")
+        if not os.getenv("DATABASE_URL", "").startswith("sqlite"):
+            print(f"[Database Warning] MySQL connection to '{Config.MYSQL_DB}' failed ({e}). Using local SQLite fallback.")
         db_path = os.path.join(os.path.dirname(__file__), "fallback_wingrootech.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
@@ -29,13 +32,15 @@ def get_db_connection():
 
 def init_mysql_tables_if_needed():
     """Ensure 'wingrootech_db' and all required tables exist in MySQL (AWS RDS / Local)"""
+    if os.getenv("DATABASE_URL", "").startswith("sqlite") or os.getenv("GITHUB_ACTIONS"):
+        return
     try:
         conn = pymysql.connect(
             host=Config.MYSQL_HOST,
             port=Config.MYSQL_PORT,
             user=Config.MYSQL_USER,
             password=Config.MYSQL_PASSWORD,
-            connect_timeout=10
+            connect_timeout=3
         )
         with conn.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{Config.MYSQL_DB}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
@@ -279,17 +284,38 @@ def init_sqlite_tables(conn):
     CREATE TABLE IF NOT EXISTS projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
-        description TEXT NOT NULL,
+        heading TEXT,
+        tag TEXT DEFAULT 'Featured Project',
+        tags TEXT,
+        description TEXT,
         category TEXT NOT NULL,
+        theme_color TEXT DEFAULT '#4f46e5',
         image TEXT,
+        video_url TEXT,
+        media_type TEXT DEFAULT 'image',
         project_url TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    for col_sql in [
+        "ALTER TABLE projects ADD COLUMN heading TEXT",
+        "ALTER TABLE projects ADD COLUMN tag TEXT DEFAULT 'Featured Project'",
+        "ALTER TABLE projects ADD COLUMN tags TEXT",
+        "ALTER TABLE projects ADD COLUMN theme_color TEXT DEFAULT '#4f46e5'",
+        "ALTER TABLE projects ADD COLUMN video_url TEXT",
+        "ALTER TABLE projects ADD COLUMN media_type TEXT DEFAULT 'image'"
+    ]:
+        try:
+            cursor.execute(col_sql)
+        except Exception:
+            pass
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
+        tagline TEXT,
+        badge TEXT DEFAULT 'Interactive',
         description TEXT NOT NULL,
         event_date TEXT NOT NULL,
         location TEXT NOT NULL,
@@ -298,6 +324,14 @@ def init_sqlite_tables(conn):
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    for col_sql in [
+        "ALTER TABLE events ADD COLUMN tagline TEXT",
+        "ALTER TABLE events ADD COLUMN badge TEXT DEFAULT 'Interactive'"
+    ]:
+        try:
+            cursor.execute(col_sql)
+        except Exception:
+            pass
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS event_registrations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
