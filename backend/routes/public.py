@@ -120,6 +120,13 @@ def download_certificate(pk):
 
     pdf_path = os.path.join(current_app.config["MEDIA_FOLDER"], cert.pdf_file)
     if not os.path.isfile(pdf_path):
+        try:
+            from services.storage import download_from_s3
+            download_from_s3(cert.pdf_file, pdf_path)
+        except Exception:
+            pass
+
+    if not os.path.isfile(pdf_path):
         return jsonify({"detail": "Certificate file not found on disk."}), 404
 
     response = send_file(
@@ -137,7 +144,8 @@ def download_certificate(pk):
 def serve_media(filename):
     # 1. Primary MEDIA_FOLDER
     primary = current_app.config.get("MEDIA_FOLDER", "uploads")
-    if os.path.exists(os.path.join(primary, filename)):
+    primary_path = os.path.join(primary, filename)
+    if os.path.exists(primary_path):
         return send_from_directory(primary, filename)
 
     # 2. Check /var/app_media if on Linux
@@ -148,6 +156,14 @@ def serve_media(filename):
     app_uploads = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
     if os.path.exists(os.path.join(app_uploads, filename)):
         return send_from_directory(app_uploads, filename)
+
+    # 4. Fetch on-demand from S3 if missing locally
+    try:
+        from services.storage import download_from_s3
+        if download_from_s3(filename, primary_path):
+            return send_from_directory(primary, filename)
+    except Exception:
+        pass
 
     return jsonify({"error": "Media file not found"}), 404
 

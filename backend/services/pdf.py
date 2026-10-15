@@ -68,6 +68,16 @@ def load_and_prepare_photo(photo_ref, media_folder_path, target_width=75, target
                     img = Image.open(p)
                     break
 
+            if img is None:
+                # Try downloading from S3 bucket if missing locally
+                try:
+                    from services.storage import download_from_s3
+                    target_p = media_p / photo_ref
+                    if download_from_s3(photo_ref, target_p) and target_p.exists():
+                        img = Image.open(target_p)
+                except Exception:
+                    pass
+
         if img is None:
             return None
 

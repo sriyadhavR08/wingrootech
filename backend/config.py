@@ -39,6 +39,11 @@ class Config:
     else:
         MEDIA_FOLDER = str(BASE_DIR / "uploads")
 
+    # AWS S3 Storage for permanent persistence of media, certificates & uploads
+    S3_MEDIA_BUCKET = os.getenv("S3_MEDIA_BUCKET") or os.getenv("MEDIA_BUCKET_NAME") or os.getenv("SSL_BUCKET_NAME", "wingroo-23243253453")
+    S3_MEDIA_PREFIX = os.getenv("S3_MEDIA_PREFIX", "media")
+    AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
+
     ASSETS_FOLDER = os.getenv("ASSETS_FOLDER") or str(BASE_DIR / "assets")
 
     FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "https://wingrootechnologies.com")

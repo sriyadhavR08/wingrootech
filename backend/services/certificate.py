@@ -65,6 +65,13 @@ def generate_certificate(internship_id):
     with open(file_path, "wb") as f:
         f.write(pdf_bytes)
 
+    # Sync certificate PDF to S3
+    try:
+        from services.storage import upload_to_s3
+        upload_to_s3(pdf_bytes, f"certificates/{pdf_filename}", content_type="application/pdf")
+    except Exception as e:
+        print(f"Warning: S3 sync for certificate {pdf_filename} skipped: {e}")
+
     cert.pdf_file = f"certificates/{pdf_filename}"
     internship.status = "CERTIFICATE_ISSUED"
 
