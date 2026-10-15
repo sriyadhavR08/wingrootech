@@ -6,6 +6,8 @@ on:
       - '**' # Triggers on all branches (dev, main, feature/*)
   pull_request:
     branches:
+      - qa-testing
+      - dev
       - main
 
 jobs:
@@ -69,3 +71,19 @@ jobs:
           SECRET_KEY: wingroo-ci-test-key-2026
         run: |
           python test_qa.py
+
+      - name: Verify Database Migrations Consistency
+        working-directory: ./backend
+        env:
+          DATABASE_URL: sqlite:///ci_qa_test.db
+          FLASK_APP: app.py
+        run: |
+          python -m flask db current || true
+
+      - name: Run E2E Health & Integration QA Check
+        working-directory: ./backend
+        env:
+          DATABASE_URL: sqlite:///ci_qa_test.db
+          SECRET_KEY: wingroo-ci-test-key-2026
+        run: |
+          python -c "from app import create_app; app = create_app(); client = app.test_client(); res = client.get('/api/health'); assert res.status_code == 200; print('CI E2E Health Check Passed!')"

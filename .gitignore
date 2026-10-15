@@ -25,3 +25,5 @@ backend/media/*
 .DS_Store
 Thumbs.db
 *.zip
+backend-deploy/
+scratch_*.py
