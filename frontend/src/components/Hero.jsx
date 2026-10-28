@@ -1,12 +1,12 @@
 import React from 'react';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  Layers, 
-  Cpu, 
-  Compass, 
-  TrendingUp, 
-  CheckCircle2, 
+import {
+  ArrowRight,
+  Sparkles,
+  Layers,
+  Cpu,
+  Compass,
+  TrendingUp,
+  CheckCircle2,
   Terminal,
   Bot,
   Zap,
@@ -45,15 +45,15 @@ export default function Hero() {
             </p>
 
             <p className="hero-description">
-              Wingroo Technologies is a premier software & web development company in Coimbatore. We build high-performance 
-              <strong> Custom Web Applications, Enterprise Portals, and Cloud Platforms</strong>, alongside cutting-edge 
-              <strong> Autonomous AI Agents</strong> and <strong>72-Hour Rapid MVPs</strong>. For engineering students and graduates, 
+              Wingroo Technologies is a premier software & web development company in Coimbatore. We build high-performance
+              <strong> Custom Web Applications, Enterprise Portals, and Cloud Platforms</strong>, alongside cutting-edge
+              <strong> Autonomous AI Agents</strong> and <strong>72-Hour Rapid MVPs</strong>. For engineering students and graduates,
               we conduct intensive 15–20 days college internships with up to 100% scholarships, daily timetables, and verified GitHub project deliverables.
             </p>
 
             <div className="hero-actions">
-              <button 
-                onClick={() => scrollTo('#contact')} 
+              <button
+                onClick={() => scrollTo('#contact')}
                 className="btn btn-primary hero-btn hero-b2b-primary"
                 title="Start Your Project / Book a Free Consultation"
               >
@@ -61,10 +61,10 @@ export default function Hero() {
                 <ArrowRight size={18} />
               </button>
 
-              <a 
-                href="https://wa.me/919626779608?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20project%20consultation." 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://wa.me/919626779609?text=Hello%20Wingroo%20Technologies,%20I%20would%20like%20to%20discuss%20a%20project%20consultation."
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn btn-secondary hero-btn hero-whatsapp-btn"
                 title="Direct WhatsApp Consultation with Software Engineers"
               >
@@ -72,8 +72,8 @@ export default function Hero() {
                 <ArrowRight size={18} />
               </a>
 
-              <button 
-                onClick={() => scrollTo('#portfolio')} 
+              <button
+                onClick={() => scrollTo('#portfolio')}
                 className="btn hero-explore-btn"
                 title="Explore Featured Portfolio Projects"
               >

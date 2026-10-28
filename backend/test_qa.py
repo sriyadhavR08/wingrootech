@@ -10,9 +10,9 @@ import os
 import sys
 import unittest
 
-# If DATABASE_URL is not provided, use an in-memory or file SQLite database for isolated QA testing
-if not os.getenv("DATABASE_URL") and os.getenv("GITHUB_ACTIONS"):
-    os.environ["DATABASE_URL"] = "sqlite:///ci_test_db.db"
+# If DATABASE_URL is not provided, use a clean SQLite database for isolated QA testing
+if not os.getenv("DATABASE_URL"):
+    os.environ["DATABASE_URL"] = "sqlite:///qa_test_isolated.db"
 
 from app import create_app
 from models import db, User, StudentProfile, Internship, Certificate

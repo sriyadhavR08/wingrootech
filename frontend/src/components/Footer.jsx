@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   ArrowUp,
   MapPin,
   Phone,
@@ -63,10 +63,10 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
           <div className="footer-brand-col">
             <div className="footer-brand" onClick={scrollToTop}>
               <div className="footer-logo-wrap">
-                <img 
-                  src="/logo.png" 
-                  alt="Wingroo Technologies" 
-                  className="footer-brand-logo" 
+                <img
+                  src="/logo.png"
+                  alt="Wingroo Technologies"
+                  className="footer-brand-logo"
                 />
               </div>
               <div className="footer-brand-text">
@@ -81,41 +81,41 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
             </p>
 
             <div className="footer-social-links">
-              <a 
-                href="https://www.linkedin.com/in/wingroo-technologies?utm_source=share_via&utm_content=profile&utm_medium=member_android" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="social-btn" 
+              <a
+                href="https://www.linkedin.com/in/wingroo-technologies?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
                 aria-label="LinkedIn"
                 title="LinkedIn"
               >
                 <LinkedinIcon />
               </a>
-              <a 
-                href="https://www.instagram.com/wingrootechnologies?stkn=MW5kY3ZwMGcweTlxNA==" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="social-btn" 
+              <a
+                href="https://www.instagram.com/wingrootechnologies?stkn=MW5kY3ZwMGcweTlxNA=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
                 aria-label="Instagram"
                 title="Instagram"
               >
                 <InstagramIcon />
               </a>
-              <a 
-                href="https://www.facebook.com/profile.php?id=100064696851817" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="social-btn" 
+              <a
+                href="https://www.facebook.com/profile.php?id=100064696851817"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
                 aria-label="Facebook"
                 title="Facebook"
               >
                 <FacebookIcon />
               </a>
-              <a 
-                href="https://wa.me/919626779608" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="social-btn" 
+              <a
+                href="https://wa.me/919626779609"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
                 aria-label="WhatsApp"
                 title="WhatsApp"
               >
@@ -152,7 +152,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
               <li>
                 <a href="https://iiepulse.indrainstitute.com/" target="_blank" rel="noopener noreferrer" className="featured-link" title="Open IIE Pulse Platform">
                   <span>IIE Pulse ↗</span>
-                  <span className="footer-chip">Web & Mobile</span>
+                  <span className="footer-chip">Web App & Mobile App</span>
                 </a>
               </li>
               <li>
@@ -173,7 +173,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
             <h4 className="footer-col-title">Headquarters</h4>
             <div className="footer-contact-info">
               <p><MapPin size={16} className="contact-icon" /> Coimbatore, Tamil Nadu, India</p>
-              <p><Phone size={16} className="contact-icon" /> +91 96267 79608</p>
+              <p><Phone size={16} className="contact-icon" /> +91 96267 79609</p>
               <p><Mail size={16} className="contact-icon" /> info@wingrootechnologies.com</p>
             </div>
             <button onClick={scrollToTop} className="scroll-top-btn" title="Back to top">
@@ -191,18 +191,18 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
 
           {/* Legal Compliance Links */}
           <div className="footer-legal-links">
-            <button 
-              type="button" 
-              onClick={() => setLegalModal('privacy')} 
+            <button
+              type="button"
+              onClick={() => setLegalModal('privacy')}
               className="footer-legal-btn"
               title="Read our Privacy Policy"
             >
               Privacy Policy
             </button>
             <span className="footer-legal-dot">•</span>
-            <button 
-              type="button" 
-              onClick={() => setLegalModal('terms')} 
+            <button
+              type="button"
+              onClick={() => setLegalModal('terms')}
               className="footer-legal-btn"
               title="Read our Terms of Service"
             >
@@ -215,8 +215,8 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
           </div>
 
           {onOpenAdmin && (
-            <button 
-              onClick={onOpenAdmin} 
+            <button
+              onClick={onOpenAdmin}
               className="footer-admin-link"
               title="Admin Portal (Password protected)"
             >
@@ -230,8 +230,8 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
       {/* Legal Modal Drawer */}
       {legalModal && (
         <div className="legal-modal-overlay" onClick={() => setLegalModal(null)}>
-          <div 
-            className="legal-modal-container" 
+          <div
+            className="legal-modal-container"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -252,7 +252,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 className="legal-modal-close"
                 onClick={() => setLegalModal(null)}
                 aria-label="Close dialog"
@@ -308,7 +308,7 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
                       <br />
                       <strong>Wingroo Technologies</strong>, Coimbatore, Tamil Nadu, India.
                       <br />
-                      Email: <code>info@wingrootechnologies.com</code> | Phone: <code>+91 96267 79608</code>
+                      Email: <code>info@wingrootechnologies.com</code> | Phone: <code>+91 96267 79609</code>
                     </p>
                   </section>
                 </div>
@@ -363,8 +363,8 @@ export default function Footer({ onOpenAdmin, onOpenStudentPortal, onOpenLogin }
             </div>
 
             <div className="legal-modal-footer">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="legal-modal-action-btn"
                 onClick={() => setLegalModal(null)}
               >

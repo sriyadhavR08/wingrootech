@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Send, 
-  MessageSquare, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  MessageSquare,
+  Clock,
+  CheckCircle2,
   AlertCircle,
   Loader2,
   ExternalLink
@@ -40,7 +40,7 @@ export default function Contact() {
           }));
         }
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const handleChange = (e) => {
@@ -113,7 +113,7 @@ export default function Contact() {
           </div>
           <h2 className="section-title">Let's Start a Conversation.</h2>
           <p className="section-desc">
-            Have a project in mind? Looking for a technology partner? Interested in an internship or collaboration? 
+            Have a project in mind? Looking for a technology partner? Interested in an internship or collaboration?
             Tell us what you're working on. Let's explore what we can create together.
           </p>
         </div>
@@ -138,24 +138,24 @@ export default function Contact() {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
-                  <input 
-                    type="text" 
-                    name="name" 
-                    required 
-                    className="form-input" 
-                    placeholder="Enter your full name" 
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    className="form-input"
+                    placeholder="Enter your full name"
                     value={formData.name}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Email Address *</label>
-                  <input 
-                    type="email" 
-                    name="email" 
-                    required 
-                    className="form-input" 
-                    placeholder="Enter your email address" 
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    className="form-input"
+                    placeholder="Enter your email address"
                     value={formData.email}
                     onChange={handleChange}
                   />
@@ -165,19 +165,19 @@ export default function Contact() {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    name="phone" 
-                    className="form-input" 
-                    placeholder="Enter your mobile number" 
+                  <input
+                    type="tel"
+                    name="phone"
+                    className="form-input"
+                    placeholder="Enter your mobile number"
                     value={formData.phone}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">What are you looking for?</label>
-                  <select 
-                    name="subject" 
+                  <select
+                    name="subject"
                     className="form-select"
                     value={formData.subject}
                     onChange={handleChange}
@@ -192,20 +192,20 @@ export default function Contact() {
 
               <div className="form-group">
                 <label className="form-label">Tell us about it *</label>
-                <textarea 
-                  name="message" 
-                  required 
-                  className="form-textarea" 
-                  rows={4} 
+                <textarea
+                  name="message"
+                  required
+                  className="form-textarea"
+                  rows={4}
                   placeholder="Describe your requirements, goals, or project scope..."
                   value={formData.message}
                   onChange={handleChange}
                 />
               </div>
 
-              <button 
-                type="submit" 
-                disabled={loading} 
+              <button
+                type="submit"
+                disabled={loading}
                 className="btn btn-primary contact-submit-btn"
               >
                 {loading ? (
@@ -249,7 +249,7 @@ export default function Contact() {
                   <div className="info-details">
                     <span className="info-label">Phone</span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <a href="tel:+919626779608" className="info-link">+91 96267 79608</a>
+                      <a href="tel:+919626779609" className="info-link">+91 96267 79609</a>
                     </div>
                   </div>
                 </div>
@@ -280,14 +280,14 @@ export default function Contact() {
                   <strong>Need immediate consultation?</strong>
                   <p>Connect with our technical lead via WhatsApp or direct call.</p>
                 </div>
-                <a 
-                  href="https://wa.me/919626779608?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20inquire%20about%20your%20services/internship." 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://wa.me/919626779609?text=Hi%20Wingroo%20Technologies,%20I%20would%20like%20to%20inquire%20about%20your%20services/internship."
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn btn-outline whatsapp-btn"
                 >
                   <MessageSquare size={16} />
-                  <span>Chat on WhatsApp (+91 96267 79608)</span>
+                  <span>Chat on WhatsApp (+91 96267 79609)</span>
                 </a>
               </div>
             </div>
@@ -301,10 +301,10 @@ export default function Contact() {
               <MapPin size={16} />
               <span>Wingroo Technologies Live Office Location • Tatabad, Coimbatore</span>
             </div>
-            <a 
-              href="https://www.google.com/maps/search/?api=1&query=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012"
+              target="_blank"
+              rel="noopener noreferrer"
               className="map-directions-link"
               title="Open Wingroo Technologies in Google Maps"
             >
@@ -313,14 +313,14 @@ export default function Contact() {
             </a>
           </div>
           <div className="google-map-iframe-wrap">
-            <iframe 
+            <iframe
               title="Wingroo Technologies Live Office Location"
               src="https://maps.google.com/maps?q=Wingroo+Technologies,+64/1,+7th+Street,+Tatabad,+Coimbatore,+Tamil+Nadu+641012&t=&z=16&ie=UTF8&iwloc=B&output=embed"
-              width="100%" 
-              height="260" 
-              style={{ border: 0, borderRadius: '12px', display: 'block' }} 
-              allowFullScreen="" 
-              loading="lazy" 
+              width="100%"
+              height="260"
+              style={{ border: 0, borderRadius: '12px', display: 'block' }}
+              allowFullScreen=""
+              loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
