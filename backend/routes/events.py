@@ -133,6 +133,25 @@ def register_event():
             new_id = cursor.lastrowid
 
         conn.commit()
+
+        # Asynchronously sync event registration to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Event Registration', {
+                'id': new_id,
+                'registration_no': reg_no,
+                'event_title': event_title,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'college': college,
+                'year': year,
+                'status': 'Confirmed',
+                'notes': notes
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
         return jsonify({
             'success': True,
             'message': f'Registration confirmed for {event_title}!',

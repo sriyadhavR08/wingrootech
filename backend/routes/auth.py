@@ -134,6 +134,25 @@ def register():
         user.last_login = datetime.datetime.now(datetime.timezone.utc)
         db.session.commit()
 
+        # Asynchronously sync new student registration to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Student Registration', {
+                'id': user.id,
+                'full_name': user.full_name,
+                'email': user.email,
+                'phone': data.get("mobile_number", ""),
+                'candidate_type': cand_type,
+                'college_name': profile.college_name,
+                'department': profile.department,
+                'course': profile.course,
+                'register_number': profile.register_number,
+                'project_name': internship.project_name if internship else '',
+                'status': 'REGISTERED'
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
         access_token, refresh_token = generate_tokens(user)
         cand_label_map = {
             "PROJECT_CLIENT": "Project Client Candidate",
@@ -239,6 +258,25 @@ def candidate_register():
         )
         db.session.add(internship)
         db.session.commit()
+
+        # Asynchronously sync candidate registration to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Student Registration', {
+                'id': user.id,
+                'full_name': user.full_name,
+                'email': user.email,
+                'phone': phone,
+                'candidate_type': candidate_type,
+                'college_name': profile.college_name,
+                'department': profile.department,
+                'course': profile.course,
+                'register_number': profile.register_number,
+                'project_name': internship.project_name if internship else '',
+                'status': 'REGISTERED'
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
 
         access_token, refresh_token = generate_tokens(user)
         return jsonify({

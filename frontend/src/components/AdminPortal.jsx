@@ -1166,47 +1166,90 @@ export default function AdminPortal({ isOpen, onClose, onDataChanged, onSwitchRo
   };
 
   const exportToCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
+    const esc = (val) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    let csvContent = '';
+    let defaultFilename = `wingroo_${activeTab}_export.csv`;
+
     if (activeTab === 'contacts') {
-      csvContent += "ID,Name,Email,Phone,Subject,Message,Date\n";
+      csvContent += 'ID,Name,Email,Phone,Subject,Message,Date\n';
       contacts.forEach(c => {
-        const cleanMsg = `"${(c.message || '').replace(/"/g, '""')}"`;
-        csvContent += `${c.id},"${c.name}","${c.email}","${c.phone || ''}","${c.subject || ''}",${cleanMsg},"${c.created_at || ''}"\n`;
+        csvContent += [c.id, esc(c.name), esc(c.email), esc(c.phone), esc(c.subject), esc(c.message), esc(c.created_at)].join(',') + '\n';
       });
     } else if (activeTab === 'internships') {
-      csvContent += "ID,Name,Email,Phone,College,Course,Year,InternshipType,Technology,Message,Date\n";
+      csvContent += 'ID,Application No,Name,Email,Phone,College,Course,Year,Internship Type,Technology,Message,Resume URL,Portfolio URL,Status,Date\n';
       internships.forEach(i => {
-        const cleanMsg = `"${(i.message || '').replace(/"/g, '""')}"`;
-        csvContent += `${i.id},"${i.name}","${i.email}","${i.phone}","${i.college}","${i.course}","${i.year}","${i.internship_type}","${i.technology}",${cleanMsg},"${i.created_at || ''}"\n`;
+        csvContent += [i.id, esc(i.application_no), esc(i.name), esc(i.email), esc(i.phone), esc(i.college), esc(i.course), esc(i.year), esc(i.internship_type), esc(i.technology), esc(i.message), esc(i.resume_url), esc(i.portfolio_url), esc(i.status || 'Under Review'), esc(i.created_at)].join(',') + '\n';
+      });
+    } else if (activeTab === 'students') {
+      csvContent += 'ID,Student Name,Email,Phone,Candidate Type,College,Department,Course,Register No,Project Name,Start Date,End Date,Status,Certificate ID,Issue Date\n';
+      studentsList.forEach(st => {
+        csvContent += [
+          st.id,
+          esc(st.full_name),
+          esc(st.email),
+          esc(st.mobile_number),
+          esc(st.candidate_type_display || st.candidate_type || 'Intern'),
+          esc(st.college_name),
+          esc(st.department),
+          esc(st.course),
+          esc(st.register_number),
+          esc(st.project_name),
+          esc(st.start_date),
+          esc(st.end_date || 'Ongoing'),
+          esc(st.status),
+          esc(st.certificate?.certificate_id || 'Not Issued'),
+          esc(st.certificate?.issue_date || '')
+        ].join(',') + '\n';
+      });
+    } else if (activeTab === 'certificates') {
+      csvContent += 'ID,Certificate ID,Student Name,Project Name,Issue Date,Status,Verification URL\n';
+      certificatesList.forEach(cert => {
+        csvContent += [
+          cert.id,
+          esc(cert.certificate_id),
+          esc(cert.student_name),
+          esc(cert.project_name),
+          esc(cert.issue_date),
+          esc(cert.status),
+          esc(cert.verification_url)
+        ].join(',') + '\n';
       });
     } else if (activeTab === 'college_internships') {
-      csvContent += "ID,Title,Domain,Type,Duration,Badge,Mode,Scholarship,Schedule,Status,Date\n";
+      csvContent += 'ID,Title,Domain,Type,Duration,Badge,Mode,Scholarship,Schedule,Status,Date\n';
       collegeInternships.forEach(ci => {
-        csvContent += `${ci.id},"${ci.title}","${ci.domain}","${ci.internship_type}","${ci.duration}","${ci.badge}","${ci.mode}","${ci.stipend_or_scholarship}","${ci.schedule_info}","${ci.status}","${ci.created_at || ''}"\n`;
+        csvContent += [ci.id, esc(ci.title), esc(ci.domain), esc(ci.internship_type), esc(ci.duration), esc(ci.badge), esc(ci.mode), esc(ci.stipend_or_scholarship), esc(ci.schedule_info), esc(ci.status), esc(ci.created_at)].join(',') + '\n';
       });
     } else if (activeTab === 'event_registrations') {
-      csvContent += "ID,RegNo,Event,Name,Email,Phone,College,Year,Status,Date\n";
+      csvContent += 'ID,Registration No,Event Title,Name,Email,Phone,College,Year,Status,Notes,Date\n';
       eventRegistrations.forEach(r => {
-        csvContent += `${r.id},"${r.registration_no}","${r.event_title}","${r.name}","${r.email}","${r.phone}","${r.college}","${r.year || ''}","${r.status}","${r.created_at || ''}"\n`;
+        csvContent += [r.id, esc(r.registration_no), esc(r.event_title), esc(r.name), esc(r.email), esc(r.phone), esc(r.college), esc(r.year), esc(r.status), esc(r.notes), esc(r.created_at)].join(',') + '\n';
       });
     } else if (activeTab === 'projects') {
-      csvContent += "ID,Title,Heading,Category,Tags,Media,DemoURL\n";
+      csvContent += 'ID,Title,Heading,Category,Tags,Media URL,Demo URL\n';
       projects.forEach(p => {
-        csvContent += `${p.id},"${p.title}","${p.heading || ''}","${p.category || ''}","${(p.tags || []).join(';')}","${p.videoUrl || p.image || ''}","${p.demoUrl || ''}"\n`;
+        csvContent += [p.id, esc(p.title), esc(p.heading), esc(p.category), esc((p.tags || []).join('; ')), esc(p.videoUrl || p.image || ''), esc(p.demoUrl || '')].join(',') + '\n';
       });
     } else {
-      csvContent += "ID,Title,Tagline,Badge,Date,Location,Poster\n";
+      csvContent += 'ID,Title,Tagline,Badge,Date,Location,Poster URL\n';
       events.forEach(ev => {
-        csvContent += `${ev.id},"${ev.title}","${ev.tagline || ''}","${ev.badge || ''}","${ev.event_date || ''}","${ev.location || ''}","${ev.poster_url || ''}"\n`;
+        csvContent += [ev.id, esc(ev.title), esc(ev.tagline), esc(ev.badge), esc(ev.event_date), esc(ev.location), esc(ev.poster_url)].join(',') + '\n';
       });
     }
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `wingroo_${activeTab}_export.csv`);
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = defaultFilename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   };
 
   if (!isOpen) return null;

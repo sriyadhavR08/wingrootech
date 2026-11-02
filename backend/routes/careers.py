@@ -65,6 +65,26 @@ def apply_job():
             cursor.execute("UPDATE job_applications SET application_no = ? WHERE id = ?", (app_no, new_id))
 
         conn.commit()
+
+        # Asynchronously sync job application to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Job Application', {
+                'id': new_id,
+                'application_no': app_no,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'experience_level': experience_level,
+                'technologies': technologies_str,
+                'resume_url': resume_url,
+                'portfolio_url': portfolio_url,
+                'message': message,
+                'status': 'Under Review'
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
         return jsonify({
             'success': True,
             'message': 'Your job application has been submitted successfully! Our talent acquisition team will review your profile.',

@@ -38,6 +38,23 @@ def submit_contact():
             
         new_id = cursor.lastrowid
         conn.commit()
+
+        # Asynchronously sync contact lead to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Contact Enquiry', {
+                'id': new_id,
+                'request_no': f"WINGROO-PRJ-{new_id:04d}" if new_id else None,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'subject': subject,
+                'message': message,
+                'status': 'Under Review'
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
         return jsonify({
             'success': True,
             'message': "Thanks for reaching out. We'll get back to you soon.",

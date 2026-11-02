@@ -169,6 +169,26 @@ def student_detail(pk):
 
         db.session.commit()
 
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Student Registration', {
+                'id': user.id,
+                'full_name': user.full_name,
+                'email': user.email,
+                'phone': user.profile.mobile_number if user.profile else '',
+                'candidate_type': user.profile.candidate_type if user.profile else '',
+                'college_name': user.profile.college_name if user.profile else '',
+                'department': user.profile.department if user.profile else '',
+                'course': user.profile.course if user.profile else '',
+                'register_number': user.profile.register_number if user.profile else '',
+                'project_name': user.internship.project_name if user.internship else '',
+                'start_date': str(user.internship.start_date) if user.internship and user.internship.start_date else '',
+                'end_date': str(user.internship.end_date) if user.internship and user.internship.end_date else '',
+                'status': user.internship.status if user.internship else '',
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
     return jsonify(student_data(user, host_url))
 
 

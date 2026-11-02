@@ -73,6 +73,29 @@ def submit_internship():
             cursor.execute("UPDATE internship_applications SET application_no = ? WHERE id = ?", (app_no, new_id))
             
         conn.commit()
+
+        # Asynchronously sync internship application to Google Spreadsheet
+        try:
+            from services.google_sheets import sync_to_google_sheet
+            sync_to_google_sheet('Internship Application', {
+                'id': new_id,
+                'application_no': app_no,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'college': college,
+                'course': course,
+                'year': year,
+                'internship_type': internship_type,
+                'technology': technology,
+                'message': message,
+                'resume_url': resume_url,
+                'portfolio_url': portfolio_url,
+                'status': 'Under Review'
+            })
+        except Exception as sheet_err:
+            print(f"[Google Sheet Hook Notice] {sheet_err}")
+
         return jsonify({
             'success': True,
             'message': 'Your internship application has been submitted successfully!',
