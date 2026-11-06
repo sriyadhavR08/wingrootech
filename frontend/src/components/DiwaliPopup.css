@@ -178,59 +178,6 @@
   filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.8));
 }
 
-/* ==========================================================================
-   POPUP GROUND CHANGUCHAKKARAM (SPINNING WHEELS)
-   ========================================================================== */
-
-.diwali-chakkar-left-pot {
-  position: absolute;
-  bottom: -22px;
-  left: -128px;
-  width: 48px;
-  height: 48px;
-  pointer-events: none;
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.85));
-}
-
-.diwali-chakkar-right-pot {
-  position: absolute;
-  bottom: -22px;
-  right: -128px;
-  width: 48px;
-  height: 48px;
-  pointer-events: none;
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 0 16px rgba(57, 255, 20, 0.85));
-}
-
-.chakkar-spin-wheel-svg {
-  width: 44px;
-  height: 44px;
-  animation: chakkarSpinFast 0.32s linear infinite;
-  transform-origin: center center;
-}
-
-.chakkar-spin-reverse {
-  animation: chakkarSpinFastReverse 0.32s linear infinite;
-}
-
-@keyframes chakkarSpinFast {
-  from { transform: perspective(120px) rotateX(45deg) rotate(0deg); }
-  to { transform: perspective(120px) rotateX(45deg) rotate(360deg); }
-}
-
-@keyframes chakkarSpinFastReverse {
-  from { transform: perspective(120px) rotateX(45deg) rotate(360deg); }
-  to { transform: perspective(120px) rotateX(45deg) rotate(0deg); }
-}
-
 /* Hanging Toran Garland on Modal */
 .diwali-hanging-toran {
   position: absolute;
@@ -584,16 +531,6 @@
     right: -12px;
     bottom: -15px;
     transform: scale(0.8);
-  }
-  .diwali-chakkar-left-pot {
-    left: -8px;
-    bottom: -55px;
-    transform: scale(0.72);
-  }
-  .diwali-chakkar-right-pot {
-    right: -8px;
-    bottom: -55px;
-    transform: scale(0.72);
   }
   .diwali-main-title {
     font-size: 1.85rem;

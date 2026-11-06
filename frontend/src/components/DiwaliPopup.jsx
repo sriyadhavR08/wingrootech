@@ -4,23 +4,50 @@ import './DiwaliPopup.css';
 
 /**
  * Realistic Web Audio API Firecracker Sound Synthesizer
- * Synthesizes punchy low-end thump, crispy noise pops, and sparkling Diwali crackles!
- * Zero external audio files, works instantaneously across all modern browsers.
+ * 1. Sky Fireworks: Atmospheric sub-bass explosion thump + granular "pat-pat-pat" crackle storm + sky reverb
+ * 2. Booshvanam: Real roaring continuous fountain hiss ("FSSSSSSSHHHHHHH-FRRRRRSH")
+ * 3. Changuchakkaram: Real high-speed spinning whoosh / whistling whir ("WHIRRRRRR-ZZZZZZ-WHIRRRRR")
  */
-class FirecrackerAudioEngine {
+class RealDiwaliAudioEngine {
   constructor() {
     this.ctx = null;
     this.isMuted = false;
-    this.lastBurst = 0;
+    this.masterGain = null;
+    this.compressor = null;
+
+    // Ambient loop nodes
+    this.booshSource = null;
+    this.booshGain = null;
+    this.chakkarSource = null;
+    this.chakkarGain = null;
+    this.chakkarLfo = null;
+    this.isAmbientPlaying = false;
+    this.lastBurstTime = 0;
   }
 
   init() {
     try {
       if (!this.ctx) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) this.ctx = new AudioCtx();
+        if (!AudioCtx) return;
+        this.ctx = new AudioCtx();
+
+        // Dynamics Compressor to give authentic punch and avoid distortion
+        this.compressor = this.ctx.createDynamicsCompressor();
+        this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
+        this.compressor.knee.setValueAtTime(10, this.ctx.currentTime);
+        this.compressor.ratio.setValueAtTime(6, this.ctx.currentTime);
+        this.compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+        this.compressor.release.setValueAtTime(0.2, this.ctx.currentTime);
+
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.85, this.ctx.currentTime);
+
+        this.compressor.connect(this.masterGain);
+        this.masterGain.connect(this.ctx.destination);
       }
-      if (this.ctx && this.ctx.state === 'suspended') {
+
+      if (this.ctx.state === 'suspended') {
         this.ctx.resume();
       }
     } catch {
@@ -28,80 +55,235 @@ class FirecrackerAudioEngine {
     }
   }
 
-  playBurst() {
+  // 1. SKY FIREWORK EXPLOSION (Realistic Aerial Thump + Granular Crackle storm)
+  playSkyBurst() {
     if (this.isMuted) return;
     this.init();
     if (!this.ctx || this.ctx.state !== 'running') return;
 
     const now = this.ctx.currentTime;
-    if (now - this.lastBurst < 0.09) return; // Prevent audio clipping
-    this.lastBurst = now;
+    if (now - this.lastBurstTime < 0.12) return;
+    this.lastBurstTime = now;
 
     try {
-      // 1. Deep Sub-Bass Thump / Boom
-      const osc = this.ctx.createOscillator();
-      const oscGain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(160, now);
-      osc.frequency.exponentialRampToValueAtTime(32, now + 0.30);
-      oscGain.gain.setValueAtTime(0.42, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
-      osc.connect(oscGain);
-      oscGain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.32);
+      // A. Deep punchy sub-bass explosion (140Hz -> 26Hz)
+      const boomOsc = this.ctx.createOscillator();
+      const boomGain = this.ctx.createGain();
+      boomOsc.type = 'triangle';
+      boomOsc.frequency.setValueAtTime(140, now);
+      boomOsc.frequency.exponentialRampToValueAtTime(26, now + 0.38);
+      boomGain.gain.setValueAtTime(0.55, now);
+      boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.40);
+      boomOsc.connect(boomGain);
+      boomGain.connect(this.compressor);
+      boomOsc.start(now);
+      boomOsc.stop(now + 0.42);
 
-      // 2. High-energy Cracker Noise Pop (Bandpass noise)
-      const duration = 0.28;
-      const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+      // B. Sharp explosive crack (Transient noise burst with natural decay)
+      const crackDur = 0.32;
+      const crackSamples = Math.floor(this.ctx.sampleRate * crackDur);
+      const crackBuf = this.ctx.createBuffer(1, crackSamples, this.ctx.sampleRate);
+      const crackData = crackBuf.getChannelData(0);
+      for (let i = 0; i < crackSamples; i++) {
+        const env = 1 - (i / crackSamples);
+        crackData[i] = (Math.random() * 2 - 1) * Math.pow(env, 1.8);
+      }
+      const crackSource = this.ctx.createBufferSource();
+      crackSource.buffer = crackBuf;
+
+      const crackFilter = this.ctx.createBiquadFilter();
+      crackFilter.type = 'bandpass';
+      crackFilter.frequency.setValueAtTime(1400 + Math.random() * 600, now);
+      crackFilter.Q.setValueAtTime(2.2, now);
+
+      const crackGain = this.ctx.createGain();
+      crackGain.gain.setValueAtTime(0.48, now);
+      crackGain.gain.exponentialRampToValueAtTime(0.001, now + crackDur);
+
+      crackSource.connect(crackFilter);
+      crackFilter.connect(crackGain);
+      crackGain.connect(this.compressor);
+      crackSource.start(now);
+
+      // C. Real Crackle Storm ("PAT-PAT-PAT-CRACKLE-PAT" cascading spark explosions)
+      const numCrackles = 5 + Math.floor(Math.random() * 5);
+      for (let k = 0; k < numCrackles; k++) {
+        const offset = 0.06 + k * 0.055 + Math.random() * 0.035;
+        const popOsc = this.ctx.createOscillator();
+        const popGain = this.ctx.createGain();
+        popOsc.type = 'square';
+        popOsc.frequency.setValueAtTime(900 + Math.random() * 950, now + offset);
+        popOsc.frequency.exponentialRampToValueAtTime(120, now + offset + 0.035);
+        popGain.gain.setValueAtTime(0.12 + Math.random() * 0.08, now + offset);
+        popGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.035);
+        popOsc.connect(popGain);
+        popGain.connect(this.compressor);
+        popOsc.start(now + offset);
+        popOsc.stop(now + offset + 0.04);
+      }
+    } catch {
+      // Safe fallback
+    }
+  }
+
+  // 2. BOOSHVANAM (FLOWERPOT FOUNTAIN) REAL SOUND ("FSSSSSSSHHHHHHH-FRRRRRSH")
+  startBooshvanamSound() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx || this.ctx.state !== 'running' || this.booshSource) return;
+
+    try {
+      const bufferSize = this.ctx.sampleRate * 2;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastOut = (lastOut + (0.05 * white)) / 1.05;
+        data[i] = lastOut * 3.5;
+      }
+
+      this.booshSource = this.ctx.createBufferSource();
+      this.booshSource.buffer = noiseBuffer;
+      this.booshSource.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2600, this.ctx.currentTime);
+      filter.Q.setValueAtTime(1.6, this.ctx.currentTime);
+
+      this.booshGain = this.ctx.createGain();
+      this.booshGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+      this.booshGain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 0.4);
+
+      this.booshSource.connect(filter);
+      filter.connect(this.booshGain);
+      this.booshGain.connect(this.compressor);
+      this.booshSource.start();
+    } catch {
+      // Safe fallback
+    }
+  }
+
+  stopBooshvanamSound() {
+    if (this.booshSource) {
+      try {
+        if (this.booshGain && this.ctx) {
+          this.booshGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+        }
+        setTimeout(() => {
+          if (this.booshSource) {
+            this.booshSource.stop();
+            this.booshSource.disconnect();
+            this.booshSource = null;
+          }
+        }, 250);
+      } catch {
+        this.booshSource = null;
+      }
+    }
+  }
+
+  // 3. CHANGUCHAKKARAM (GROUND CHAKKAR) REAL SOUND ("WHIRRR-SHSHSH-WHIRRR-SHSHSH")
+  startChakkarSound() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx || this.ctx.state !== 'running' || this.chakkarSource) return;
+
+    try {
+      const bufferSize = this.ctx.sampleRate * 2;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.35 ? 1.0 : 0.15);
+        data[i] = (Math.random() * 2 - 1) * 0.7;
       }
 
-      const noiseSource = this.ctx.createBufferSource();
-      noiseSource.buffer = noiseBuffer;
+      this.chakkarSource = this.ctx.createBufferSource();
+      this.chakkarSource.buffer = noiseBuffer;
+      this.chakkarSource.loop = true;
 
-      const bandpass = this.ctx.createBiquadFilter();
-      bandpass.type = 'bandpass';
-      bandpass.frequency.setValueAtTime(1200 + Math.random() * 800, now);
-      bandpass.Q.setValueAtTime(2.8, now);
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2400, this.ctx.currentTime);
+      filter.Q.setValueAtTime(3.2, this.ctx.currentTime);
 
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.35, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      this.chakkarLfo = this.ctx.createOscillator();
+      this.chakkarLfo.frequency.setValueAtTime(4.8, this.ctx.currentTime);
 
-      noiseSource.connect(bandpass);
-      bandpass.connect(noiseGain);
-      noiseGain.connect(this.ctx.destination);
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.setValueAtTime(800, this.ctx.currentTime);
+      this.chakkarLfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
 
-      noiseSource.start(now);
-      noiseSource.stop(now + duration);
+      this.chakkarGain = this.ctx.createGain();
+      this.chakkarGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+      this.chakkarGain.gain.linearRampToValueAtTime(0.14, this.ctx.currentTime + 0.4);
 
-      // 3. Mini secondary sparkling crackles ("pat-pat-pat" fireworks sizzle)
-      const crackleCount = 3 + Math.floor(Math.random() * 3);
-      for (let c = 0; c < crackleCount; c++) {
-        const cDelay = 0.05 + c * 0.045 + Math.random() * 0.03;
-        const cOsc = this.ctx.createOscillator();
-        const cGain = this.ctx.createGain();
-        cOsc.type = 'triangle';
-        cOsc.frequency.setValueAtTime(850 + Math.random() * 700, now + cDelay);
-        cOsc.frequency.exponentialRampToValueAtTime(90, now + cDelay + 0.035);
-        cGain.gain.setValueAtTime(0.08, now + cDelay);
-        cGain.gain.exponentialRampToValueAtTime(0.001, now + cDelay + 0.035);
-        cOsc.connect(cGain);
-        cGain.connect(this.ctx.destination);
-        cOsc.start(now + cDelay);
-        cOsc.stop(now + cDelay + 0.04);
-      }
+      this.chakkarSource.connect(filter);
+      filter.connect(this.chakkarGain);
+      this.chakkarGain.connect(this.compressor);
+
+      this.chakkarLfo.start();
+      this.chakkarSource.start();
     } catch {
-      // Ignore audio glitches safely
+      // Safe fallback
+    }
+  }
+
+  stopChakkarSound() {
+    if (this.chakkarSource) {
+      try {
+        if (this.chakkarGain && this.ctx) {
+          this.chakkarGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+        }
+        setTimeout(() => {
+          if (this.chakkarSource) {
+            this.chakkarSource.stop();
+            this.chakkarSource.disconnect();
+            this.chakkarSource = null;
+          }
+          if (this.chakkarLfo) {
+            this.chakkarLfo.stop();
+            this.chakkarLfo.disconnect();
+            this.chakkarLfo = null;
+          }
+        }, 250);
+      } catch {
+        this.chakkarSource = null;
+        this.chakkarLfo = null;
+      }
+    }
+  }
+
+  startModalAmbience() {
+    if (this.isMuted) return;
+    this.startBooshvanamSound();
+    this.startChakkarSound();
+    this.isAmbientPlaying = true;
+  }
+
+  stopModalAmbience() {
+    this.stopBooshvanamSound();
+    this.stopChakkarSound();
+    this.isAmbientPlaying = false;
+  }
+
+  setMuted(muted) {
+    this.isMuted = muted;
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(muted ? 0 : 0.85, this.ctx.currentTime);
+    }
+    if (muted) {
+      this.stopModalAmbience();
+    } else {
+      this.init();
+      this.startModalAmbience();
+      this.playSkyBurst();
     }
   }
 }
 
-const crackerAudio = new FirecrackerAudioEngine();
+const crackerAudio = new RealDiwaliAudioEngine();
 
 /**
  * Diwali Celebration Component
@@ -152,11 +334,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   const toggleSound = () => {
     setIsMuted(prev => {
       const next = !prev;
-      crackerAudio.isMuted = next;
-      if (!next) {
-        crackerAudio.init();
-        crackerAudio.playBurst();
-      }
+      crackerAudio.setMuted(next);
       return next;
     });
   };
@@ -165,6 +343,9 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   useEffect(() => {
     const unlockAudio = () => {
       crackerAudio.init();
+      if (isModalOpen && !crackerAudio.isMuted) {
+        crackerAudio.startModalAmbience();
+      }
     };
     window.addEventListener('click', unlockAudio, { once: true });
     window.addEventListener('keydown', unlockAudio, { once: true });
@@ -172,7 +353,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('keydown', unlockAudio);
     };
-  }, []);
+  }, [isModalOpen]);
+
+  // Manage Real Ambient sound for Booshvanam & Changuchakkaram while modal is open
+  useEffect(() => {
+    if (isModalOpen && !isMuted) {
+      crackerAudio.startModalAmbience();
+    } else {
+      crackerAudio.stopModalAmbience();
+    }
+    return () => {
+      crackerAudio.stopModalAmbience();
+    };
+  }, [isModalOpen, isMuted]);
 
   // 30-Second Automatic Transition to Wingroo Main Site
   useEffect(() => {
@@ -372,39 +565,23 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         this.sparks[i].draw(ctx);
       }
 
-      // 3. Physical rotating Chakkar disc (ground ellipse perspective)
+      // 3. Sizzling fiery white-hot ignition core (Blazing pure Diwali fire, no painted disc)
       ctx.save();
       ctx.translate(this.x, this.y);
-      ctx.scale(1, 0.45); // Foreshortening
+      ctx.scale(1, 0.45); // Floor perspective
 
-      // Outer wheel rim
+      // Blazing fiery center glow corona
+      const coreGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, this.radius * 0.7);
+      coreGrad.addColorStop(0, '#FFFFFF');
+      coreGrad.addColorStop(0.35, '#FEF08A');
+      coreGrad.addColorStop(0.7, '#F59E0B');
+      coreGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = coreGrad;
       ctx.beginPath();
-      ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#651A05';
+      ctx.arc(0, 0, this.radius * 0.7, 0, Math.PI * 2);
       ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#F59E0B';
-      ctx.stroke();
 
-      // Rotating decorative wheel spiral pattern
-      ctx.save();
-      ctx.rotate(this.angle);
-      for (let b = 0; b < 4; b++) {
-        const bAngle = b * (Math.PI / 2);
-        ctx.beginPath();
-        ctx.arc(
-          Math.cos(bAngle) * (this.radius * 0.48),
-          Math.sin(bAngle) * (this.radius * 0.48),
-          this.radius * 0.38,
-          0,
-          Math.PI * 2
-        );
-        ctx.fillStyle = (b % 2 === 0) ? '#DC2626' : (this.theme === 'green' ? '#16A34A' : '#F59E0B');
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // White-hot center ignition core
+      // Intense central white-hot spark
       ctx.beginPath();
       ctx.arc(0, 0, this.radius * 0.28, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
@@ -493,7 +670,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        crackerAudio.playBurst();
+        crackerAudio.playSkyBurst();
         const count = 80 + Math.floor(Math.random() * 45);
         const burstColor = this.color;
 
@@ -821,7 +998,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        crackerAudio.playBurst();
+        crackerAudio.playSkyBurst();
         const count = 55 + Math.floor(Math.random() * 35);
         const burstColor = this.color;
 
@@ -1003,19 +1180,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <X size={20} />
             </button>
 
-            {/* Left Changuchakkaram Ground Wheel Base */}
-            <div className="diwali-chakkar-left-pot" aria-hidden="true" title="Changuchakkaram (சங்கு சக்கரம்)">
-              <svg className="chakkar-spin-wheel-svg" viewBox="0 0 44 44" fill="none">
-                <circle cx="22" cy="22" r="20" fill="#782106" stroke="#F59E0B" strokeWidth="2" />
-                <path d="M22 2C10.95 2 2 10.95 2 22" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M42 22C42 10.95 33.05 2 22 2" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M22 42C33.05 42 42 33.05 42 22" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M2 22C2 33.05 10.95 42 22 42" stroke="#FDE047" strokeWidth="3.5" strokeLinecap="round" />
-                <circle cx="22" cy="22" r="6" fill="#FFFFFF" />
-                <circle cx="22" cy="22" r="3" fill="#FDE047" />
-              </svg>
-            </div>
-
             {/* Left Booshvanam Pot Base */}
             <div className="diwali-booshvanam-left" aria-hidden="true" title="Booshvanam (பூவாணம்)">
               <div id="booshvanam-left-nozzle" className="booshvanam-nozzle" />
@@ -1049,19 +1213,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                     <stop offset="1" stopColor="#451A03" />
                   </linearGradient>
                 </defs>
-              </svg>
-            </div>
-
-            {/* Right Changuchakkaram Ground Wheel Base */}
-            <div className="diwali-chakkar-right-pot" aria-hidden="true" title="Changuchakkaram (சங்கு சக்கரம்)">
-              <svg className="chakkar-spin-wheel-svg chakkar-spin-reverse" viewBox="0 0 44 44" fill="none">
-                <circle cx="22" cy="22" r="20" fill="#782106" stroke="#F59E0B" strokeWidth="2" />
-                <path d="M22 2C10.95 2 2 10.95 2 22" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M42 22C42 10.95 33.05 2 22 2" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M22 42C33.05 42 42 33.05 42 22" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M2 22C2 33.05 10.95 42 22 42" stroke="#FDE047" strokeWidth="3.5" strokeLinecap="round" />
-                <circle cx="22" cy="22" r="6" fill="#FFFFFF" />
-                <circle cx="22" cy="22" r="3" fill="#FDE047" />
               </svg>
             </div>
 
