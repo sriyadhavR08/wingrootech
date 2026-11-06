@@ -68,7 +68,206 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   ];
 
   // =========================================================================
-  // 1. MODAL SKY CRACKERS & BOOSHVANAM ENGINE (WHILE MODAL IS OPEN)
+  // SHARED CHANGUCHAKKARAM (GROUND CHAKKAR / ZAMIN CHAKKAR) PHYSICS ENGINE
+  // Spits high-speed tangential spark streams, creating swirling circular fire wheels!
+  // =========================================================================
+  class ChakkarSpark {
+    constructor(x, y, vx, vy, color) {
+      this.x = x;
+      this.y = y;
+      this.prevX = x;
+      this.prevY = y;
+      this.vx = vx;
+      this.vy = vy;
+      this.color = color;
+      this.alpha = 1;
+      this.decay = 0.026 + Math.random() * 0.022;
+      this.size = 1.6 + Math.random() * 1.8;
+      this.friction = 0.945;
+      this.gravity = 0.07;
+    }
+
+    update() {
+      this.prevX = this.x;
+      this.prevY = this.y;
+      this.vx *= this.friction;
+      this.vy = this.vy * this.friction + this.gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= this.decay;
+    }
+
+    draw(ctx) {
+      if (this.alpha <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, this.alpha);
+
+      // Glowing streak line from previous position to create continuous spiral arms
+      ctx.beginPath();
+      ctx.moveTo(this.prevX, this.prevY);
+      ctx.lineTo(this.x, this.y);
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = this.size;
+      ctx.stroke();
+
+      // Sizzling spark head
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size * 0.85, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  class GroundChakkar {
+    constructor(id, getCoords, radius = 22, theme = 'gold', direction = 1) {
+      this.id = id;
+      this.getCoords = getCoords;
+      const initial = getCoords();
+      this.x = initial.x;
+      this.y = initial.y;
+      this.baseX = initial.x;
+      this.baseY = initial.y;
+      this.radius = radius;
+      this.theme = theme; // 'gold', 'green', 'crimson'
+      this.direction = direction; // 1 (CW) or -1 (CCW)
+      this.angle = Math.random() * Math.PI * 2;
+      this.spinSpeed = 0.32 + Math.random() * 0.06;
+      this.wobblePhase = Math.random() * Math.PI * 2;
+      this.sparks = [];
+    }
+
+    update() {
+      const coords = this.getCoords();
+      this.baseX = coords.x;
+      this.baseY = coords.y;
+
+      this.angle += this.spinSpeed * this.direction;
+      this.wobblePhase += 0.08;
+
+      // Authentic dancing jitter on the ground
+      this.x = this.baseX + Math.sin(this.wobblePhase * 1.6) * 3;
+      this.y = this.baseY + Math.cos(this.wobblePhase * 2.1) * 1.5;
+
+      // Emit sparks from 3 tangential nozzles on the wheel rim
+      const nozzleCount = 3;
+      const sparksPerNozzle = 4;
+
+      for (let n = 0; n < nozzleCount; n++) {
+        const nozzleAngle = this.angle + (n * (Math.PI * 2 / nozzleCount));
+        // Ground perspective (Y radius is 45% of X radius)
+        const nx = this.x + Math.cos(nozzleAngle) * this.radius;
+        const ny = this.y + Math.sin(nozzleAngle) * (this.radius * 0.45);
+
+        // Tangential ejection angle
+        const tangentAngle = nozzleAngle + (this.direction * Math.PI / 2);
+
+        for (let s = 0; s < sparksPerNozzle; s++) {
+          const speed = 4.2 + Math.random() * 5.4;
+          const radialKick = 1.0 + Math.random() * 2.0;
+          const vx = Math.cos(tangentAngle) * speed + Math.cos(nozzleAngle) * radialKick;
+          const vy = (Math.sin(tangentAngle) * speed + Math.sin(nozzleAngle) * radialKick) * 0.45 - (0.4 + Math.random() * 1.8);
+
+          let col = '#FFD700';
+          const r = Math.random();
+          if (this.theme === 'green') {
+            col = r < 0.60 ? '#39FF14' : (r < 0.85 ? '#00F5D4' : '#FFFDF0');
+          } else if (this.theme === 'crimson') {
+            col = r < 0.60 ? '#FF1E56' : (r < 0.85 ? '#FF8C00' : '#FFFDF0');
+          } else {
+            col = r < 0.45 ? '#FFD700' : (r < 0.75 ? '#FFA500' : (r < 0.90 ? '#FFFDF0' : '#FF3D00'));
+          }
+
+          this.sparks.push(new ChakkarSpark(nx, ny, vx, vy, col));
+        }
+      }
+
+      // Update existing sparks
+      for (let i = this.sparks.length - 1; i >= 0; i--) {
+        const sp = this.sparks[i];
+        sp.update();
+        if (sp.alpha <= 0) {
+          this.sparks.splice(i, 1);
+        }
+      }
+    }
+
+    draw(ctx) {
+      // 1. Fiery ground pool reflection (illuminates floor under the wheel)
+      ctx.save();
+      const glowGrad = ctx.createRadialGradient(this.x, this.y, 4, this.x, this.y, this.radius * 3.6);
+      if (this.theme === 'green') {
+        glowGrad.addColorStop(0, 'rgba(57, 255, 20, 0.42)');
+        glowGrad.addColorStop(0.4, 'rgba(0, 245, 212, 0.18)');
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      } else if (this.theme === 'crimson') {
+        glowGrad.addColorStop(0, 'rgba(255, 30, 86, 0.42)');
+        glowGrad.addColorStop(0.4, 'rgba(255, 140, 0, 0.18)');
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      } else {
+        glowGrad.addColorStop(0, 'rgba(255, 215, 0, 0.48)');
+        glowGrad.addColorStop(0.4, 'rgba(255, 140, 0, 0.22)');
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      }
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y, this.radius * 3.6, this.radius * 1.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Swirling spark trails
+      for (let i = 0; i < this.sparks.length; i++) {
+        this.sparks[i].draw(ctx);
+      }
+
+      // 3. Physical rotating Chakkar disc (ground ellipse perspective)
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.scale(1, 0.45); // Foreshortening
+
+      // Outer wheel rim
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#651A05';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#F59E0B';
+      ctx.stroke();
+
+      // Rotating decorative wheel spiral pattern
+      ctx.save();
+      ctx.rotate(this.angle);
+      for (let b = 0; b < 4; b++) {
+        const bAngle = b * (Math.PI / 2);
+        ctx.beginPath();
+        ctx.arc(
+          Math.cos(bAngle) * (this.radius * 0.48),
+          Math.sin(bAngle) * (this.radius * 0.48),
+          this.radius * 0.38,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = (b % 2 === 0) ? '#DC2626' : (this.theme === 'green' ? '#16A34A' : '#F59E0B');
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // White-hot center ignition core
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius * 0.28, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = '#FDE047';
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  // =========================================================================
+  // 1. MODAL SKY CRACKERS & BOOSHVANAM & CHANGUCHAKKARAM ENGINE
   // =========================================================================
   useEffect(() => {
     if (!isModalOpen) return;
@@ -257,6 +456,84 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
     let lastRocket = Date.now();
 
+    // Multiple spinning Changuchakkarams placed strategically around the scene
+    const modalChakkars = [
+      // 1. Far Left Floor (Gold)
+      new GroundChakkar(
+        'm-far-left',
+        () => ({
+          x: Math.max(65, width * 0.11),
+          y: height - 55
+        }),
+        22,
+        'gold',
+        1
+      ),
+      // 2. Near Left Booshvanam Flank (Green)
+      new GroundChakkar(
+        'm-near-left',
+        () => {
+          const card = document.querySelector('.diwali-popup-container');
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            return {
+              x: Math.max(120, rect.left - 75),
+              y: Math.min(height - 45, rect.bottom + 10)
+            };
+          }
+          return { x: width * 0.25, y: height - 60 };
+        },
+        24,
+        'green',
+        -1
+      ),
+      // 3. Near Right Booshvanam Flank (Crimson)
+      new GroundChakkar(
+        'm-near-right',
+        () => {
+          const card = document.querySelector('.diwali-popup-container');
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            return {
+              x: Math.min(width - 120, rect.right + 75),
+              y: Math.min(height - 45, rect.bottom + 10)
+            };
+          }
+          return { x: width * 0.75, y: height - 60 };
+        },
+        24,
+        'crimson',
+        1
+      ),
+      // 4. Far Right Floor (Gold)
+      new GroundChakkar(
+        'm-far-right',
+        () => ({
+          x: Math.min(width - 65, width * 0.89),
+          y: height - 55
+        }),
+        22,
+        'gold',
+        -1
+      ),
+      // 5. Center Floor under the card
+      new GroundChakkar(
+        'm-center-floor',
+        () => {
+          const card = document.querySelector('.diwali-popup-container');
+          let groundY = height - 42;
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            groundY = Math.min(height - 35, rect.bottom + 45);
+          }
+          return { x: width * 0.5, y: groundY };
+        },
+        20,
+        'gold',
+        1
+      )
+    ];
+
     const loop = () => {
       ctx.fillStyle = 'rgba(6, 3, 14, 0.24)';
       ctx.fillRect(0, 0, width, height);
@@ -329,6 +606,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         b.update();
         b.draw();
         if (b.alpha <= 0) booshvanamSparks.splice(i, 1);
+      }
+
+      // Update & draw Changuchakkarams spinning around the scene
+      for (let i = 0; i < modalChakkars.length; i++) {
+        modalChakkars[i].update();
+        modalChakkars[i].draw(ctx);
       }
 
       animationFrameId = requestAnimationFrame(loop);
@@ -484,6 +767,24 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
     let lastLaunch = Date.now();
 
+    // Two Changuchakkarams spinning on the bottom left and bottom right corners of the website
+    const sideChakkars = [
+      new GroundChakkar(
+        'side-left',
+        () => ({ x: Math.max(65, width * 0.08), y: height - 55 }),
+        22,
+        'gold',
+        1
+      ),
+      new GroundChakkar(
+        'side-right',
+        () => ({ x: Math.min(width - 65, width * 0.92), y: height - 55 }),
+        22,
+        'green',
+        -1
+      )
+    ];
+
     const loop = () => {
       // Clear transparently so full website is 100% visible and sharp
       ctx.clearRect(0, 0, width, height);
@@ -510,6 +811,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         p.update();
         p.draw();
         if (p.alpha <= 0) sideParticles.splice(i, 1);
+      }
+
+      // Update & draw side Changuchakkarams
+      for (let i = 0; i < sideChakkars.length; i++) {
+        sideChakkars[i].update();
+        sideChakkars[i].draw(ctx);
       }
 
       animationFrameId = requestAnimationFrame(loop);
@@ -571,6 +878,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <X size={20} />
             </button>
 
+            {/* Left Changuchakkaram Ground Wheel Base */}
+            <div className="diwali-chakkar-left-pot" aria-hidden="true" title="Changuchakkaram (சங்கு சக்கரம்)">
+              <svg className="chakkar-spin-wheel-svg" viewBox="0 0 44 44" fill="none">
+                <circle cx="22" cy="22" r="20" fill="#782106" stroke="#F59E0B" strokeWidth="2" />
+                <path d="M22 2C10.95 2 2 10.95 2 22" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M42 22C42 10.95 33.05 2 22 2" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M22 42C33.05 42 42 33.05 42 22" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M2 22C2 33.05 10.95 42 22 42" stroke="#FDE047" strokeWidth="3.5" strokeLinecap="round" />
+                <circle cx="22" cy="22" r="6" fill="#FFFFFF" />
+                <circle cx="22" cy="22" r="3" fill="#FDE047" />
+              </svg>
+            </div>
+
             {/* Left Booshvanam Pot Base */}
             <div className="diwali-booshvanam-left" aria-hidden="true" title="Booshvanam (பூவாணம்)">
               <div id="booshvanam-left-nozzle" className="booshvanam-nozzle" />
@@ -604,6 +924,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                     <stop offset="1" stopColor="#451A03" />
                   </linearGradient>
                 </defs>
+              </svg>
+            </div>
+
+            {/* Right Changuchakkaram Ground Wheel Base */}
+            <div className="diwali-chakkar-right-pot" aria-hidden="true" title="Changuchakkaram (சங்கு சக்கரம்)">
+              <svg className="chakkar-spin-wheel-svg chakkar-spin-reverse" viewBox="0 0 44 44" fill="none">
+                <circle cx="22" cy="22" r="20" fill="#782106" stroke="#F59E0B" strokeWidth="2" />
+                <path d="M22 2C10.95 2 2 10.95 2 22" stroke="#22C55E" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M42 22C42 10.95 33.05 2 22 2" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M22 42C33.05 42 42 33.05 42 22" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M2 22C2 33.05 10.95 42 22 42" stroke="#FDE047" strokeWidth="3.5" strokeLinecap="round" />
+                <circle cx="22" cy="22" r="6" fill="#FFFFFF" />
+                <circle cx="22" cy="22" r="3" fill="#FDE047" />
               </svg>
             </div>
 
