@@ -20,6 +20,10 @@ import AIChatbot from './components/AIChatbot'
 import SocialSidebar from './components/SocialSidebar'
 import ScrollNavigator from './components/ScrollNavigator'
 import InternshipApp from './internship-portal/App'
+import DiwaliPopup from './components/DiwaliPopup'
+
+// Festive Popup Control: Set to false or remove anytime you want to take it down
+const SHOW_DIWALI_POPUP = true;
 
 function LandingPage() {
   const [activePortal, setActivePortal] = useState(null); // null | 'student' | 'admin'
@@ -102,6 +106,9 @@ function LandingPage() {
         onOpenStudentPortal={handleOpenStudent}
         onOpenLogin={handleOpenLogin}
       />
+
+      {/* Decorative Diwali Festive Greeting Modal (easily removed anytime) */}
+      {SHOW_DIWALI_POPUP && <DiwaliPopup onOpenStudentPortal={handleOpenStudent} />}
 
       {/* Interactive AI Chatbot Widget */}
       <AIChatbot onOpenStudentPortal={handleOpenStudent} />
