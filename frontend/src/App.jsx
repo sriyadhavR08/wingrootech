@@ -88,6 +88,9 @@ function LandingPage() {
         onOpenStudentPortal={handleOpenStudent}
       />
       <main>
+        {/* Decorative Diwali Festive In-Page Section with Two-Sided Sky Crackers & Booshvanam */}
+        {SHOW_DIWALI_POPUP && <DiwaliPopup onOpenStudentPortal={handleOpenStudent} />}
+
         <Hero />
         <About />
         <Services />
@@ -106,9 +109,6 @@ function LandingPage() {
         onOpenStudentPortal={handleOpenStudent}
         onOpenLogin={handleOpenLogin}
       />
-
-      {/* Decorative Diwali Festive Greeting Modal (easily removed anytime) */}
-      {SHOW_DIWALI_POPUP && <DiwaliPopup onOpenStudentPortal={handleOpenStudent} />}
 
       {/* Interactive AI Chatbot Widget */}
       <AIChatbot onOpenStudentPortal={handleOpenStudent} />
