@@ -26,8 +26,13 @@
 }
 
 @keyframes diwaliOverlayFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Modal Internal Sky Fireworks Canvas */
@@ -50,7 +55,7 @@
   background: radial-gradient(circle at 50% -20%, #3e124c 0%, #1c0a2e 55%, #0e0419 100%);
   border: 1.5px solid rgba(245, 158, 11, 0.7);
   border-radius: 28px;
-  box-shadow: 
+  box-shadow:
     0 0 80px rgba(245, 158, 11, 0.45),
     0 0 140px rgba(239, 68, 68, 0.25),
     0 25px 60px -10px rgba(0, 0, 0, 0.95),
@@ -67,6 +72,7 @@
     opacity: 0;
     transform: scale(0.82) translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -168,8 +174,17 @@
 }
 
 @keyframes nozzleRoar {
-  0% { transform: scale(0.9); opacity: 0.85; filter: drop-shadow(0 0 12px #f59e0b); }
-  100% { transform: scale(1.4); opacity: 1; filter: drop-shadow(0 0 24px #fde047); }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 12px #f59e0b);
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 1;
+    filter: drop-shadow(0 0 24px #fde047);
+  }
 }
 
 .booshvanam-pot-svg {
@@ -206,8 +221,13 @@
 }
 
 @keyframes toranSway {
-  0% { transform: rotate(-48deg) translateY(0); }
-  100% { transform: rotate(-42deg) translateY(3px); }
+  0% {
+    transform: rotate(-48deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(-42deg) translateY(3px);
+  }
 }
 
 /* Modal Garland / Badge */
@@ -272,9 +292,20 @@
 }
 
 @keyframes flameFlicker {
-  0% { transform: scale(1) rotate(-1.5deg); opacity: 0.95; }
-  50% { transform: scale(1.08, 1.15) rotate(2deg); opacity: 1; }
-  100% { transform: scale(0.96, 0.92) rotate(-1deg); opacity: 0.9; }
+  0% {
+    transform: scale(1) rotate(-1.5deg);
+    opacity: 0.95;
+  }
+
+  50% {
+    transform: scale(1.08, 1.15) rotate(2deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.96, 0.92) rotate(-1deg);
+    opacity: 0.9;
+  }
 }
 
 /* Modal Typography */
@@ -336,7 +367,7 @@
   justify-content: center;
   gap: 10px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 
+  box-shadow:
     0 4px 22px rgba(245, 158, 11, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -344,7 +375,7 @@
 .diwali-primary-btn:hover {
   transform: translateY(-2px);
   background: linear-gradient(135deg, #fbbf24 0%, #f97316 60%, #ea580c 100%);
-  box-shadow: 
+  box-shadow:
     0 8px 30px rgba(245, 158, 11, 0.75),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   color: #fff;
@@ -438,9 +469,10 @@
   z-index: 9998;
 }
 
-/* Embedded UI Festive Banner (Rendered in the page after closing modal) */
+/* Embedded UI Festive Banner (Pinned under sticky Navbar so scrolling the website does not scroll it away) */
 .diwali-ui-festive-bar {
-  position: relative;
+  position: sticky;
+  top: var(--header-height, 80px);
   width: 100%;
   background: linear-gradient(135deg, #2d0b38 0%, #170524 55%, #0f031b 100%);
   border-bottom: 1.5px solid rgba(245, 158, 11, 0.5);
@@ -449,16 +481,23 @@
   align-items: center;
   justify-content: space-between;
   color: #fef08a;
-  z-index: 50;
-  box-shadow: 
+  z-index: 990;
+  box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.5),
     0 0 25px rgba(245, 158, 11, 0.25);
   animation: diwaliBarSlideDown 0.4s ease-out forwards;
 }
 
 @keyframes diwaliBarSlideDown {
-  from { opacity: 0; transform: translateY(-100%); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .diwali-ui-bar-content {
@@ -487,7 +526,7 @@
   letter-spacing: 0.01em;
 }
 
-.diwali-ui-bar-tamil {
+.diwali-ui-bar-subtext {
   color: #fde047;
   font-size: 0.85rem;
   font-weight: 600;
@@ -527,24 +566,30 @@
     bottom: -15px;
     transform: scale(0.8);
   }
+
   .diwali-booshvanam-right {
     right: -12px;
     bottom: -15px;
     transform: scale(0.8);
   }
+
   .diwali-main-title {
     font-size: 1.85rem;
   }
+
   .diwali-tamil-title {
     font-size: 0.95rem;
   }
+
   .diwali-ui-bar-content {
     gap: 6px;
   }
+
   .diwali-ui-bar-text {
     font-size: 0.78rem;
   }
-  .diwali-ui-bar-tamil {
+
+  .diwali-ui-bar-subtext {
     display: none;
   }
 }

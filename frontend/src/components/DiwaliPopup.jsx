@@ -313,6 +313,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    crackerAudio.stopAll();
     try {
       sessionStorage.setItem('wingroo_diwali_modal_closed', 'true');
     } catch {
@@ -998,7 +999,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        crackerAudio.playSkyBurst();
+        // Silent on main website as requested
         const count = 55 + Math.floor(Math.random() * 35);
         const burstColor = this.color;
 
@@ -1181,7 +1182,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
             </button>
 
             {/* Left Booshvanam Pot Base */}
-            <div className="diwali-booshvanam-left" aria-hidden="true" title="Booshvanam (பூவாணம்)">
+            <div className="diwali-booshvanam-left" aria-hidden="true" title="Booshvanam (Flowerpot)">
               <div id="booshvanam-left-nozzle" className="booshvanam-nozzle" />
               <svg className="booshvanam-pot-svg" viewBox="0 0 54 50" fill="none">
                 <path d="M27 6L8 46C7 48 8.5 49 11 49H43C45.5 49 47 48 46 46L27 6Z" fill="url(#bPotLeft)" stroke="#F59E0B" strokeWidth="1.8" />
@@ -1199,7 +1200,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
             </div>
 
             {/* Right Booshvanam Pot Base */}
-            <div className="diwali-booshvanam-right" aria-hidden="true" title="Booshvanam (பூவாணம்)">
+            <div className="diwali-booshvanam-right" aria-hidden="true" title="Booshvanam (Flowerpot)">
               <div id="booshvanam-right-nozzle" className="booshvanam-nozzle" />
               <svg className="booshvanam-pot-svg" viewBox="0 0 54 50" fill="none">
                 <path d="M27 6L8 46C7 48 8.5 49 11 49H43C45.5 49 47 48 46 46L27 6Z" fill="url(#bPotRight)" stroke="#F59E0B" strokeWidth="1.8" />
@@ -1284,7 +1285,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
             {/* Festive Title */}
             <h2 className="diwali-main-title">Happy Diwali! 🪔✨</h2>
-            <div className="diwali-tamil-title">இனிய தீபாவளி திருநாள் நல்வாழ்த்துகள்!</div>
 
             {/* Warm Greeting Text */}
             <p className="diwali-greeting-body">
@@ -1338,23 +1338,14 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           {/* Transparent Canvas: Sky crackers bursting on both the Left and Right sides of the WHOLE UI */}
           <canvas ref={globalSidesCanvasRef} className="diwali-global-sides-canvas" />
 
-          {/* Sleek UI Festive Diwali Greeting Bar (Placed nicely in the page) */}
+          {/* Sleek UI Festive Diwali Greeting Bar (Sticky under Navbar, English Only, No Sound on Main Site) */}
           <div className="diwali-ui-festive-bar" role="banner" aria-label="Diwali Wishes">
             <div className="diwali-ui-bar-content">
               <span className="diwali-ui-bar-badge">🪔 Diwali Special</span>
               <span className="diwali-ui-bar-text">Happy Diwali!</span>
-              <span className="diwali-ui-bar-tamil">இனிய தீபாவளி திருநாள் நல்வாழ்த்துகள்! • Wingroo Technologies</span>
+              <span className="diwali-ui-bar-subtext">Wishing You Boundless Joy, Prosperity & Glowing Success • Wingroo Technologies</span>
             </div>
             <div className="diwali-ui-bar-actions">
-              <button 
-                type="button" 
-                className="diwali-ui-sound-btn" 
-                onClick={toggleSound}
-                title={isMuted ? "Unmute Crackers" : "Mute Crackers"}
-              >
-                {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                <span>{isMuted ? "Sound Off" : "Sound On"}</span>
-              </button>
               <button 
                 type="button" 
                 className="diwali-ui-view-modal-btn" 
