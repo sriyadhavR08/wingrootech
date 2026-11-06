@@ -617,8 +617,8 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   }, [isModalOpen]);
 
   // =========================================================================
-  // 2. TWO-SIDED WHOLE UI SKY CRACKERS ENGINE (WHEN MODAL IS CLOSED)
-  // Shoots & bursts sky crackers strictly along the Left & Right flanks of the whole page!
+  // 2. MAIN WEBSITE: SUBTLE SINGLE SKY CRACKER WITH SPARKLING BURST (WHEN MODAL IS CLOSED)
+  // Strictly one cracker at a time, bursting into graceful twinkling star sparks!
   // =========================================================================
   useEffect(() => {
     if (isModalOpen) return;
@@ -638,23 +638,23 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     };
     window.addEventListener('resize', handleResize);
 
-    const sideRockets = [];
-    const sideParticles = [];
+    const singleRockets = [];
+    const sparkParticles = [];
 
-    class SideSkyRocket {
+    class SingleSparkRocket {
       constructor(isLeft, color) {
         this.color = color;
-        this.speed = 12 + Math.random() * 5;
-        // Strictly left flank (0% - 20%) or right flank (80% - 100%)
+        this.speed = 8.5 + Math.random() * 2.5;
+        // Launch along outer side flanks so website reading content remains 100% unobstructed
         if (isLeft) {
-          this.x = width * 0.03 + Math.random() * (width * 0.16);
-          this.targetX = this.x + (Math.random() * 70 - 20);
+          this.x = width * 0.04 + Math.random() * (width * 0.12);
+          this.targetX = this.x + (Math.random() * 50 - 15);
         } else {
-          this.x = width * 0.81 + Math.random() * (width * 0.16);
-          this.targetX = this.x + (Math.random() * 70 - 50);
+          this.x = width * 0.84 + Math.random() * (width * 0.12);
+          this.targetX = this.x + (Math.random() * 50 - 35);
         }
         this.y = height + 10;
-        this.targetY = height * 0.10 + Math.random() * (height * 0.38);
+        this.targetY = height * 0.12 + Math.random() * (height * 0.32);
 
         const angle = Math.atan2(this.targetY - this.y, this.targetX - this.x);
         this.vx = Math.cos(angle) * this.speed;
@@ -665,7 +665,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       update() {
         this.trail.push({ x: this.x, y: this.y });
-        if (this.trail.length > 8) this.trail.shift();
+        if (this.trail.length > 7) this.trail.shift();
 
         this.x += this.vx;
         this.y += this.vy;
@@ -679,19 +679,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         ctx.save();
         for (let i = 0; i < this.trail.length; i++) {
           const pt = this.trail[i];
-          const trailAlpha = (i / this.trail.length) * 0.9;
+          const trailAlpha = (i / this.trail.length) * 0.85;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 2 + i * 0.35, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 1.8 + i * 0.3, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 215, 0, ${trailAlpha})`;
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = 8;
           ctx.shadowColor = '#FF8C00';
           ctx.fill();
         }
 
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 14;
         ctx.shadowColor = this.color;
         ctx.fill();
         ctx.restore();
@@ -699,30 +699,31 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        // Silent on main website as requested
-        const count = 55 + Math.floor(Math.random() * 35);
+        // Delicate, graceful sparkling starburst (35-50 twinkling glitter sparks)
+        const count = 35 + Math.floor(Math.random() * 18);
         const burstColor = this.color;
 
         for (let i = 0; i < count; i++) {
-          sideParticles.push(new SideSkyParticle(this.x, this.y, burstColor));
+          sparkParticles.push(new SingleSparkParticle(this.x, this.y, burstColor));
         }
       }
     }
 
-    class SideSkyParticle {
+    class SingleSparkParticle {
       constructor(x, y, color) {
         this.x = x;
         this.y = y;
         this.color = color;
         const angle = Math.random() * Math.PI * 2;
-        const speed = 2.0 + Math.random() * 7.5;
+        const speed = 1.6 + Math.random() * 5.2;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
-        this.friction = 0.93;
-        this.gravity = 0.12;
+        this.friction = 0.94;
+        this.gravity = 0.08;
         this.alpha = 1;
         this.decay = 0.012 + Math.random() * 0.015;
-        this.size = 2.2 + Math.random() * 2.5;
+        this.size = 1.8 + Math.random() * 2.2;
+        this.twinkleOffset = Math.random() * Math.PI * 2;
       }
 
       update() {
@@ -736,79 +737,60 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       draw() {
         if (this.alpha <= 0) return;
         ctx.save();
-        ctx.globalAlpha = Math.max(0, this.alpha);
+        // Twinkling sparkle effect ("spark aguramathiri")
+        const twinkle = 0.7 + 0.3 * Math.sin(Date.now() * 0.015 + this.twinkleOffset);
+        ctx.globalAlpha = Math.max(0, this.alpha * twinkle);
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 10;
         ctx.shadowColor = this.color;
         ctx.fill();
+
+        // Tiny center glitter star on bright particles
+        if (this.alpha > 0.45 && this.size > 2.0) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(this.x - 0.75, this.y - 0.75, 1.5, 1.5);
+        }
         ctx.restore();
       }
     }
 
     let toggleLeftRight = true;
-    const launchSideRocket = () => {
+    const launchSingleRocket = () => {
       const color = skyColors[Math.floor(Math.random() * skyColors.length)];
-      sideRockets.push(new SideSkyRocket(toggleLeftRight, color));
+      singleRockets.push(new SingleSparkRocket(toggleLeftRight, color));
       toggleLeftRight = !toggleLeftRight;
     };
 
-    launchSideRocket();
-    setTimeout(launchSideRocket, 250);
-
+    // First rocket after 1.2s delay
+    const initialTimer = setTimeout(launchSingleRocket, 1200);
     let lastLaunch = Date.now();
 
-    // Two Changuchakkarams spinning on the bottom left and bottom right corners of the website
-    const sideChakkars = [
-      new GroundChakkar(
-        'side-left',
-        () => ({ x: Math.max(65, width * 0.08), y: height - 55 }),
-        22,
-        'gold',
-        1
-      ),
-      new GroundChakkar(
-        'side-right',
-        () => ({ x: Math.min(width - 65, width * 0.92), y: height - 55 }),
-        22,
-        'green',
-        -1
-      )
-    ];
-
     const loop = () => {
-      // Clear transparently so full website is 100% visible and sharp
+      // Clear transparently so website text & UI is 100% visible and razor sharp
       ctx.clearRect(0, 0, width, height);
 
       const now = Date.now();
-      if (now - lastLaunch > 750 + Math.random() * 550) {
-        launchSideRocket();
-        // Occasional double rocket
-        if (Math.random() > 0.45) {
-          setTimeout(launchSideRocket, 180);
-        }
+      // Strictly ONE rocket at a time ("oru oru sky cracker mattum"):
+      // Only launch next rocket when current rocket has finished exploding and 3.2s - 4.6s has elapsed
+      if (singleRockets.length === 0 && now - lastLaunch > 3200 + Math.random() * 1400) {
+        launchSingleRocket();
         lastLaunch = now;
       }
 
-      for (let i = sideRockets.length - 1; i >= 0; i--) {
-        const r = sideRockets[i];
+      for (let i = singleRockets.length - 1; i >= 0; i--) {
+        const r = singleRockets[i];
         r.update();
         r.draw();
-        if (r.exploded) sideRockets.splice(i, 1);
+        if (r.exploded) singleRockets.splice(i, 1);
       }
 
-      for (let i = sideParticles.length - 1; i >= 0; i--) {
-        const p = sideParticles[i];
+      for (let i = sparkParticles.length - 1; i >= 0; i--) {
+        const p = sparkParticles[i];
         p.update();
         p.draw();
-        if (p.alpha <= 0) sideParticles.splice(i, 1);
-      }
-
-      // Update & draw side Changuchakkarams
-      for (let i = 0; i < sideChakkars.length; i++) {
-        sideChakkars[i].update();
-        sideChakkars[i].draw(ctx);
+        if (p.alpha <= 0) sparkParticles.splice(i, 1);
       }
 
       animationFrameId = requestAnimationFrame(loop);
@@ -817,6 +799,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     loop();
 
     return () => {
+      clearTimeout(initialTimer);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
     };
