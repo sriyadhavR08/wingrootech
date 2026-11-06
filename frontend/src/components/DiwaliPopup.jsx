@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { X, Sparkles, ArrowRight, Gift } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Sparkles, Heart } from 'lucide-react';
 import './DiwaliPopup.css';
 
 /**
- * Diwali Festive Popup Modal with Two-Sided Sparkling Animated Crackers
+ * Diwali Celebration Popup Modal
  * 
- * To remove or disable anytime:
- * Simply set `SHOW_DIWALI_POPUP = false` in `src/App.jsx` or remove `<DiwaliPopup />`.
+ * Features:
+ * - Dynamic Sky Crackers (HTML5 Canvas simulation of realistic rockets & bursting aerial fireworks)
+ * - Ground Crackers: Spinning Zamin Chakkar (Left) & Sparkling Flowerpot Anar (Right)
+ * - Triple Glowing Earthen Diyas with flickering flame animations
+ * - Pure Festive Wishes (No Commercial Offers)
+ * - Modular toggle via SHOW_DIWALI_POPUP in `src/App.jsx`
  */
 export default function DiwaliPopup({ onOpenStudentPortal }) {
-  // Check if previously dismissed in this browser session
   const [isOpen, setIsOpen] = useState(() => {
     try {
       return sessionStorage.getItem('wingroo_diwali_dismissed') !== 'true';
@@ -18,7 +21,8 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   });
 
-  // Handle closing modal
+  const canvasRef = useRef(null);
+
   const handleClose = () => {
     setIsOpen(false);
     try {
@@ -28,7 +32,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   };
 
-  // Re-open from floating pill
   const handleReopen = () => {
     setIsOpen(true);
   };
@@ -44,20 +47,217 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const handleActionClick = () => {
+  // =========================================================================
+  // REALISTIC SKY CRACKERS & FIREWORKS SIMULATION (CANVAS 2D)
+  // =========================================================================
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Particle Colors for Festive Diwali Sky
+    const colors = [
+      '#FFD700', // Gold
+      '#FFA500', // Amber Orange
+      '#FF3366', // Ruby Pink
+      '#00FFCC', // Cyan Spark
+      '#7000FF', // Royal Violet
+      '#39FF14', // Neon Green
+      '#FFFFFF', // Pure White
+      '#FF4500'  // Fiery Crimson
+    ];
+
+    const rockets = [];
+    const particles = [];
+
+    class Rocket {
+      constructor(startX, targetX, targetY, color) {
+        this.x = startX;
+        this.y = height + 10;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.color = color;
+        this.speed = 10 + Math.random() * 5;
+        const angle = Math.atan2(targetY - this.y, targetX - this.x);
+        this.vx = Math.cos(angle) * this.speed;
+        this.vy = Math.sin(angle) * this.speed;
+        this.trail = [];
+        this.exploded = false;
+      }
+
+      update() {
+        this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+        if (this.trail.length > 7) this.trail.shift();
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Check if reached apex/target height
+        if (this.vy < 0 && this.y <= this.targetY) {
+          this.explode();
+        }
+      }
+
+      draw() {
+        // Draw rocket glowing spark trail
+        ctx.save();
+        for (let i = 0; i < this.trail.length; i++) {
+          const pt = this.trail[i];
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 2 + i * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 215, 0, ${i / this.trail.length})`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#FFA500';
+          ctx.fill();
+        }
+
+        // Rocket head spark
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      explode() {
+        this.exploded = true;
+        const count = 55 + Math.floor(Math.random() * 30);
+        const burstColor = this.color;
+
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(this.x, this.y, burstColor));
+        }
+      }
+    }
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2.5 + Math.random() * 7;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.friction = 0.94;
+        this.gravity = 0.12;
+        this.alpha = 1;
+        this.decay = 0.012 + Math.random() * 0.016;
+        this.size = 2.2 + Math.random() * 2;
+      }
+
+      update() {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+      }
+
+      draw() {
+        if (this.alpha <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Launch a rocket into sky
+    const launchRocket = () => {
+      // Launch from left side or right side towards top sky
+      const fromLeft = Math.random() > 0.5;
+      const startX = fromLeft ? width * 0.15 + Math.random() * (width * 0.15) : width * 0.70 + Math.random() * (width * 0.15);
+      const targetX = fromLeft ? width * 0.20 + Math.random() * (width * 0.25) : width * 0.55 + Math.random() * (width * 0.25);
+      const targetY = height * 0.15 + Math.random() * (height * 0.35);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      rockets.push(new Rocket(startX, targetX, targetY, color));
+    };
+
+    // Initial volley of crackers
+    launchRocket();
+    setTimeout(launchRocket, 400);
+    setTimeout(launchRocket, 800);
+
+    let lastLaunch = Date.now();
+
+    const loop = () => {
+      // Clear with soft trailing blur for light trails
+      ctx.fillStyle = 'rgba(7, 4, 15, 0.22)';
+      ctx.fillRect(0, 0, width, height);
+
+      // Periodically launch new sky crackers (every ~750ms)
+      const now = Date.now();
+      if (now - lastLaunch > 750 + Math.random() * 400) {
+        launchRocket();
+        lastLaunch = now;
+      }
+
+      // Update & draw rockets
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.update();
+        r.draw();
+        if (r.exploded) {
+          rockets.splice(i, 1);
+        }
+      }
+
+      // Update & draw firework burst particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isOpen]);
+
+  const handleCelebrate = () => {
     handleClose();
-    // Scroll smoothly to internship / programs section or open portal
-    const section = document.getElementById('internship') || document.getElementById('programs') || document.getElementById('services');
+    // Scroll smoothly to celebration or portfolio
+    const section = document.getElementById('about') || document.getElementById('services');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
-    } else if (onOpenStudentPortal) {
-      onOpenStudentPortal();
     }
   };
 
   return (
     <>
-      {/* 1. Main Modal Dialog */}
+      {/* 1. Main Festive Modal Dialog */}
       {isOpen && (
         <div 
           className="diwali-popup-overlay" 
@@ -68,6 +268,9 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           aria-modal="true"
           aria-label="Happy Diwali Greetings"
         >
+          {/* Dynamic Sky Fireworks Canvas */}
+          <canvas ref={canvasRef} className="diwali-fireworks-canvas" />
+
           <div className="diwali-popup-container">
             {/* Top Hanging Decorative Marigold Toran */}
             <div className="diwali-hanging-toran" aria-hidden="true">
@@ -88,112 +291,65 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               onClick={handleClose}
               aria-label="Close Diwali Popup"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
 
             {/* ========================================================
-                LEFT SIDE SPARKLING CRACKERS & FOUNTAIN
+                LEFT GROUND CRACKER: Spinning Zamin Chakkar (தரைச்சக்கரம்)
                ======================================================== */}
-            {/* Top-Left Aerial Starburst */}
-            <div className="diwali-aerial-cracker diwali-aerial-left" aria-hidden="true">
-              <div className="diwali-burst-ring" />
-              <span className="diwali-star-spark star-1" />
-              <span className="diwali-star-spark star-2" />
-              <span className="diwali-star-spark star-3" />
-              <span className="diwali-star-spark star-4" />
-              <span className="diwali-star-spark star-5" />
-              <span className="diwali-star-spark star-6" />
-              <span className="diwali-star-spark star-7" />
-              <span className="diwali-star-spark star-8" />
-            </div>
-
-            {/* Bottom-Left Sparkling Anar / Flowerpot Fountain */}
-            <div className="diwali-side-cracker diwali-cracker-left" aria-hidden="true">
-              <div className="diwali-fountain-stream">
-                <span className="spark-p spark-left-1" />
-                <span className="spark-p spark-left-2" />
-                <span className="spark-p spark-left-3" />
-                <span className="spark-p spark-left-4" />
-                <span className="spark-p spark-left-5" />
-                <span className="spark-p spark-left-6" />
-                <span className="spark-p spark-left-7" />
-                <span className="spark-p spark-left-8" />
-                <span className="spark-p spark-left-9" />
-                <span className="spark-p spark-left-10" />
-              </div>
-              <div className="diwali-anar-pot">
-                <div className="diwali-anar-nozzle" />
-                <svg className="diwali-anar-body" viewBox="0 0 52 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#potGradLeft)" stroke="#F59E0B" strokeWidth="1.5" />
-                  <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
-                  <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
-                  <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
-                  <defs>
-                    <linearGradient id="potGradLeft" x1="26" y1="6" x2="26" y2="47" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#92400E" />
-                      <stop offset="0.5" stopColor="#B45309" />
-                      <stop offset="1" stopColor="#78350F" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
+            <div className="diwali-chakkar-wrapper" aria-hidden="true" title="Ground Chakkar (தரைச்சக்கரம்)">
+              <div className="chakkar-sparks-ring" />
+              <svg className="diwali-chakkar-wheel" viewBox="0 0 50 50" fill="none">
+                <circle cx="25" cy="25" r="23" stroke="#F59E0B" strokeWidth="2.5" fill="#78350F" />
+                <path d="M25 2L28 22L48 25L28 28L25 48L22 28L2 25L22 22Z" fill="url(#chakkarGrad)" />
+                <circle cx="25" cy="25" r="5" fill="#FEF08A" />
+                <defs>
+                  <linearGradient id="chakkarGrad" x1="2" y1="2" x2="48" y2="48">
+                    <stop stopColor="#FDE047" />
+                    <stop offset="0.5" stopColor="#F59E0B" />
+                    <stop offset="1" stopColor="#DC2626" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
 
             {/* ========================================================
-                RIGHT SIDE SPARKLING CRACKERS & FOUNTAIN
+                RIGHT GROUND CRACKER: Sparkling Flowerpot Anar (பூந்தொட்டி)
                ======================================================== */}
-            {/* Top-Right Aerial Starburst */}
-            <div className="diwali-aerial-cracker diwali-aerial-right" aria-hidden="true">
-              <div className="diwali-burst-ring" style={{ animationDelay: '0.8s' }} />
-              <span className="diwali-star-spark star-1" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-2" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-3" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-4" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-5" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-6" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-7" style={{ animationDelay: '0.9s' }} />
-              <span className="diwali-star-spark star-8" style={{ animationDelay: '0.9s' }} />
-            </div>
-
-            {/* Bottom-Right Sparkling Anar / Flowerpot Fountain */}
-            <div className="diwali-side-cracker diwali-cracker-right" aria-hidden="true">
-              <div className="diwali-fountain-stream">
-                <span className="spark-p spark-right-1" />
-                <span className="spark-p spark-right-2" />
-                <span className="spark-p spark-right-3" />
-                <span className="spark-p spark-right-4" />
-                <span className="spark-p spark-right-5" />
-                <span className="spark-p spark-right-6" />
-                <span className="spark-p spark-right-7" />
-                <span className="spark-p spark-right-8" />
-                <span className="spark-p spark-right-9" />
-                <span className="spark-p spark-right-10" />
+            <div className="diwali-anar-wrapper" aria-hidden="true" title="Flowerpot Fountain (பூந்தொட்டி)">
+              <div className="anar-sparks-stream">
+                <span className="anar-spark anar-s1" />
+                <span className="anar-spark anar-s2" />
+                <span className="anar-spark anar-s3" />
+                <span className="anar-spark anar-s4" />
+                <span className="anar-spark anar-s5" />
+                <span className="anar-spark anar-s6" />
+                <span className="anar-spark anar-s7" />
+                <span className="anar-spark anar-s8" />
               </div>
-              <div className="diwali-anar-pot">
-                <div className="diwali-anar-nozzle" />
-                <svg className="diwali-anar-body" viewBox="0 0 52 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#potGradRight)" stroke="#F59E0B" strokeWidth="1.5" />
-                  <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
-                  <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
-                  <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
-                  <defs>
-                    <linearGradient id="potGradRight" x1="26" y1="6" x2="26" y2="47" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#92400E" />
-                      <stop offset="0.5" stopColor="#B45309" />
-                      <stop offset="1" stopColor="#78350F" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
+              <div className="diwali-anar-flame-tip" />
+              <svg className="diwali-anar-pot-svg" viewBox="0 0 52 48" fill="none">
+                <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#anarGradRight)" stroke="#F59E0B" strokeWidth="1.5" />
+                <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
+                <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
+                <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
+                <defs>
+                  <linearGradient id="anarGradRight" x1="26" y1="6" x2="26" y2="47">
+                    <stop stopColor="#92400E" />
+                    <stop offset="0.5" stopColor="#B45309" />
+                    <stop offset="1" stopColor="#78350F" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
 
             {/* Top Festive Badge */}
             <div className="diwali-top-garland">
               <span className="diwali-garland-line" />
               <div className="diwali-festive-badge">
-                <Sparkles size={12} />
+                <Sparkles size={13} />
                 <span>Festival of Lights Celebration</span>
-                <Sparkles size={12} />
+                <Sparkles size={13} />
               </div>
               <span className="diwali-garland-line" />
             </div>
@@ -202,18 +358,18 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
             <div className="diwali-diya-hero-container">
               {/* Left Diya */}
               <div className="diwali-diya-side">
-                <svg width="42" height="40" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradient)" />
+                <svg width="42" height="40" viewBox="0 0 50 48" fill="none">
+                  <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradLeft)" />
                   <path className="diwali-flame-inner" d="M25 11C25 11 20 17 20 21C20 23.8 22.2 26 25 26C27.8 26 30 23.8 30 21C30 17 25 11 25 11Z" fill="#FFFBEB" />
-                  <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGold)" />
+                  <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGoldLeft)" />
                   <ellipse cx="25" cy="28.5" rx="20" ry="4.5" fill="#B45309" />
                   <defs>
-                    <linearGradient id="flameGradient" x1="25" y1="4" x2="25" y2="29" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="flameGradLeft" x1="25" y1="4" x2="25" y2="29">
                       <stop stopColor="#FDE047" />
                       <stop offset="0.5" stopColor="#F59E0B" />
                       <stop offset="1" stopColor="#DC2626" />
                     </linearGradient>
-                    <linearGradient id="diyaGold" x1="5" y1="28" x2="45" y2="44" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="diyaGoldLeft" x1="5" y1="28" x2="45" y2="44">
                       <stop stopColor="#F59E0B" />
                       <stop offset="0.5" stopColor="#D97706" />
                       <stop offset="1" stopColor="#78350F" />
@@ -224,19 +380,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
               {/* Main Center Diya */}
               <div className="diwali-diya-main">
-                <svg width="68" height="64" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="68" height="64" viewBox="0 0 50 48" fill="none">
                   <path className="diwali-flame" d="M25 3C25 3 16 13 16 21C16 26 20 30 25 30C30 30 34 26 34 21C34 13 25 3 25 3Z" fill="url(#mainFlameGrad)" />
                   <path className="diwali-flame-inner" d="M25 10C25 10 19 16 19 21C19 24.3 21.7 27 25 27C28.3 27 31 24.3 31 21C31 16 25 10 25 10Z" fill="#FFFBEB" />
                   <path d="M4 28C7 39 17 45 25 45C33 45 43 39 46 28C40 33.5 10 33.5 4 28Z" fill="url(#mainDiyaGold)" />
                   <ellipse cx="25" cy="28.5" rx="21" ry="5" fill="#92400E" />
-                  <circle cx="25" cy="36" r="2.5" fill="#FDE047" opacity="0.85" />
+                  <circle cx="25" cy="36" r="2.5" fill="#FDE047" opacity="0.9" />
                   <defs>
-                    <linearGradient id="mainFlameGrad" x1="25" y1="3" x2="25" y2="30" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="mainFlameGrad" x1="25" y1="3" x2="25" y2="30">
                       <stop stopColor="#FEF08A" />
                       <stop offset="0.45" stopColor="#F59E0B" />
                       <stop offset="1" stopColor="#EF4444" />
                     </linearGradient>
-                    <linearGradient id="mainDiyaGold" x1="4" y1="28" x2="46" y2="45" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="mainDiyaGold" x1="4" y1="28" x2="46" y2="45">
                       <stop stopColor="#FCD34D" />
                       <stop offset="0.4" stopColor="#F59E0B" />
                       <stop offset="1" stopColor="#78350F" />
@@ -247,72 +403,60 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
               {/* Right Diya */}
               <div className="diwali-diya-side">
-                <svg width="42" height="40" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradient)" />
+                <svg width="42" height="40" viewBox="0 0 50 48" fill="none">
+                  <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradLeft)" />
                   <path className="diwali-flame-inner" d="M25 11C25 11 20 17 20 21C20 23.8 22.2 26 25 26C27.8 26 30 23.8 30 21C30 17 25 11 25 11Z" fill="#FFFBEB" />
-                  <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGold)" />
+                  <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGoldLeft)" />
                   <ellipse cx="25" cy="28.5" rx="20" ry="4.5" fill="#B45309" />
                 </svg>
               </div>
             </div>
 
             {/* Festive Title */}
-            <h2 className="diwali-main-title">Happy Diwali! ✨</h2>
+            <h2 className="diwali-main-title">Happy Diwali! 🪔✨</h2>
             <div className="diwali-tamil-title">இனிய தீபாவளி திருநாள் நல்வாழ்த்துகள்!</div>
 
-            {/* Warm Greeting Text */}
+            {/* Warm Greeting Text (PURE CELEBRATION - NO COMMERCIAL OFFER) */}
             <p className="diwali-greeting-body">
-              May this divine festival of lights spark boundless joy, good health, and stellar success in your tech journey. Wingroo Technologies wishes you and your family a bright and prosperous Diwali!
+              May the divine festival of lights illuminate your life with boundless happiness, radiant health, and glorious success.
+              <span className="diwali-brand-signature">
+                ✨ Warm wishes from Wingroo Technologies & Team ✨
+              </span>
             </p>
-
-            {/* Special Festive Offer Badge */}
-            <div className="diwali-offer-card">
-              <div className="diwali-offer-left">
-                <div className="diwali-offer-icon">
-                  <Gift size={20} />
-                </div>
-                <div>
-                  <div className="diwali-offer-title">Festive Tech Scholarship</div>
-                  <div className="diwali-offer-sub">Flat 20% off on all Industry Internships & AI Certifications</div>
-                </div>
-              </div>
-              <div className="diwali-coupon-badge">
-                DIWALI2026
-              </div>
-            </div>
 
             {/* Action Buttons */}
             <div className="diwali-action-group">
               <button 
                 type="button" 
                 className="diwali-primary-btn" 
-                onClick={handleActionClick}
+                onClick={handleCelebrate}
               >
-                <span>Explore Programs & Offers</span>
-                <ArrowRight size={17} />
+                <Sparkles size={18} />
+                <span>Celebrate Diwali with Us</span>
+                <Heart size={18} fill="#fff" />
               </button>
               <button 
                 type="button" 
                 className="diwali-dismiss-link" 
                 onClick={handleClose}
               >
-                Continue to Website
+                Enter Website 🪔
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. Floating Festive Diya Pill (Shown when modal is dismissed, allows user to re-read wishes) */}
+      {/* 2. Floating Festive Diya Pill (When modal is closed) */}
       {!isOpen && (
         <button 
           type="button" 
           className="diwali-floating-pill" 
           onClick={handleReopen}
-          title="Click to view Diwali Wishes & Festive Offer"
+          title="Click to view Diwali Wishes"
         >
-          <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🪔</span>
-          <span>Happy Diwali Offers!</span>
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>🪔</span>
+          <span>Happy Diwali Wishes!</span>
         </button>
       )}
     </>
