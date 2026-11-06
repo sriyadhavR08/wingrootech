@@ -767,6 +767,24 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     const initialTimer = setTimeout(launchSingleRocket, 1200);
     let lastLaunch = Date.now();
 
+    // Two Changuchakkarams spinning on the bottom left and bottom right corners of the website
+    const sideChakkars = [
+      new GroundChakkar(
+        'side-left',
+        () => ({ x: Math.max(65, width * 0.08), y: height - 55 }),
+        22,
+        'gold',
+        1
+      ),
+      new GroundChakkar(
+        'side-right',
+        () => ({ x: Math.min(width - 65, width * 0.92), y: height - 55 }),
+        22,
+        'green',
+        -1
+      )
+    ];
+
     const loop = () => {
       // Clear transparently so website text & UI is 100% visible and razor sharp
       ctx.clearRect(0, 0, width, height);
@@ -791,6 +809,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         p.update();
         p.draw();
         if (p.alpha <= 0) sparkParticles.splice(i, 1);
+      }
+
+      // Update & draw side Changuchakkarams
+      for (let i = 0; i < sideChakkars.length; i++) {
+        sideChakkars[i].update();
+        sideChakkars[i].draw(ctx);
       }
 
       animationFrameId = requestAnimationFrame(loop);
