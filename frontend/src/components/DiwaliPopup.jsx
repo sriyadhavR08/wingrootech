@@ -472,7 +472,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
     let lastRocket = Date.now();
 
-    // Exactly TWO Changuchakkarams: Left and Right (100% visible on both Mobile & Desktop)
+    // Exactly TWO Changuchakkarams: Left and Right (100% visible on both Mobile & Desktop, Zero Pot Overlap)
     const isMobile = width < 600;
     const modalChakkars = [
       // 1. Left Chakkar (Gold)
@@ -483,19 +483,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           if (card) {
             const rect = card.getBoundingClientRect();
             if (width < 600) {
-              return {
-                x: Math.max(20, rect.left - 16),
-                y: Math.min(height - 28, rect.bottom + 4)
-              };
+              // On mobile: position cleanly below the bottom-left of the card with zero pot overlap
+              const cx = Math.max(22, rect.left + 22);
+              const cy = Math.min(height - 24, rect.bottom + 22);
+              return { x: cx, y: cy };
             }
             return {
               x: Math.max(90, rect.left - 80),
               y: Math.min(height - 45, rect.bottom + 8)
             };
           }
-          return { x: width * 0.16, y: height - 45 };
+          return { x: width * 0.25, y: height - 38 };
         },
-        isMobile ? 18 : 24,
+        isMobile ? 16 : 24,
         'gold',
         1
       ),
@@ -507,19 +507,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           if (card) {
             const rect = card.getBoundingClientRect();
             if (width < 600) {
-              return {
-                x: Math.min(width - 20, rect.right + 16),
-                y: Math.min(height - 28, rect.bottom + 4)
-              };
+              // On mobile: position cleanly below the bottom-right of the card with zero pot overlap
+              const cx = Math.min(width - 22, rect.right - 22);
+              const cy = Math.min(height - 24, rect.bottom + 22);
+              return { x: cx, y: cy };
             }
             return {
               x: Math.min(width - 90, rect.right + 80),
               y: Math.min(height - 45, rect.bottom + 8)
             };
           }
-          return { x: width * 0.84, y: height - 45 };
+          return { x: width * 0.75, y: height - 38 };
         },
-        isMobile ? 18 : 24,
+        isMobile ? 16 : 24,
         'green',
         -1
       )
