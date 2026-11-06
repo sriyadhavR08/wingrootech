@@ -1,6 +1,107 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Sparkles, Heart } from 'lucide-react';
+import { X, Sparkles, Heart, Volume2, VolumeX } from 'lucide-react';
 import './DiwaliPopup.css';
+
+/**
+ * Realistic Web Audio API Firecracker Sound Synthesizer
+ * Synthesizes punchy low-end thump, crispy noise pops, and sparkling Diwali crackles!
+ * Zero external audio files, works instantaneously across all modern browsers.
+ */
+class FirecrackerAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.isMuted = false;
+    this.lastBurst = 0;
+  }
+
+  init() {
+    try {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) this.ctx = new AudioCtx();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+    } catch {
+      // AudioContext restricted
+    }
+  }
+
+  playBurst() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx || this.ctx.state !== 'running') return;
+
+    const now = this.ctx.currentTime;
+    if (now - this.lastBurst < 0.09) return; // Prevent audio clipping
+    this.lastBurst = now;
+
+    try {
+      // 1. Deep Sub-Bass Thump / Boom
+      const osc = this.ctx.createOscillator();
+      const oscGain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.exponentialRampToValueAtTime(32, now + 0.30);
+      oscGain.gain.setValueAtTime(0.42, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
+      osc.connect(oscGain);
+      oscGain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.32);
+
+      // 2. High-energy Cracker Noise Pop (Bandpass noise)
+      const duration = 0.28;
+      const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.35 ? 1.0 : 0.15);
+      }
+
+      const noiseSource = this.ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(1200 + Math.random() * 800, now);
+      bandpass.Q.setValueAtTime(2.8, now);
+
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.35, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      noiseSource.connect(bandpass);
+      bandpass.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+
+      noiseSource.start(now);
+      noiseSource.stop(now + duration);
+
+      // 3. Mini secondary sparkling crackles ("pat-pat-pat" fireworks sizzle)
+      const crackleCount = 3 + Math.floor(Math.random() * 3);
+      for (let c = 0; c < crackleCount; c++) {
+        const cDelay = 0.05 + c * 0.045 + Math.random() * 0.03;
+        const cOsc = this.ctx.createOscillator();
+        const cGain = this.ctx.createGain();
+        cOsc.type = 'triangle';
+        cOsc.frequency.setValueAtTime(850 + Math.random() * 700, now + cDelay);
+        cOsc.frequency.exponentialRampToValueAtTime(90, now + cDelay + 0.035);
+        cGain.gain.setValueAtTime(0.08, now + cDelay);
+        cGain.gain.exponentialRampToValueAtTime(0.001, now + cDelay + 0.035);
+        cOsc.connect(cGain);
+        cGain.connect(this.ctx.destination);
+        cOsc.start(now + cDelay);
+        cOsc.stop(now + cDelay + 0.04);
+      }
+    } catch {
+      // Ignore audio glitches safely
+    }
+  }
+}
+
+const crackerAudio = new FirecrackerAudioEngine();
 
 /**
  * Diwali Celebration Component
@@ -22,6 +123,9 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   });
 
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [isMuted, setIsMuted] = useState(false);
+
   const modalCanvasRef = useRef(null);
   const globalSidesCanvasRef = useRef(null);
 
@@ -35,6 +139,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   };
 
   const handleReopenModal = () => {
+    setTimeLeft(30);
     setIsModalOpen(true);
     try {
       sessionStorage.removeItem('wingroo_diwali_modal_closed');
@@ -42,6 +147,51 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       // ignore
     }
   };
+
+  // Toggle firecracker sound on/off
+  const toggleSound = () => {
+    setIsMuted(prev => {
+      const next = !prev;
+      crackerAudio.isMuted = next;
+      if (!next) {
+        crackerAudio.init();
+        crackerAudio.playBurst();
+      }
+      return next;
+    });
+  };
+
+  // Unlock Web Audio API on first user interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      crackerAudio.init();
+    };
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+    };
+  }, []);
+
+  // 30-Second Automatic Transition to Wingroo Main Site
+  useEffect(() => {
+    if (!isModalOpen) return;
+    setTimeLeft(30);
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleCloseModal();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isModalOpen]);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -343,6 +493,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
+        crackerAudio.playBurst();
         const count = 80 + Math.floor(Math.random() * 45);
         const burstColor = this.color;
 
@@ -456,81 +607,43 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
     let lastRocket = Date.now();
 
-    // Multiple spinning Changuchakkarams placed strategically around the scene
+    // Exactly TWO Changuchakkarams: Left and Right (Uncongested, neat & aesthetic)
     const modalChakkars = [
-      // 1. Far Left Floor (Gold)
+      // 1. Left Chakkar (Gold)
       new GroundChakkar(
-        'm-far-left',
-        () => ({
-          x: Math.max(65, width * 0.11),
-          y: height - 55
-        }),
-        22,
-        'gold',
-        1
-      ),
-      // 2. Near Left Booshvanam Flank (Green)
-      new GroundChakkar(
-        'm-near-left',
+        'm-left',
         () => {
           const card = document.querySelector('.diwali-popup-container');
           if (card) {
             const rect = card.getBoundingClientRect();
             return {
-              x: Math.max(120, rect.left - 75),
-              y: Math.min(height - 45, rect.bottom + 10)
+              x: Math.max(90, rect.left - 80),
+              y: Math.min(height - 45, rect.bottom + 8)
             };
           }
-          return { x: width * 0.25, y: height - 60 };
+          return { x: width * 0.22, y: height - 55 };
+        },
+        24,
+        'gold',
+        1
+      ),
+      // 2. Right Chakkar (Green)
+      new GroundChakkar(
+        'm-right',
+        () => {
+          const card = document.querySelector('.diwali-popup-container');
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            return {
+              x: Math.min(width - 90, rect.right + 80),
+              y: Math.min(height - 45, rect.bottom + 8)
+            };
+          }
+          return { x: width * 0.78, y: height - 55 };
         },
         24,
         'green',
         -1
-      ),
-      // 3. Near Right Booshvanam Flank (Crimson)
-      new GroundChakkar(
-        'm-near-right',
-        () => {
-          const card = document.querySelector('.diwali-popup-container');
-          if (card) {
-            const rect = card.getBoundingClientRect();
-            return {
-              x: Math.min(width - 120, rect.right + 75),
-              y: Math.min(height - 45, rect.bottom + 10)
-            };
-          }
-          return { x: width * 0.75, y: height - 60 };
-        },
-        24,
-        'crimson',
-        1
-      ),
-      // 4. Far Right Floor (Gold)
-      new GroundChakkar(
-        'm-far-right',
-        () => ({
-          x: Math.min(width - 65, width * 0.89),
-          y: height - 55
-        }),
-        22,
-        'gold',
-        -1
-      ),
-      // 5. Center Floor under the card
-      new GroundChakkar(
-        'm-center-floor',
-        () => {
-          const card = document.querySelector('.diwali-popup-container');
-          let groundY = height - 42;
-          if (card) {
-            const rect = card.getBoundingClientRect();
-            groundY = Math.min(height - 35, rect.bottom + 45);
-          }
-          return { x: width * 0.5, y: groundY };
-        },
-        20,
-        'gold',
-        1
       )
     ];
 
@@ -708,6 +821,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
+        crackerAudio.playBurst();
         const count = 55 + Math.floor(Math.random() * 35);
         const burstColor = this.color;
 
@@ -866,6 +980,17 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <span className="toran-leaf" />
               <span className="toran-leaf" />
             </div>
+
+            {/* Sound Toggle Button */}
+            <button 
+              type="button" 
+              className="diwali-sound-btn" 
+              onClick={toggleSound}
+              aria-label={isMuted ? "Sound Off (Click to turn ON)" : "Sound On (Click to Mute)"}
+              title={isMuted ? "Sound Off (Click to turn ON)" : "Sound On (Click to Mute)"}
+            >
+              {isMuted ? <VolumeX size={19} /> : <Volume2 size={19} />}
+            </button>
 
             {/* Close Button on Modal */}
             <button 
@@ -1037,6 +1162,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                 Enter Website 🪔
               </button>
             </div>
+
+            {/* 30-Second Auto-Entering Indicator */}
+            <div className="diwali-auto-timer-box">
+              <div className="diwali-auto-timer-track">
+                <div 
+                  className="diwali-auto-timer-fill" 
+                  style={{ width: `${(timeLeft / 30) * 100}%` }} 
+                />
+              </div>
+              <span className="diwali-auto-timer-label">
+                Entering Wingroo site automatically in <strong>{timeLeft}s</strong>
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -1057,6 +1195,15 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <span className="diwali-ui-bar-tamil">இனிய தீபாவளி திருநாள் நல்வாழ்த்துகள்! • Wingroo Technologies</span>
             </div>
             <div className="diwali-ui-bar-actions">
+              <button 
+                type="button" 
+                className="diwali-ui-sound-btn" 
+                onClick={toggleSound}
+                title={isMuted ? "Unmute Crackers" : "Mute Crackers"}
+              >
+                {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                <span>{isMuted ? "Sound Off" : "Sound On"}</span>
+              </button>
               <button 
                 type="button" 
                 className="diwali-ui-view-modal-btn" 
