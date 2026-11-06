@@ -22,7 +22,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   });
 
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(7);
 
   const modalCanvasRef = useRef(null);
   const globalSidesCanvasRef = useRef(null);
@@ -37,7 +37,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   };
 
   const handleReopenModal = () => {
-    setTimeLeft(15);
+    setTimeLeft(7);
     setIsModalOpen(true);
     try {
       sessionStorage.removeItem('wingroo_diwali_modal_closed');
@@ -48,10 +48,10 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
 
 
-  // 15-Second Automatic Transition to Wingroo Main Site
+  // 7-Second Automatic Transition to Wingroo Main Site
   useEffect(() => {
     if (!isModalOpen) return;
-    setTimeLeft(15);
+    setTimeLeft(7);
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -885,6 +885,19 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               </svg>
             </div>
 
+                        {/* Official Wingroo Brand Header */}
+            <div className="diwali-brand-header">
+              <img 
+                src="/logo.png" 
+                alt="Wingroo Technologies" 
+                className="diwali-brand-logo" 
+              />
+              <div className="diwali-brand-text">
+                <span className="diwali-brand-name">WINGROO</span>
+                <span className="diwali-brand-tagline">TECHNOLOGIES</span>
+              </div>
+            </div>
+
             {/* Top Festive Badge */}
             <div className="diwali-top-garland">
               <span className="diwali-garland-line" />
@@ -988,7 +1001,8 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
           {/* Sleek UI Festive Diwali Greeting Bar (Sticky under Navbar, English Only, No Sound on Main Site) */}
           <div className="diwali-ui-festive-bar" role="banner" aria-label="Diwali Wishes">
-            <div className="diwali-ui-bar-content">
+                        <div className="diwali-ui-bar-content">
+              <img src="/logo.png" alt="Wingroo" className="diwali-ui-bar-logo" />
               <span className="diwali-ui-bar-badge">🪔 Diwali Special</span>
               <span className="diwali-ui-bar-text">Happy Diwali!</span>
               <span className="diwali-ui-bar-subtext">Wishing You Boundless Joy, Prosperity & Glowing Success • Wingroo Technologies</span>
