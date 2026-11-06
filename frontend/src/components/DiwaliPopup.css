@@ -643,26 +643,113 @@
   transform: scale(1.05);
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments: Perfect Desktop & Mobile Experience */
 @media (max-width: 768px) {
+  .diwali-popup-overlay {
+    padding: 14px 10px;
+  }
+
+  /* Compact Card so Left & Right side crackers, booshvanam & chakkars are gloriously visible */
+  .diwali-popup-container {
+    width: 84%;
+    max-width: 325px;
+    padding: 22px 16px 18px;
+    border-radius: 22px;
+    box-shadow:
+      0 0 50px rgba(245, 158, 11, 0.4),
+      0 0 100px rgba(239, 68, 68, 0.2),
+      0 20px 50px -10px rgba(0, 0, 0, 0.95);
+  }
+
+  .diwali-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Stacked Brand Header on Mobile */
+  .diwali-brand-header {
+    gap: 5px;
+    margin-top: -6px;
+    margin-bottom: 8px;
+    padding: 5px 14px 6px;
+    border-radius: 16px;
+  }
+
+  .diwali-brand-logo {
+    height: 36px;
+  }
+
+  .diwali-brand-name-part {
+    font-size: 0.84rem;
+    letter-spacing: 0.08em;
+  }
+
+  .diwali-brand-tech-part {
+    font-size: 0.84rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* Top Festive Badge */
+  .diwali-top-garland {
+    margin-top: 2px;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+
+  .diwali-festive-badge {
+    font-size: 0.66rem;
+    padding: 3px 12px;
+    gap: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Diyas on Mobile */
+  .diwali-diya-hero-container {
+    gap: 10px;
+    margin: 6px 0 10px;
+    transform: scale(0.84);
+    transform-origin: center bottom;
+  }
+
+  /* Titles & Typography */
+  .diwali-main-title {
+    font-size: 1.62rem;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .diwali-greeting-body {
+    font-size: 0.80rem;
+    line-height: 1.45;
+    margin: 0 0 14px;
+    padding: 0 2px;
+  }
+
+  .diwali-brand-signature {
+    font-size: 0.76rem;
+    margin-top: 6px;
+  }
+
+  .diwali-primary-btn {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    border-radius: 12px;
+    gap: 8px;
+  }
+
+  /* Booshvanam pots at bottom corners, perfectly aligned on screen */
   .diwali-booshvanam-left {
-    left: -12px;
-    bottom: -15px;
-    transform: scale(0.8);
+    left: -20px;
+    bottom: -16px;
+    transform: scale(0.85);
   }
 
   .diwali-booshvanam-right {
-    right: -12px;
-    bottom: -15px;
-    transform: scale(0.8);
-  }
-
-  .diwali-main-title {
-    font-size: 1.85rem;
-  }
-
-  .diwali-tamil-title {
-    font-size: 0.95rem;
+    right: -20px;
+    bottom: -16px;
+    transform: scale(0.85);
   }
 
   .diwali-ui-bar-content {
@@ -675,5 +762,32 @@
 
   .diwali-ui-bar-subtext {
     display: none;
+  }
+}
+
+/* Extra small mobile screens (width <= 360px) */
+@media (max-width: 360px) {
+  .diwali-popup-container {
+    width: 82%;
+    max-width: 295px;
+    padding: 18px 12px 16px;
+  }
+
+  .diwali-main-title {
+    font-size: 1.45rem;
+  }
+
+  .diwali-greeting-body {
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .diwali-brand-logo {
+    height: 32px;
+  }
+
+  .diwali-brand-name-part,
+  .diwali-brand-tech-part {
+    font-size: 0.78rem;
   }
 }

@@ -450,9 +450,17 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
 
     const launchModalRocket = () => {
-      const startX = width * 0.05 + Math.random() * (width * 0.90);
-      const targetX = startX + (Math.random() * 160 - 80);
-      const targetY = height * 0.08 + Math.random() * (height * 0.38);
+      let startX;
+      if (width < 600) {
+        // On mobile, launch primarily in visible left (3% - 24%) and right (76% - 97%) flanks
+        startX = Math.random() > 0.5
+          ? width * 0.03 + Math.random() * (width * 0.20)
+          : width * 0.77 + Math.random() * (width * 0.20);
+      } else {
+        startX = width * 0.05 + Math.random() * (width * 0.90);
+      }
+      const targetX = startX + (Math.random() * (width < 600 ? 50 : 160) - (width < 600 ? 25 : 80));
+      const targetY = height * 0.06 + Math.random() * (height * 0.32);
       const color = skyColors[Math.floor(Math.random() * skyColors.length)];
 
       rockets.push(new ModalRocket(startX, targetX, targetY, color));
@@ -464,7 +472,8 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
     let lastRocket = Date.now();
 
-    // Exactly TWO Changuchakkarams: Left and Right (Uncongested, neat & aesthetic)
+    // Exactly TWO Changuchakkarams: Left and Right (100% visible on both Mobile & Desktop)
+    const isMobile = width < 600;
     const modalChakkars = [
       // 1. Left Chakkar (Gold)
       new GroundChakkar(
@@ -473,14 +482,20 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           const card = document.querySelector('.diwali-popup-container');
           if (card) {
             const rect = card.getBoundingClientRect();
+            if (width < 600) {
+              return {
+                x: Math.max(20, rect.left - 16),
+                y: Math.min(height - 28, rect.bottom + 4)
+              };
+            }
             return {
               x: Math.max(90, rect.left - 80),
               y: Math.min(height - 45, rect.bottom + 8)
             };
           }
-          return { x: width * 0.22, y: height - 55 };
+          return { x: width * 0.16, y: height - 45 };
         },
-        24,
+        isMobile ? 18 : 24,
         'gold',
         1
       ),
@@ -491,14 +506,20 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           const card = document.querySelector('.diwali-popup-container');
           if (card) {
             const rect = card.getBoundingClientRect();
+            if (width < 600) {
+              return {
+                x: Math.min(width - 20, rect.right + 16),
+                y: Math.min(height - 28, rect.bottom + 4)
+              };
+            }
             return {
               x: Math.min(width - 90, rect.right + 80),
               y: Math.min(height - 45, rect.bottom + 8)
             };
           }
-          return { x: width * 0.78, y: height - 55 };
+          return { x: width * 0.84, y: height - 45 };
         },
-        24,
+        isMobile ? 18 : 24,
         'green',
         -1
       )
