@@ -3,12 +3,14 @@ import { X, Sparkles, Heart } from 'lucide-react';
 import './DiwaliPopup.css';
 
 /**
- * Diwali Celebration Popup Modal
+ * Diwali Celebration Popup Modal with Big Sky Crackers & Realistic Booshvanam
  * 
- * - When popup is OPEN: Covers full page with high-intensity sky rocket crackers canvas,
- *   spinning chakkar, sparkling flowerpot fountain, and glowing diyas.
- * - When popup is CLOSED: Pop-up and sky crackers close completely, returning to clean website.
- * - Modular toggle via SHOW_DIWALI_POPUP in `src/App.jsx`.
+ * Features:
+ * - Big Sky Crackers: Heavy continuous rocket launches & grand multi-color aerial explosions
+ * - Realistic Booshvanam (Flowerpot Fountain): Roaring physics-based fountain spraying hundreds
+ *   of golden sparkling embers high into the air on both sides!
+ * - Pure Festive Wishes: No commercial offers or coupons
+ * - Clean cleanup on close & single-flag modular removal
  */
 export default function DiwaliPopup({ onOpenStudentPortal }) {
   const [isOpen, setIsOpen] = useState(() => {
@@ -46,8 +48,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   }, [isOpen]);
 
   // =========================================================================
-  // SKY CRACKERS & FIREWORKS SIMULATION (RUNS ONLY WHILE POPUP IS OPEN)
-  // Covers the full popup screen area with dynamic rockets and bursting sparks!
+  // REALISTIC BIG SKY CRACKERS & BOOSHVANAM ENGINE (HTML5 CANVAS 2D)
   // =========================================================================
   useEffect(() => {
     if (!isOpen) return;
@@ -67,29 +68,35 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     };
     window.addEventListener('resize', handleResize);
 
-    // Festive Color Palette for Diwali Sky Fireworks
-    const colors = [
+    // Radiant festive palette for Sky Fireworks
+    const skyColors = [
       '#FFD700', // Imperial Gold
-      '#FF8800', // Amber Flame
-      '#FF2E63', // Ruby Pink
-      '#00F5D4', // Emerald Cyan
+      '#FF8C00', // Amber Orange
+      '#FF1E56', // Ruby Crimson
+      '#00F5D4', // Emerald Neon
       '#9D4EDD', // Royal Violet
-      '#38EF7D', // Vibrant Green
+      '#00E5FF', // Electric Cyan
+      '#39FF14', // Neon Green
       '#FFFDF0', // Pure Diamond White
-      '#FF5722'  // Deep Orange Red
+      '#FF007F'  // Vibrant Rose
     ];
 
     const rockets = [];
-    const particles = [];
+    const skyParticles = [];
+    const booshvanamSparks = [];
+    const flashWaves = [];
 
-    class Rocket {
+    // -----------------------------------------------------------------------
+    // 1. BIG SKY ROCKETS & AERIAL EXPLOSIONS
+    // -----------------------------------------------------------------------
+    class SkyRocket {
       constructor(startX, targetX, targetY, color) {
         this.x = startX;
         this.y = height + 10;
         this.targetX = targetX;
         this.targetY = targetY;
         this.color = color;
-        this.speed = 11 + Math.random() * 5;
+        this.speed = 13 + Math.random() * 6;
         const angle = Math.atan2(targetY - this.y, targetX - this.x);
         this.vx = Math.cos(angle) * this.speed;
         this.vy = Math.sin(angle) * this.speed;
@@ -99,12 +106,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       update() {
         this.trail.push({ x: this.x, y: this.y, alpha: 1 });
-        if (this.trail.length > 8) this.trail.shift();
+        if (this.trail.length > 9) this.trail.shift();
 
         this.x += this.vx;
         this.y += this.vy;
 
-        // Explode when reached target height
+        // Apex explosion
         if (this.vy < 0 && this.y <= this.targetY) {
           this.explode();
         }
@@ -112,21 +119,23 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       draw() {
         ctx.save();
+        // Fiery golden rocket trail
         for (let i = 0; i < this.trail.length; i++) {
           const pt = this.trail[i];
           const trailAlpha = (i / this.trail.length) * 0.95;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 2 + i * 0.4, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 2.2 + i * 0.4, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 215, 0, ${trailAlpha})`;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#FF8800';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#FF8C00';
           ctx.fill();
         }
 
+        // Rocket Head Flash
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 18;
         ctx.shadowColor = this.color;
         ctx.fill();
         ctx.restore();
@@ -134,29 +143,47 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        const count = 55 + Math.floor(Math.random() * 30);
+        // Big heavy explosion: 80 - 130 particles
+        const count = 85 + Math.floor(Math.random() * 45);
         const burstColor = this.color;
 
+        // Sky flash shockwave
+        flashWaves.push({
+          x: this.x,
+          y: this.y,
+          radius: 20,
+          color: burstColor,
+          alpha: 0.55
+        });
+
+        // 3 Explosion Styles: Willow, Radial Starburst, Ring
+        const styleChoice = Math.random();
+
         for (let i = 0; i < count; i++) {
-          particles.push(new Particle(this.x, this.y, burstColor));
+          skyParticles.push(new SkyParticle(this.x, this.y, burstColor, styleChoice));
         }
       }
     }
 
-    class Particle {
-      constructor(x, y, color) {
+    class SkyParticle {
+      constructor(x, y, color, styleChoice) {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.style = styleChoice;
         const angle = Math.random() * Math.PI * 2;
-        const speed = 2.0 + Math.random() * 7;
+        // Faster and larger expansion for big crackers
+        const speed = styleChoice > 0.65 
+          ? (3.0 + Math.random() * 10)  // Big Starburst
+          : (2.0 + Math.random() * 7);   // Golden Willow Rain
+
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
-        this.friction = 0.94;
-        this.gravity = 0.11;
+        this.friction = 0.93;
+        this.gravity = styleChoice < 0.4 ? 0.16 : 0.11; // Willow drops faster like gold rain
         this.alpha = 1;
-        this.decay = 0.012 + Math.random() * 0.015;
-        this.size = 2.4 + Math.random() * 2.2;
+        this.decay = 0.009 + Math.random() * 0.014;
+        this.size = 2.4 + Math.random() * 2.8;
       }
 
       update() {
@@ -182,39 +209,137 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       }
     }
 
-    // Launch sky rockets across the entire width of the popup page
-    const launchRocket = () => {
-      const startX = width * 0.08 + Math.random() * (width * 0.84);
-      const targetX = startX + (Math.random() * 140 - 70);
-      const targetY = height * 0.10 + Math.random() * (height * 0.40);
-      const color = colors[Math.floor(Math.random() * colors.length)];
+    // -----------------------------------------------------------------------
+    // 2. REALISTIC BOOSHVANAM (FLOWERPOT FOUNTAIN) PHYSICS
+    // Shoots hundreds of golden sparks high upwards from the nozzles
+    // -----------------------------------------------------------------------
+    class BooshvanamSpark {
+      constructor(nozzleX, nozzleY) {
+        this.x = nozzleX + (Math.random() * 6 - 3);
+        this.y = nozzleY;
+        // Shoots high into the sky: 150px - 260px!
+        const upwardForce = 8 + Math.random() * 10.5;
+        const spreadAngle = (Math.random() - 0.5) * 5.5; // Fan out spray
+        this.vx = spreadAngle;
+        this.vy = -upwardForce;
+        this.gravity = 0.22; // Gravity pulls embers down
+        this.friction = 0.985;
+        this.alpha = 1;
+        this.decay = 0.014 + Math.random() * 0.018;
+        this.size = 2.0 + Math.random() * 2.4;
 
-      rockets.push(new Rocket(startX, targetX, targetY, color));
-    };
-
-    // Initial volley of crackers on open
-    launchRocket();
-    setTimeout(launchRocket, 300);
-    setTimeout(launchRocket, 650);
-
-    let lastLaunch = Date.now();
-
-    const loop = () => {
-      // Soft semi-transparent trail clear across the full popup overlay
-      ctx.fillStyle = 'rgba(8, 4, 18, 0.22)';
-      ctx.fillRect(0, 0, width, height);
-
-      // Launch sky rockets continuously across the whole popup
-      const now = Date.now();
-      if (now - lastLaunch > 950 + Math.random() * 600) {
-        launchRocket();
-        if (Math.random() > 0.55) {
-          setTimeout(launchRocket, 160);
-        }
-        lastLaunch = now;
+        // Realistic Diwali Booshvanam ember color spectrum:
+        // White-hot core -> Golden yellow -> Amber orange -> Crimson red
+        const rand = Math.random();
+        if (rand < 0.25) this.color = '#FFFFFF';
+        else if (rand < 0.65) this.color = '#FFD700';
+        else if (rand < 0.88) this.color = '#FF9100';
+        else this.color = '#FF2A2A';
       }
 
-      // Update & draw sky rockets
+      update() {
+        this.vx *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+      }
+
+      draw() {
+        if (this.alpha <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Launch heavy sky rockets across the screen
+    const launchHeavyRocket = () => {
+      // Launch across left, center, right
+      const startX = width * 0.05 + Math.random() * (width * 0.90);
+      const targetX = startX + (Math.random() * 160 - 80);
+      const targetY = height * 0.08 + Math.random() * (height * 0.38);
+      const color = skyColors[Math.floor(Math.random() * skyColors.length)];
+
+      rockets.push(new SkyRocket(startX, targetX, targetY, color));
+    };
+
+    // Initial festive burst volley
+    launchHeavyRocket();
+    setTimeout(launchHeavyRocket, 250);
+    setTimeout(launchHeavyRocket, 550);
+    setTimeout(launchHeavyRocket, 900);
+
+    let lastRocketTime = Date.now();
+
+    // -----------------------------------------------------------------------
+    // MAIN RENDER & PHYSICS LOOP
+    // -----------------------------------------------------------------------
+    const loop = () => {
+      // Soft semi-transparent trail clear for glowing light tails
+      ctx.fillStyle = 'rgba(6, 3, 14, 0.24)';
+      ctx.fillRect(0, 0, width, height);
+
+      // 1. Sky Flash Shockwaves
+      for (let i = flashWaves.length - 1; i >= 0; i--) {
+        const wave = flashWaves[i];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${wave.alpha})`;
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = wave.color;
+        ctx.fill();
+        ctx.restore();
+
+        wave.radius += 10;
+        wave.alpha -= 0.08;
+        if (wave.alpha <= 0) {
+          flashWaves.splice(i, 1);
+        }
+      }
+
+      // 2. Launch Sky Rockets Frequently (Every 450 - 850ms)
+      const now = Date.now();
+      if (now - lastRocketTime > 500 + Math.random() * 450) {
+        launchHeavyRocket();
+        // Occasional double rocket
+        if (Math.random() > 0.45) {
+          setTimeout(launchHeavyRocket, 150);
+        }
+        lastRocketTime = now;
+      }
+
+      // 3. Emit Real Booshvanam Sparks from Left & Right Nozzles
+      const leftEl = document.getElementById('booshvanam-left-nozzle');
+      const rightEl = document.getElementById('booshvanam-right-nozzle');
+
+      if (leftEl) {
+        const rect = leftEl.getBoundingClientRect();
+        const nx = rect.left + rect.width / 2;
+        const ny = rect.top + rect.height / 2;
+        // 5-8 sparks per frame = roaring dense fountain
+        for (let s = 0; s < 6; s++) {
+          booshvanamSparks.push(new BooshvanamSpark(nx, ny));
+        }
+      }
+
+      if (rightEl) {
+        const rect = rightEl.getBoundingClientRect();
+        const nx = rect.left + rect.width / 2;
+        const ny = rect.top + rect.height / 2;
+        for (let s = 0; s < 6; s++) {
+          booshvanamSparks.push(new BooshvanamSpark(nx, ny));
+        }
+      }
+
+      // 4. Update & Draw Sky Rockets
       for (let i = rockets.length - 1; i >= 0; i--) {
         const r = rockets[i];
         r.update();
@@ -224,13 +349,23 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         }
       }
 
-      // Update & draw firework particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
+      // 5. Update & Draw Sky Firework Particles
+      for (let i = skyParticles.length - 1; i >= 0; i--) {
+        const p = skyParticles[i];
         p.update();
         p.draw();
         if (p.alpha <= 0) {
-          particles.splice(i, 1);
+          skyParticles.splice(i, 1);
+        }
+      }
+
+      // 6. Update & Draw Booshvanam Fountain Sparks
+      for (let i = booshvanamSparks.length - 1; i >= 0; i--) {
+        const b = booshvanamSparks[i];
+        b.update();
+        b.draw();
+        if (b.alpha <= 0) {
+          booshvanamSparks.splice(i, 1);
         }
       }
 
@@ -255,7 +390,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
   return (
     <>
-      {/* 1. Main Festive Modal Dialog (Covers the full page/screen when open) */}
+      {/* 1. Main Festive Modal Dialog (Covers the full screen with Big Sky Crackers & Roaring Booshvanams) */}
       {isOpen && (
         <div 
           className="diwali-popup-overlay" 
@@ -266,7 +401,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           aria-modal="true"
           aria-label="Happy Diwali Greetings"
         >
-          {/* Sky Fireworks Canvas covering the entire full-screen popup page */}
+          {/* High-Performance Canvas for Big Sky Fireworks & Dense Booshvanam Fountains */}
           <canvas ref={canvasRef} className="diwali-popup-canvas" />
 
           <div className="diwali-popup-container">
@@ -293,49 +428,42 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
             </button>
 
             {/* ========================================================
-                LEFT GROUND CRACKER: Spinning Zamin Chakkar (தரைச்சக்கரம்)
+                LEFT REALISTIC BOOSHVANAM (FLOWERPOT FOUNTAIN) POT
                ======================================================== */}
-            <div className="diwali-chakkar-wrapper" aria-hidden="true" title="Ground Chakkar (தரைச்சக்கரம்)">
-              <div className="chakkar-sparks-ring" />
-              <svg className="diwali-chakkar-wheel" viewBox="0 0 50 50" fill="none">
-                <circle cx="25" cy="25" r="23" stroke="#F59E0B" strokeWidth="2.5" fill="#78350F" />
-                <path d="M25 2L28 22L48 25L28 28L25 48L22 28L2 25L22 22Z" fill="url(#chakkarGrad)" />
-                <circle cx="25" cy="25" r="5" fill="#FEF08A" />
+            <div className="diwali-booshvanam-left" aria-hidden="true" title="Booshvanam (பூவாணம் / Flowerpot Fountain)">
+              <div id="booshvanam-left-nozzle" className="booshvanam-nozzle" />
+              <svg className="booshvanam-pot-svg" viewBox="0 0 54 50" fill="none">
+                <path d="M27 6L8 46C7 48 8.5 49 11 49H43C45.5 49 47 48 46 46L27 6Z" fill="url(#booshPotGradLeft)" stroke="#F59E0B" strokeWidth="1.8" />
+                <path d="M14 38H40" stroke="#FEF08A" strokeWidth="1.5" strokeDasharray="3 2" />
+                <path d="M18 28H36" stroke="#FDE047" strokeWidth="1.5" strokeDasharray="3 2" />
+                <path d="M22 18H32" stroke="#FFF" strokeWidth="1.2" strokeDasharray="2 2" />
+                <ellipse cx="27" cy="6" rx="6" ry="2.2" fill="#D97706" />
                 <defs>
-                  <linearGradient id="chakkarGrad" x1="2" y1="2" x2="48" y2="48">
-                    <stop stopColor="#FDE047" />
-                    <stop offset="0.5" stopColor="#F59E0B" />
-                    <stop offset="1" stopColor="#DC2626" />
+                  <linearGradient id="booshPotGradLeft" x1="27" y1="6" x2="27" y2="49">
+                    <stop stopColor="#B45309" />
+                    <stop offset="0.5" stopColor="#78350F" />
+                    <stop offset="1" stopColor="#451A03" />
                   </linearGradient>
                 </defs>
               </svg>
             </div>
 
             {/* ========================================================
-                RIGHT GROUND CRACKER: Sparkling Flowerpot Anar (பூந்தொட்டி)
+                RIGHT REALISTIC BOOSHVANAM (FLOWERPOT FOUNTAIN) POT
                ======================================================== */}
-            <div className="diwali-anar-wrapper" aria-hidden="true" title="Flowerpot Fountain (பூந்தொட்டி)">
-              <div className="anar-sparks-stream">
-                <span className="anar-spark anar-s1" />
-                <span className="anar-spark anar-s2" />
-                <span className="anar-spark anar-s3" />
-                <span className="anar-spark anar-s4" />
-                <span className="anar-spark anar-s5" />
-                <span className="anar-spark anar-s6" />
-                <span className="anar-spark anar-s7" />
-                <span className="anar-spark anar-s8" />
-              </div>
-              <div className="diwali-anar-flame-tip" />
-              <svg className="diwali-anar-pot-svg" viewBox="0 0 52 48" fill="none">
-                <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#anarGradRight)" stroke="#F59E0B" strokeWidth="1.5" />
-                <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
-                <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
-                <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
+            <div className="diwali-booshvanam-right" aria-hidden="true" title="Booshvanam (பூவாணம் / Flowerpot Fountain)">
+              <div id="booshvanam-right-nozzle" className="booshvanam-nozzle" />
+              <svg className="booshvanam-pot-svg" viewBox="0 0 54 50" fill="none">
+                <path d="M27 6L8 46C7 48 8.5 49 11 49H43C45.5 49 47 48 46 46L27 6Z" fill="url(#booshPotGradRight)" stroke="#F59E0B" strokeWidth="1.8" />
+                <path d="M14 38H40" stroke="#FEF08A" strokeWidth="1.5" strokeDasharray="3 2" />
+                <path d="M18 28H36" stroke="#FDE047" strokeWidth="1.5" strokeDasharray="3 2" />
+                <path d="M22 18H32" stroke="#FFF" strokeWidth="1.2" strokeDasharray="2 2" />
+                <ellipse cx="27" cy="6" rx="6" ry="2.2" fill="#D97706" />
                 <defs>
-                  <linearGradient id="anarGradRight" x1="26" y1="6" x2="26" y2="47">
-                    <stop stopColor="#92400E" />
-                    <stop offset="0.5" stopColor="#B45309" />
-                    <stop offset="1" stopColor="#78350F" />
+                  <linearGradient id="booshPotGradRight" x1="27" y1="6" x2="27" y2="49">
+                    <stop stopColor="#B45309" />
+                    <stop offset="0.5" stopColor="#78350F" />
+                    <stop offset="1" stopColor="#451A03" />
                   </linearGradient>
                 </defs>
               </svg>
