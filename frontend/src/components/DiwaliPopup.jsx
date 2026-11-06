@@ -3,16 +3,12 @@ import { X, Sparkles, Heart } from 'lucide-react';
 import './DiwaliPopup.css';
 
 /**
- * Diwali Whole-Page Celebration & Sky Crackers
+ * Diwali Celebration Popup Modal
  * 
- * Features:
- * - Whole-Page Sky Crackers: HTML5 Canvas transparently renders rockets & bursting fireworks across the ENTIRE viewport
- * - Works continuously whether the greeting modal is open or closed
- * - Non-intrusive: pointer-events none, 100% transparent clear (does not darken webpage)
- * - Ground Crackers: Spinning Zamin Chakkar (Left) & Sparkling Flowerpot Anar (Right)
- * - Triple Glowing Earthen Diyas with flickering flame animations
- * - Pure Festive Wishes (No Commercial Offers)
- * - Modular toggle via SHOW_DIWALI_POPUP in `src/App.jsx`
+ * - When popup is OPEN: Covers full page with high-intensity sky rocket crackers canvas,
+ *   spinning chakkar, sparkling flowerpot fountain, and glowing diyas.
+ * - When popup is CLOSED: Pop-up and sky crackers close completely, returning to clean website.
+ * - Modular toggle via SHOW_DIWALI_POPUP in `src/App.jsx`.
  */
 export default function DiwaliPopup({ onOpenStudentPortal }) {
   const [isOpen, setIsOpen] = useState(() => {
@@ -50,10 +46,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   }, [isOpen]);
 
   // =========================================================================
-  // WHOLE-PAGE REALISTIC SKY CRACKERS & FIREWORKS (CANVAS 2D)
-  // Transparent, non-blocking, bursts across the full page!
+  // SKY CRACKERS & FIREWORKS SIMULATION (RUNS ONLY WHILE POPUP IS OPEN)
+  // Covers the full popup screen area with dynamic rockets and bursting sparks!
   // =========================================================================
   useEffect(() => {
+    if (!isOpen) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -106,7 +104,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Explode when reached target height or apex
+        // Explode when reached target height
         if (this.vy < 0 && this.y <= this.targetY) {
           this.explode();
         }
@@ -114,23 +112,21 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       draw() {
         ctx.save();
-        // Rocket spark trail
         for (let i = 0; i < this.trail.length; i++) {
           const pt = this.trail[i];
-          const trailAlpha = (i / this.trail.length) * 0.9;
+          const trailAlpha = (i / this.trail.length) * 0.95;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 1.8 + i * 0.35, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 2 + i * 0.4, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 215, 0, ${trailAlpha})`;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 10;
           ctx.shadowColor = '#FF8800';
           ctx.fill();
         }
 
-        // Rocket glowing tip
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3.2, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 16;
         ctx.shadowColor = this.color;
         ctx.fill();
         ctx.restore();
@@ -138,7 +134,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        const count = 50 + Math.floor(Math.random() * 30);
+        const count = 55 + Math.floor(Math.random() * 30);
         const burstColor = this.color;
 
         for (let i = 0; i < count; i++) {
@@ -160,7 +156,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         this.gravity = 0.11;
         this.alpha = 1;
         this.decay = 0.012 + Math.random() * 0.015;
-        this.size = 2.2 + Math.random() * 2.2;
+        this.size = 2.4 + Math.random() * 2.2;
       }
 
       update() {
@@ -179,43 +175,41 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.shadowColor = this.color;
         ctx.fill();
         ctx.restore();
       }
     }
 
-    // Launch a rocket from bottom across the screen
+    // Launch sky rockets across the entire width of the popup page
     const launchRocket = () => {
-      // Launch from anywhere across the entire bottom (10% to 90% of screen)
       const startX = width * 0.08 + Math.random() * (width * 0.84);
-      // Target anywhere in the top 10% - 45% of the sky
       const targetX = startX + (Math.random() * 140 - 70);
-      const targetY = height * 0.10 + Math.random() * (height * 0.35);
+      const targetY = height * 0.10 + Math.random() * (height * 0.40);
       const color = colors[Math.floor(Math.random() * colors.length)];
 
       rockets.push(new Rocket(startX, targetX, targetY, color));
     };
 
-    // Initial festive burst
+    // Initial volley of crackers on open
     launchRocket();
-    setTimeout(launchRocket, 350);
-    setTimeout(launchRocket, 800);
+    setTimeout(launchRocket, 300);
+    setTimeout(launchRocket, 650);
 
     let lastLaunch = Date.now();
 
     const loop = () => {
-      // Crystal clear transparent erase so the full webpage underneath is 100% visible
-      ctx.clearRect(0, 0, width, height);
+      // Soft semi-transparent trail clear across the full popup overlay
+      ctx.fillStyle = 'rgba(8, 4, 18, 0.22)';
+      ctx.fillRect(0, 0, width, height);
 
-      // Launch sky rockets across the whole page periodically
+      // Launch sky rockets continuously across the whole popup
       const now = Date.now();
-      if (now - lastLaunch > 1100 + Math.random() * 700) {
+      if (now - lastLaunch > 950 + Math.random() * 600) {
         launchRocket();
-        // Occasional double sky rocket
-        if (Math.random() > 0.6) {
-          setTimeout(launchRocket, 180);
+        if (Math.random() > 0.55) {
+          setTimeout(launchRocket, 160);
         }
         lastLaunch = now;
       }
@@ -249,7 +243,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isOpen]);
 
   const handleCelebrate = () => {
     handleClose();
@@ -261,10 +255,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
   return (
     <>
-      {/* 1. Whole-Page Sky Crackers Canvas Layer (Always active across the whole website) */}
-      <canvas ref={canvasRef} className="diwali-whole-page-canvas" />
-
-      {/* 2. Main Festive Modal Dialog */}
+      {/* 1. Main Festive Modal Dialog (Covers the full page/screen when open) */}
       {isOpen && (
         <div 
           className="diwali-popup-overlay" 
@@ -275,6 +266,9 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           aria-modal="true"
           aria-label="Happy Diwali Greetings"
         >
+          {/* Sky Fireworks Canvas covering the entire full-screen popup page */}
+          <canvas ref={canvasRef} className="diwali-popup-canvas" />
+
           <div className="diwali-popup-container">
             {/* Top Hanging Decorative Marigold Toran */}
             <div className="diwali-hanging-toran" aria-hidden="true">
@@ -451,7 +445,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
         </div>
       )}
 
-      {/* 3. Floating Festive Diya Pill (When modal is closed) */}
+      {/* 2. Floating Festive Diya Pill (When modal is closed) */}
       {!isOpen && (
         <button 
           type="button" 

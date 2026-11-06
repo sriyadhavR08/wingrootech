@@ -1,29 +1,20 @@
 /* ==========================================================================
-   DIWALI WHOLE-PAGE CELEBRATION & SKY CRACKERS
-   Festive sky crackers across the entire website + decorative greeting modal
+   DIWALI WISHES POPUP - FULL-PAGE IMMERSIVE SKY CRACKERS & CELEBRATION
+   Sky crackers burst across the whole popup page only when modal is open.
    ========================================================================== */
 
-/* Full-Screen Page Fireworks Canvas (covers whole page, 100% transparent & non-blocking) */
-.diwali-whole-page-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 99980;
-}
-
-/* Modal Backdrop Overlay */
+/* Full-Screen Festive Popup Overlay (covers the entire screen) */
 .diwali-popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(7, 4, 15, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 4, 18, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,21 +29,32 @@
   to { opacity: 1; }
 }
 
-/* Modal Container Box */
+/* Sky Fireworks Canvas filling the whole popup screen */
+.diwali-popup-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Central Festive Card Box */
 .diwali-popup-container {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 520px;
+  max-width: 530px;
   background: radial-gradient(circle at 50% -20%, #3a1347 0%, #1c0a2e 55%, #0e0419 100%);
-  border: 1.5px solid rgba(245, 158, 11, 0.6);
+  border: 1.5px solid rgba(245, 158, 11, 0.65);
   border-radius: 28px;
   box-shadow: 
-    0 0 70px rgba(245, 158, 11, 0.4),
-    0 0 120px rgba(239, 68, 68, 0.22),
-    0 25px 60px -10px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(254, 240, 138, 0.5),
-    inset 0 -1px 0 rgba(245, 158, 11, 0.25);
+    0 0 70px rgba(245, 158, 11, 0.45),
+    0 0 120px rgba(239, 68, 68, 0.25),
+    0 25px 60px -10px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(254, 240, 138, 0.55),
+    inset 0 -1px 0 rgba(245, 158, 11, 0.3);
   padding: 36px 30px 30px;
   text-align: center;
   color: #fff;
@@ -79,7 +81,7 @@
   height: 38px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid rgba(245, 158, 11, 0.45);
   color: #fef08a;
   display: flex;
   align-items: center;
