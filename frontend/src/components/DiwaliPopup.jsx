@@ -885,16 +885,16 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               </svg>
             </div>
 
-                        {/* Official Wingroo Brand Header */}
+            {/* Official Wingroo Brand Header (Logo on Top, Word Below) */}
             <div className="diwali-brand-header">
               <img 
                 src="/logo.png" 
                 alt="Wingroo Technologies" 
                 className="diwali-brand-logo" 
               />
-              <div className="diwali-brand-text">
-                <span className="diwali-brand-name">WINGROO</span>
-                <span className="diwali-brand-tagline">TECHNOLOGIES</span>
+              <div className="diwali-brand-title-wrap">
+                <span className="diwali-brand-name-part">WINGROO</span>
+                <span className="diwali-brand-tech-part">TECHNOLOGIES</span>
               </div>
             </div>
 

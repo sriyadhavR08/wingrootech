@@ -235,15 +235,16 @@
 /* Official Wingroo Corporate Brand Header */
 .diwali-brand-header {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: -6px;
   margin-bottom: 14px;
-  padding: 6px 20px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(254, 240, 138, 0.3);
-  border-radius: 999px;
+  padding: 8px 22px 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(254, 240, 138, 0.28);
+  border-radius: 20px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 
@@ -262,35 +263,38 @@
 }
 
 .diwali-brand-logo {
-  height: 38px;
+  height: 48px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.45));
 }
 
-.diwali-brand-text {
+.diwali-brand-title-wrap {
   display: flex;
-  flex-direction: column;
-  text-align: left;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
 }
 
-.diwali-brand-name {
+.diwali-brand-name-part {
   font-family: var(--font-heading, 'Outfit', 'Plus Jakarta Sans', sans-serif);
   font-weight: 800;
-  font-size: 1.08rem;
-  letter-spacing: 0.07em;
+  font-size: 0.98rem;
+  letter-spacing: 0.10em;
   color: #ffffff;
   line-height: 1.1;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.diwali-brand-tagline {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.20em;
+.diwali-brand-tech-part {
+  font-family: var(--font-heading, 'Outfit', 'Plus Jakarta Sans', sans-serif);
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: 0.10em;
   color: #fde047;
   line-height: 1.1;
+  text-shadow: 0 0 10px rgba(253, 224, 71, 0.4);
 }
 
 .diwali-ui-bar-logo {
