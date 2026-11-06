@@ -3,7 +3,7 @@ import { X, Sparkles, ArrowRight, Gift } from 'lucide-react';
 import './DiwaliPopup.css';
 
 /**
- * Diwali Festive Popup Modal
+ * Diwali Festive Popup Modal with Two-Sided Sparkling Animated Crackers
  * 
  * To remove or disable anytime:
  * Simply set `SHOW_DIWALI_POPUP = false` in `src/App.jsx` or remove `<DiwaliPopup />`.
@@ -69,8 +69,17 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
           aria-label="Happy Diwali Greetings"
         >
           <div className="diwali-popup-container">
-            {/* Ambient Background Sparkles */}
-            <div className="diwali-ambient-sparkles" />
+            {/* Top Hanging Decorative Marigold Toran */}
+            <div className="diwali-hanging-toran" aria-hidden="true">
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+              <span className="toran-leaf" />
+            </div>
 
             {/* Close Button */}
             <button 
@@ -82,22 +91,118 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <X size={18} />
             </button>
 
-            {/* Top Garland & Badge */}
+            {/* ========================================================
+                LEFT SIDE SPARKLING CRACKERS & FOUNTAIN
+               ======================================================== */}
+            {/* Top-Left Aerial Starburst */}
+            <div className="diwali-aerial-cracker diwali-aerial-left" aria-hidden="true">
+              <div className="diwali-burst-ring" />
+              <span className="diwali-star-spark star-1" />
+              <span className="diwali-star-spark star-2" />
+              <span className="diwali-star-spark star-3" />
+              <span className="diwali-star-spark star-4" />
+              <span className="diwali-star-spark star-5" />
+              <span className="diwali-star-spark star-6" />
+              <span className="diwali-star-spark star-7" />
+              <span className="diwali-star-spark star-8" />
+            </div>
+
+            {/* Bottom-Left Sparkling Anar / Flowerpot Fountain */}
+            <div className="diwali-side-cracker diwali-cracker-left" aria-hidden="true">
+              <div className="diwali-fountain-stream">
+                <span className="spark-p spark-left-1" />
+                <span className="spark-p spark-left-2" />
+                <span className="spark-p spark-left-3" />
+                <span className="spark-p spark-left-4" />
+                <span className="spark-p spark-left-5" />
+                <span className="spark-p spark-left-6" />
+                <span className="spark-p spark-left-7" />
+                <span className="spark-p spark-left-8" />
+                <span className="spark-p spark-left-9" />
+                <span className="spark-p spark-left-10" />
+              </div>
+              <div className="diwali-anar-pot">
+                <div className="diwali-anar-nozzle" />
+                <svg className="diwali-anar-body" viewBox="0 0 52 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#potGradLeft)" stroke="#F59E0B" strokeWidth="1.5" />
+                  <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
+                  <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
+                  <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
+                  <defs>
+                    <linearGradient id="potGradLeft" x1="26" y1="6" x2="26" y2="47" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#92400E" />
+                      <stop offset="0.5" stopColor="#B45309" />
+                      <stop offset="1" stopColor="#78350F" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            {/* ========================================================
+                RIGHT SIDE SPARKLING CRACKERS & FOUNTAIN
+               ======================================================== */}
+            {/* Top-Right Aerial Starburst */}
+            <div className="diwali-aerial-cracker diwali-aerial-right" aria-hidden="true">
+              <div className="diwali-burst-ring" style={{ animationDelay: '0.8s' }} />
+              <span className="diwali-star-spark star-1" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-2" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-3" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-4" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-5" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-6" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-7" style={{ animationDelay: '0.9s' }} />
+              <span className="diwali-star-spark star-8" style={{ animationDelay: '0.9s' }} />
+            </div>
+
+            {/* Bottom-Right Sparkling Anar / Flowerpot Fountain */}
+            <div className="diwali-side-cracker diwali-cracker-right" aria-hidden="true">
+              <div className="diwali-fountain-stream">
+                <span className="spark-p spark-right-1" />
+                <span className="spark-p spark-right-2" />
+                <span className="spark-p spark-right-3" />
+                <span className="spark-p spark-right-4" />
+                <span className="spark-p spark-right-5" />
+                <span className="spark-p spark-right-6" />
+                <span className="spark-p spark-right-7" />
+                <span className="spark-p spark-right-8" />
+                <span className="spark-p spark-right-9" />
+                <span className="spark-p spark-right-10" />
+              </div>
+              <div className="diwali-anar-pot">
+                <div className="diwali-anar-nozzle" />
+                <svg className="diwali-anar-body" viewBox="0 0 52 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M26 6L8 44C7 46 8.5 47 11 47H41C43.5 47 45 46 44 44L26 6Z" fill="url(#potGradRight)" stroke="#F59E0B" strokeWidth="1.5" />
+                  <path d="M14 36H38" stroke="#FEF08A" strokeWidth="1.2" strokeDasharray="2 2" />
+                  <path d="M18 26H34" stroke="#FDE047" strokeWidth="1.2" strokeDasharray="2 2" />
+                  <ellipse cx="26" cy="6" rx="6" ry="2" fill="#D97706" />
+                  <defs>
+                    <linearGradient id="potGradRight" x1="26" y1="6" x2="26" y2="47" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#92400E" />
+                      <stop offset="0.5" stopColor="#B45309" />
+                      <stop offset="1" stopColor="#78350F" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            {/* Top Festive Badge */}
             <div className="diwali-top-garland">
               <span className="diwali-garland-line" />
               <div className="diwali-festive-badge">
                 <Sparkles size={12} />
-                <span>Festival of Lights</span>
+                <span>Festival of Lights Celebration</span>
                 <Sparkles size={12} />
               </div>
               <span className="diwali-garland-line" />
             </div>
 
-            {/* Animated Diya Art */}
+            {/* Center Animated Diyas */}
             <div className="diwali-diya-hero-container">
-              {/* Left Small Diya */}
+              {/* Left Diya */}
               <div className="diwali-diya-side">
-                <svg width="44" height="42" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="42" height="40" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradient)" />
                   <path className="diwali-flame-inner" d="M25 11C25 11 20 17 20 21C20 23.8 22.2 26 25 26C27.8 26 30 23.8 30 21C30 17 25 11 25 11Z" fill="#FFFBEB" />
                   <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGold)" />
@@ -117,7 +222,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                 </svg>
               </div>
 
-              {/* Center Main Diya */}
+              {/* Main Center Diya */}
               <div className="diwali-diya-main">
                 <svg width="68" height="64" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path className="diwali-flame" d="M25 3C25 3 16 13 16 21C16 26 20 30 25 30C30 30 34 26 34 21C34 13 25 3 25 3Z" fill="url(#mainFlameGrad)" />
@@ -140,9 +245,9 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                 </svg>
               </div>
 
-              {/* Right Small Diya */}
+              {/* Right Diya */}
               <div className="diwali-diya-side">
-                <svg width="44" height="42" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="42" height="40" viewBox="0 0 50 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path className="diwali-flame" d="M25 4C25 4 17 14 17 21C17 25.4 20.6 29 25 29C29.4 29 33 25.4 33 21C33 14 25 4 25 4Z" fill="url(#flameGradient)" />
                   <path className="diwali-flame-inner" d="M25 11C25 11 20 17 20 21C20 23.8 22.2 26 25 26C27.8 26 30 23.8 30 21C30 17 25 11 25 11Z" fill="#FFFBEB" />
                   <path d="M5 28C8 38 18 44 25 44C32 44 42 38 45 28C39 33 11 33 5 28Z" fill="url(#diyaGold)" />
@@ -153,7 +258,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
             {/* Festive Title */}
             <h2 className="diwali-main-title">Happy Diwali! ✨</h2>
-            <div className="diwali-tamil-title">இனிய தீபாவளி நல்வாழ்த்துகள்!</div>
+            <div className="diwali-tamil-title">இனிய தீபாவளி திருநாள் நல்வாழ்த்துகள்!</div>
 
             {/* Warm Greeting Text */}
             <p className="diwali-greeting-body">
