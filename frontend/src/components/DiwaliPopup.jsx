@@ -244,7 +244,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   });
 
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(15);
   const [isMuted, setIsMuted] = useState(false);
 
   const modalCanvasRef = useRef(null);
@@ -261,7 +261,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   };
 
   const handleReopenModal = () => {
-    setTimeLeft(30);
+    setTimeLeft(15);
     setIsModalOpen(true);
     try {
       sessionStorage.removeItem('wingroo_diwali_modal_closed');
@@ -292,10 +292,10 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     };
   }, []);
 
-  // 30-Second Automatic Transition to Wingroo Main Site
+  // 15-Second Automatic Transition to Wingroo Main Site
   useEffect(() => {
     if (!isModalOpen) return;
-    setTimeLeft(30);
+    setTimeLeft(15);
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -1230,26 +1230,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
                 <span>Celebrate Diwali with Us</span>
                 <Heart size={18} fill="#fff" />
               </button>
-              <button 
-                type="button" 
-                className="diwali-dismiss-link" 
-                onClick={handleCloseModal}
-              >
-                Enter Website 🪔
-              </button>
-            </div>
-
-            {/* 30-Second Auto-Entering Indicator */}
-            <div className="diwali-auto-timer-box">
-              <div className="diwali-auto-timer-track">
-                <div 
-                  className="diwali-auto-timer-fill" 
-                  style={{ width: `${(timeLeft / 30) * 100}%` }} 
-                />
-              </div>
-              <span className="diwali-auto-timer-label">
-                Entering Wingroo site automatically in <strong>{timeLeft}s</strong>
-              </span>
             </div>
           </div>
         </div>
