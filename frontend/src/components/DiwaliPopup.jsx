@@ -1,228 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Sparkles, Heart, Volume2, VolumeX } from 'lucide-react';
+import { X, Sparkles, Heart } from 'lucide-react';
 import './DiwaliPopup.css';
-
-/**
- * Realistic Web Audio API Sky Cracker Sound Synthesizer
- * 1. Rocket Launch: Ascending whistling rocket whoosh + propulsion jet hiss ("Fsssssh-WHEEEEEEE-UP!")
- * 2. Sky Explosion: Heavy sub-bass aerial shockwave + explosive crack + cascading crackle storm ("DHUUUMM! + PAT-PAT-PAT-PAT")
- * Only sky cracker sounds are played, exactly as requested.
- */
-class RealDiwaliAudioEngine {
-  constructor() {
-    this.ctx = null;
-    this.isMuted = false;
-    this.masterGain = null;
-    this.compressor = null;
-    this.lastLaunchTime = 0;
-    this.lastBurstTime = 0;
-  }
-
-  init() {
-    try {
-      if (!this.ctx) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        this.ctx = new AudioCtx();
-
-        // Dynamics Compressor for clean, powerful punch without distortion
-        this.compressor = this.ctx.createDynamicsCompressor();
-        this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
-        this.compressor.knee.setValueAtTime(10, this.ctx.currentTime);
-        this.compressor.ratio.setValueAtTime(6, this.ctx.currentTime);
-        this.compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
-        this.compressor.release.setValueAtTime(0.2, this.ctx.currentTime);
-
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.90, this.ctx.currentTime);
-
-        this.compressor.connect(this.masterGain);
-        this.masterGain.connect(this.ctx.destination);
-      }
-
-      if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
-      }
-    } catch {
-      // AudioContext restricted
-    }
-  }
-
-  // 1. ROCKET LAUNCH SOUND ("Fssssshhhhh-WHEEEEEEEEEE-UP!")
-  playRocketLaunch() {
-    if (this.isMuted) return;
-    this.init();
-    if (!this.ctx || this.ctx.state !== 'running') return;
-
-    const now = this.ctx.currentTime;
-    if (now - this.lastLaunchTime < 0.25) return; // Prevent sound clutter
-    this.lastLaunchTime = now;
-
-    try {
-      const flightDuration = 0.85;
-
-      // A. High-speed ascending whistling rocket sound
-      const whistleOsc = this.ctx.createOscillator();
-      const whistleGain = this.ctx.createGain();
-      whistleOsc.type = 'sine';
-      whistleOsc.frequency.setValueAtTime(380, now);
-      whistleOsc.frequency.exponentialRampToValueAtTime(2600, now + flightDuration);
-
-      whistleGain.gain.setValueAtTime(0.001, now);
-      whistleGain.gain.linearRampToValueAtTime(0.25, now + 0.18);
-      whistleGain.gain.exponentialRampToValueAtTime(0.001, now + flightDuration);
-
-      whistleOsc.connect(whistleGain);
-      whistleGain.connect(this.compressor);
-      whistleOsc.start(now);
-      whistleOsc.stop(now + flightDuration + 0.03);
-
-      // B. Rocket thruster jet flame hiss
-      const bufferSize = Math.floor(this.ctx.sampleRate * flightDuration);
-      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * 0.6;
-      }
-
-      const noiseSource = this.ctx.createBufferSource();
-      noiseSource.buffer = noiseBuffer;
-
-      const bandpass = this.ctx.createBiquadFilter();
-      bandpass.type = 'bandpass';
-      bandpass.frequency.setValueAtTime(650, now);
-      bandpass.frequency.exponentialRampToValueAtTime(3400, now + flightDuration);
-      bandpass.Q.setValueAtTime(2.2, now);
-
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.001, now);
-      noiseGain.gain.linearRampToValueAtTime(0.20, now + 0.12);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + flightDuration);
-
-      noiseSource.connect(bandpass);
-      bandpass.connect(noiseGain);
-      noiseGain.connect(this.compressor);
-
-      noiseSource.start(now);
-      noiseSource.stop(now + flightDuration);
-    } catch {
-      // Safe fallback
-    }
-  }
-
-  // 2. REAL SKY CRACKER BURST SOUND ("DHUUUUMM! + PAT-PAT-PAT CRACKLES")
-  playSkyBurst() {
-    if (this.isMuted) return;
-    this.init();
-    if (!this.ctx || this.ctx.state !== 'running') return;
-
-    const now = this.ctx.currentTime;
-    if (now - this.lastBurstTime < 0.10) return;
-    this.lastBurstTime = now;
-
-    try {
-      // A. Deep punchy sub-bass explosion shockwave (155Hz -> 25Hz)
-      const boomOsc = this.ctx.createOscillator();
-      const boomGain = this.ctx.createGain();
-      boomOsc.type = 'triangle';
-      boomOsc.frequency.setValueAtTime(155, now);
-      boomOsc.frequency.exponentialRampToValueAtTime(25, now + 0.42);
-      boomGain.gain.setValueAtTime(0.70, now);
-      boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      boomOsc.connect(boomGain);
-      boomGain.connect(this.compressor);
-      boomOsc.start(now);
-      boomOsc.stop(now + 0.48);
-
-      // B. Sharp aerial explosion transient crack
-      const crackDur = 0.35;
-      const crackSamples = Math.floor(this.ctx.sampleRate * crackDur);
-      const crackBuf = this.ctx.createBuffer(1, crackSamples, this.ctx.sampleRate);
-      const crackData = crackBuf.getChannelData(0);
-      for (let i = 0; i < crackSamples; i++) {
-        const env = 1 - (i / crackSamples);
-        crackData[i] = (Math.random() * 2 - 1) * Math.pow(env, 1.6);
-      }
-      const crackSource = this.ctx.createBufferSource();
-      crackSource.buffer = crackBuf;
-
-      const crackFilter = this.ctx.createBiquadFilter();
-      crackFilter.type = 'bandpass';
-      crackFilter.frequency.setValueAtTime(1500 + Math.random() * 500, now);
-      crackFilter.Q.setValueAtTime(2.0, now);
-
-      const crackGain = this.ctx.createGain();
-      crackGain.gain.setValueAtTime(0.55, now);
-      crackGain.gain.exponentialRampToValueAtTime(0.001, now + crackDur);
-
-      crackSource.connect(crackFilter);
-      crackFilter.connect(crackGain);
-      crackGain.connect(this.compressor);
-      crackSource.start(now);
-
-      // C. Real Crackle Storm ("PAT-PAT-PAT-PAT" cascading spark crackles)
-      const numCrackles = 6 + Math.floor(Math.random() * 5);
-      for (let k = 0; k < numCrackles; k++) {
-        const offset = 0.06 + k * 0.05 + Math.random() * 0.035;
-        const popOsc = this.ctx.createOscillator();
-        const popGain = this.ctx.createGain();
-        popOsc.type = 'square';
-        popOsc.frequency.setValueAtTime(800 + Math.random() * 1100, now + offset);
-        popOsc.frequency.exponentialRampToValueAtTime(110, now + offset + 0.035);
-        popGain.gain.setValueAtTime(0.14 + Math.random() * 0.08, now + offset);
-        popGain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.035);
-        popOsc.connect(popGain);
-        popGain.connect(this.compressor);
-        popOsc.start(now + offset);
-        popOsc.stop(now + offset + 0.04);
-      }
-
-      // D. Distant Sky Reverb Rumble
-      const rumbleDur = 0.7;
-      const rumbleSamples = Math.floor(this.ctx.sampleRate * rumbleDur);
-      const rumbleBuf = this.ctx.createBuffer(1, rumbleSamples, this.ctx.sampleRate);
-      const rumbleData = rumbleBuf.getChannelData(0);
-      for (let i = 0; i < rumbleSamples; i++) {
-        const decay = Math.exp(-3 * (i / rumbleSamples));
-        rumbleData[i] = (Math.random() * 2 - 1) * decay * 0.35;
-      }
-      const rumbleSource = this.ctx.createBufferSource();
-      rumbleSource.buffer = rumbleBuf;
-
-      const lowpass = this.ctx.createBiquadFilter();
-      lowpass.type = 'lowpass';
-      lowpass.frequency.setValueAtTime(320, now);
-
-      const rumbleGain = this.ctx.createGain();
-      rumbleGain.gain.setValueAtTime(0.22, now);
-      rumbleGain.gain.exponentialRampToValueAtTime(0.001, now + rumbleDur);
-
-      rumbleSource.connect(lowpass);
-      lowpass.connect(rumbleGain);
-      rumbleGain.connect(this.compressor);
-      rumbleSource.start(now);
-    } catch {
-      // Safe fallback
-    }
-  }
-
-  stopAll() {
-    // Immediate silence
-  }
-
-  setMuted(muted) {
-    this.isMuted = muted;
-    if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setValueAtTime(muted ? 0 : 0.90, this.ctx.currentTime);
-    }
-    if (!muted) {
-      this.init();
-      this.playRocketLaunch();
-    }
-  }
-}
-
-const crackerAudio = new RealDiwaliAudioEngine();
 
 /**
  * Diwali Celebration Component
@@ -245,14 +23,12 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
   });
 
   const [timeLeft, setTimeLeft] = useState(15);
-  const [isMuted, setIsMuted] = useState(false);
 
   const modalCanvasRef = useRef(null);
   const globalSidesCanvasRef = useRef(null);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    crackerAudio.stopAll();
     try {
       sessionStorage.setItem('wingroo_diwali_modal_closed', 'true');
     } catch {
@@ -270,27 +46,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
     }
   };
 
-  // Toggle firecracker sound on/off
-  const toggleSound = () => {
-    setIsMuted(prev => {
-      const next = !prev;
-      crackerAudio.setMuted(next);
-      return next;
-    });
-  };
 
-  // Unlock Web Audio API on first user interaction
-  useEffect(() => {
-    const unlockAudio = () => {
-      crackerAudio.init();
-    };
-    window.addEventListener('click', unlockAudio, { once: true });
-    window.addEventListener('keydown', unlockAudio, { once: true });
-    return () => {
-      window.removeEventListener('click', unlockAudio);
-      window.removeEventListener('keydown', unlockAudio);
-    };
-  }, []);
 
   // 15-Second Automatic Transition to Wingroo Main Site
   useEffect(() => {
@@ -595,7 +351,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
 
       explode() {
         this.exploded = true;
-        crackerAudio.playSkyBurst();
         const count = 80 + Math.floor(Math.random() * 45);
         const burstColor = this.color;
 
@@ -700,7 +455,6 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
       const targetY = height * 0.08 + Math.random() * (height * 0.38);
       const color = skyColors[Math.floor(Math.random() * skyColors.length)];
 
-      crackerAudio.playRocketLaunch();
       rockets.push(new ModalRocket(startX, targetX, targetY, color));
     };
 
@@ -1084,18 +838,7 @@ export default function DiwaliPopup({ onOpenStudentPortal }) {
               <span className="toran-leaf" />
             </div>
 
-            {/* Sound Toggle Button */}
-            <button 
-              type="button" 
-              className="diwali-sound-btn" 
-              onClick={toggleSound}
-              aria-label={isMuted ? "Sound Off (Click to turn ON)" : "Sound On (Click to Mute)"}
-              title={isMuted ? "Sound Off (Click to turn ON)" : "Sound On (Click to Mute)"}
-            >
-              {isMuted ? <VolumeX size={19} /> : <Volume2 size={19} />}
-            </button>
-
-            {/* Close Button on Modal */}
+{/* Close Button on Modal */}
             <button 
               type="button" 
               className="diwali-close-btn" 
