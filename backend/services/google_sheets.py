@@ -66,19 +66,40 @@ def post_to_google_sheet(payload):
         return False, str(e)
 
 
+def sanitize_for_google_sheet(val):
+    """
+    Sanitizes values before posting to Google Sheets.
+    If a string starts with '+', '=', '-', or '@', Google Sheets treats it as a formula.
+    For example, '+91 9123456780' causes '#ERROR! Formula parse error'.
+    Prefixing with a single quote (') forces Google Sheets to treat the cell as plain text
+    while preserving the full phone number and + country code without error.
+    """
+    if val is None:
+        return ""
+    if isinstance(val, str):
+        trimmed = val.strip()
+        if trimmed and trimmed[0] in ("+", "=", "-", "@"):
+            return f"'{trimmed}"
+        return trimmed
+    return val
+
+
 def sync_to_google_sheet(form_type, data):
     """
     Asynchronously syncs a form submission or update to the Google Sheet,
     and dispatches an instant lead notification email to wingrootechnologies@gmail.com.
     Runs in background threads so user response times are completely instantaneous.
     """
+    # Sanitize data for Google Sheets to prevent formula injection / #ERROR! on phone numbers (+91...)
+    sanitized_data = {k: sanitize_for_google_sheet(v) for k, v in data.items()}
+
     # 1. Asynchronously sync to Google Sheets Webhook
     payload = {
         "form_type": form_type,
         "spreadsheet_id": TARGET_SPREADSHEET_ID,
         "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
-        "data": data,
-        **data
+        "data": sanitized_data,
+        **sanitized_data
     }
     thread = threading.Thread(target=post_to_google_sheet, args=(payload,), daemon=True)
     thread.start()
