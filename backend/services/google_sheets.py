@@ -68,9 +68,11 @@ def post_to_google_sheet(payload):
 
 def sync_to_google_sheet(form_type, data):
     """
-    Asynchronously syncs a form submission or update to the Google Sheet.
-    Runs in a background thread so user response times are completely instantaneous.
+    Asynchronously syncs a form submission or update to the Google Sheet,
+    and dispatches an instant lead notification email to wingrootechnologies@gmail.com.
+    Runs in background threads so user response times are completely instantaneous.
     """
+    # 1. Asynchronously sync to Google Sheets Webhook
     payload = {
         "form_type": form_type,
         "spreadsheet_id": TARGET_SPREADSHEET_ID,
@@ -80,3 +82,10 @@ def sync_to_google_sheet(form_type, data):
     }
     thread = threading.Thread(target=post_to_google_sheet, args=(payload,), daemon=True)
     thread.start()
+
+    # 2. Asynchronously dispatch instant email notification to wingrootechnologies@gmail.com
+    try:
+        from services.email_service import async_send_lead_notification
+        async_send_lead_notification(form_type, data)
+    except Exception as email_err:
+        logger.warning(f"[Email Notification Dispatch Warning] {email_err}")

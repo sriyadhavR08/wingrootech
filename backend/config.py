@@ -51,3 +51,10 @@ class Config:
     
     # Frontend Origin for CORS
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+
+    # Email Notification Settings
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+    SMTP_EMAIL = os.getenv("SMTP_EMAIL", "wingrootechnologies@gmail.com")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+    NOTIFICATION_RECEIVER_EMAIL = os.getenv("NOTIFICATION_RECEIVER_EMAIL", "wingrootechnologies@gmail.com")
