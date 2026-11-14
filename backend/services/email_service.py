@@ -300,3 +300,121 @@ def async_send_lead_notification(form_type, data):
     )
     thread.start()
     return thread
+
+
+def send_contact_otp_email(recipient_email, otp_code, user_name="Valued User"):
+    """
+    Sends a 6-digit email verification OTP to the user for Contact Form validation.
+    Returns (success: bool, message: str)
+    """
+    cfg = get_email_config()
+    sender_email = cfg["smtp_email"]
+    sender_password = cfg["smtp_password"]
+
+    if not sender_email or not sender_password:
+        logger.error("[Email Service] SMTP credentials missing for OTP sending.")
+        return False, "Email service not configured"
+
+    display_name = user_name.strip() if user_name and user_name.strip() else "Valued User"
+    subject = f"Your Verification Code: {otp_code} - Wingroo Technologies"
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"Wingroo Technologies <{sender_email}>"
+    msg["To"] = recipient_email
+
+    plain_body = f"""Hello {display_name},
+
+Thank you for reaching out to Wingroo Technologies.
+
+Your verification code is: {otp_code}
+
+This code is valid for 10 minutes. Please enter this code in the contact form to verify your email address and submit your message.
+
+If you did not request this verification, please disregard this email.
+
+Best regards,
+Wingroo Technologies Team
+https://wingrootechnologies.com
+"""
+
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Email Verification Code</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F8FAFC; padding: 32px 12px;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" style="max-width: 520px; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08); border: 1px solid #E2E8F0;">
+              
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%); padding: 24px 28px; text-align: center;">
+                  <h1 style="margin: 0; color: #FFFFFF; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">WINGROO TECHNOLOGIES</h1>
+                  <p style="margin: 4px 0 0 0; color: #94A3B8; font-size: 13px;">Contact Form Email Verification</p>
+                </td>
+              </tr>
+
+              <!-- Main Content -->
+              <tr>
+                <td style="padding: 32px 28px 24px 28px; text-align: center;">
+                  <p style="margin: 0 0 12px 0; color: #334155; font-size: 15px; font-weight: 600;">
+                    Hello {display_name},
+                  </p>
+                  <p style="margin: 0 0 24px 0; color: #64748B; font-size: 14px; line-height: 1.6;">
+                    Please use the one-time verification code below to verify your email address and submit your message on our contact page.
+                  </p>
+
+                  <!-- Big OTP Box -->
+                  <div style="background: #EEF2FF; border: 2px dashed #6366F1; border-radius: 10px; padding: 18px 24px; display: inline-block; margin-bottom: 24px;">
+                    <span style="font-family: 'Courier New', monospace, sans-serif; font-size: 36px; font-weight: 800; color: #4338CA; letter-spacing: 8px;">
+                      {otp_code}
+                    </span>
+                  </div>
+
+                  <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">
+                    ⏰ <strong>Valid for 10 minutes only.</strong>
+                  </p>
+                  <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                    If you did not request this verification code, you can safely ignore this email.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 16px 28px; text-align: center;">
+                  <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                    © {datetime.now().year} Wingroo Technologies. All rights reserved.
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(plain_body, "plain", "utf-8"))
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    try:
+        server = smtplib.SMTP(cfg["smtp_server"], cfg["smtp_port"], timeout=15)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, [recipient_email], msg.as_string())
+        server.quit()
+        logger.info(f"[Email Service] OTP email delivered to {recipient_email}")
+        return True, "Verification code sent to your email."
+    except Exception as e:
+        logger.error(f"[Email Service] Failed sending OTP email to {recipient_email}: {e}")
+        return False, str(e)
+
