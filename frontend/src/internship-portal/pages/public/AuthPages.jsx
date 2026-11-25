@@ -32,6 +32,11 @@ export function Login({ initialRole = 'student', initialCandidateTab = 'signin' 
   const [regValues, setRegValues] = useState({
     candidate_type: "COLLEGE_INTERN",
     gender: "MALE",
+    project_name: "Artificial Intelligence and Machine Learning",
+    duration: "15 Days Internship Program",
+    branch: "100ft",
+    reporting_time: "11:00",
+    internship_mode: "Offline",
   });
   const [regBusy, setRegBusy] = useState(false);
   const [regError, setRegError] = useState("");
@@ -159,7 +164,7 @@ export function Login({ initialRole = 'student', initialCandidateTab = 'signin' 
       });
 
       const data = res.data;
-      setRegSuccess("Registration successful! Redirecting to your candidate dashboard…");
+      setRegSuccess(data.message || "Registration submitted successfully! Your application is pending administrator approval. You will receive your official Appointment Letter once approved.");
 
       if (data.access && data.user) {
         saveTokens({ access: data.access, refresh: data.refresh });

@@ -17,12 +17,74 @@ SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1mT0ksBaB_-pfVbf2SYVV-
 def get_email_config():
     """Retrieve SMTP credentials from environment variables or Config"""
     return {
-        "smtp_server": os.getenv("SMTP_SERVER") or getattr(Config, "SMTP_SERVER", "smtp.gmail.com"),
-        "smtp_port": int(os.getenv("SMTP_PORT") or getattr(Config, "SMTP_PORT", 587)),
-        "smtp_email": os.getenv("SMTP_EMAIL") or getattr(Config, "SMTP_EMAIL", "wingrootechnologies@gmail.com"),
-        "smtp_password": (os.getenv("SMTP_PASSWORD") or getattr(Config, "SMTP_PASSWORD", "")).replace(" ", "").strip(),
-        "receiver_email": os.getenv("NOTIFICATION_RECEIVER_EMAIL") or getattr(Config, "NOTIFICATION_RECEIVER_EMAIL", "wingrootechnologies@gmail.com"),
+        "smtp_server": os.getenv("SMTP_SERVER") or getattr(Config, "SMTP_SERVER", "mail.wingrootechnologies.com"),
+        "smtp_port": int(os.getenv("SMTP_PORT") or getattr(Config, "SMTP_PORT", 465)),
+        "smtp_email": os.getenv("SMTP_EMAIL") or getattr(Config, "SMTP_EMAIL", "hr@wingrootechnologies.com"),
+        "smtp_password": (os.getenv("SMTP_PASSWORD") or getattr(Config, "SMTP_PASSWORD", "Covai@641006")).replace(" ", "").strip(),
+        "receiver_email": os.getenv("NOTIFICATION_RECEIVER_EMAIL") or getattr(Config, "NOTIFICATION_RECEIVER_EMAIL", "hr@wingrootechnologies.com"),
     }
+
+
+def create_smtp_connection(server_host, server_port, username, password, timeout=15):
+    """
+    Connects to SMTP with intelligent handling for SSL (port 465) and STARTTLS (ports 587/25),
+    with automatic fallback between SSL and TLS and relaxed SSL context for custom domain hosts.
+    """
+    import ssl
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    errors = []
+
+    def try_ssl(host, port):
+        s = smtplib.SMTP_SSL(host, port, context=context, timeout=timeout)
+        s.login(username, password)
+        return s
+
+    def try_tls(host, port):
+        s = smtplib.SMTP(host, port, timeout=timeout)
+        s.ehlo()
+        s.starttls(context=context)
+        s.ehlo()
+        s.login(username, password)
+        return s
+
+    # Primary attempt based on configured port
+    if server_port == 465:
+        try:
+            return try_ssl(server_host, 465)
+        except Exception as e:
+            errors.append(f"SSL {server_host}:465 failed: {e}")
+            try:
+                return try_tls(server_host, 587)
+            except Exception as e2:
+                errors.append(f"Fallback TLS {server_host}:587 failed: {e2}")
+    else:
+        try:
+            return try_tls(server_host, server_port)
+        except Exception as e:
+            errors.append(f"TLS {server_host}:{server_port} failed: {e}")
+            try:
+                return try_ssl(server_host, 465)
+            except Exception as e2:
+                errors.append(f"Fallback SSL {server_host}:465 failed: {e2}")
+
+    # Additional fallbacks: try domain directly if mail.<domain> was used, or vice versa
+    alt_hosts = []
+    if "mail." in server_host:
+        alt_hosts.append(server_host.replace("mail.", ""))
+    else:
+        alt_hosts.append(f"mail.{server_host}")
+
+    for alt_host in alt_hosts:
+        for try_fn, p in [(try_ssl, 465), (try_tls, 587)]:
+            try:
+                return try_fn(alt_host, p)
+            except Exception as e3:
+                errors.append(f"Fallback {alt_host}:{p} failed: {e3}")
+
+    raise RuntimeError(f"Could not connect to SMTP server. Attempts: {'; '.join(errors)}")
 
 
 def format_field_label(key):
@@ -275,9 +337,7 @@ def send_lead_email(form_type, data):
     msg.attach(MIMEText(html_content, "html", "utf-8"))
 
     try:
-        server = smtplib.SMTP(cfg["smtp_server"], cfg["smtp_port"], timeout=15)
-        server.starttls()
-        server.login(sender_email, sender_password)
+        server = create_smtp_connection(cfg["smtp_server"], cfg["smtp_port"], sender_email, sender_password)
         server.sendmail(sender_email, [receiver_email], msg.as_string())
         server.quit()
         logger.info(f"[Email Service Success] Sent lead notification for '{form_type}' ({lead_name}) to {receiver_email}")
@@ -407,9 +467,7 @@ https://wingrootechnologies.com
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     try:
-        server = smtplib.SMTP(cfg["smtp_server"], cfg["smtp_port"], timeout=15)
-        server.starttls()
-        server.login(sender_email, sender_password)
+        server = create_smtp_connection(cfg["smtp_server"], cfg["smtp_port"], sender_email, sender_password)
         server.sendmail(sender_email, [recipient_email], msg.as_string())
         server.quit()
         logger.info(f"[Email Service] OTP email delivered to {recipient_email}")
@@ -417,4 +475,325 @@ https://wingrootechnologies.com
     except Exception as e:
         logger.error(f"[Email Service] Failed sending OTP email to {recipient_email}: {e}")
         return False, str(e)
+
+
+VENUE_MAP = {
+    "100ft": "2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, Tamil Nadu 641012",
+    "hopes": "GR complex , 1st floor . 1567 avinashi rd , peelamedu , coimbatore - 641004",
+    "kuniyamuthur": "1st floor , AAKIFAH 2017 Complex , Palakkad main rd , near muthoot finance kuniyamuthur - 641008",
+}
+
+
+def get_branch_venue(branch):
+    """Returns the physical address for a chosen branch"""
+    b = str(branch or "").strip().lower().replace(" ", "").replace("-", "")
+    if "hope" in b:
+        return VENUE_MAP["hopes"]
+    elif "kuniya" in b:
+        return VENUE_MAP["kuniyamuthur"]
+    else:
+        return VENUE_MAP["100ft"]
+
+
+def format_reporting_time(raw_time):
+    """Formats time input into human-readable e.g. 11:00 AM"""
+    if not raw_time:
+        return "11:00 AM"
+    raw = str(raw_time).strip()
+    if "AM" in raw.upper() or "PM" in raw.upper():
+        return raw.upper()
+    try:
+        parts = raw.split(":")
+        if len(parts) >= 2:
+            hour = int(parts[0])
+            minute = int(parts[1])
+            suffix = "AM" if hour < 12 else "PM"
+            h12 = hour % 12
+            if h12 == 0:
+                h12 = 12
+            return f"{h12:02d}:{minute:02d} {suffix}"
+    except Exception:
+        pass
+    return raw
+
+
+def format_joining_date(raw_date):
+    """Formats date into DD/MM/YYYY e.g. 25/11/2026"""
+    if not raw_date:
+        return datetime.now().strftime("%d/%m/%Y")
+    if hasattr(raw_date, "strftime"):
+        return raw_date.strftime("%d/%m/%Y")
+    raw = str(raw_date).strip()
+    if "/" in raw:
+        return raw
+    try:
+        parts = raw.split("-")
+        if len(parts) == 3 and len(parts[0]) == 4:
+            return f"{parts[2]}/{parts[1]}/{parts[0]}"
+    except Exception:
+        pass
+    return raw
+
+
+def format_program_selection_title(duration_raw, mode="Offline"):
+    """Format opening sentence title: e.g. '15-Day Offline Internship Program' or '1-Month Offline Internship Program'"""
+    raw = str(duration_raw or "15 Days").strip()
+    raw_lower = raw.lower()
+    if "15" in raw_lower:
+        period = "15-Day"
+    elif "1 month" in raw_lower or raw_lower.startswith("1"):
+        period = "1-Month"
+    elif "2 month" in raw_lower or raw_lower.startswith("2"):
+        period = "2-Month"
+    elif "3 month" in raw_lower or raw_lower.startswith("3"):
+        period = "3-Month"
+    elif "6 month" in raw_lower or raw_lower.startswith("6"):
+        period = "6-Month"
+    else:
+        period = raw.replace("Internship Program", "").strip()
+        if "day" in period.lower() and not period.endswith("-Day"):
+            period = period.replace("Days", "-Day").replace("days", "-Day")
+        elif "month" in period.lower() and not period.endswith("-Month"):
+            period = period.replace("Months", "-Month").replace("months", "-Month").replace("Month", "-Month")
+
+    mode_str = mode.capitalize() if mode else "Offline"
+    return f"{period} {mode_str} Internship Program"
+
+
+def format_duration_display(duration_raw):
+    """Format display in table: e.g. '15 Days Internship Program'"""
+    raw = str(duration_raw or "15 Days Internship Program").strip()
+    if not raw:
+        return "15 Days Internship Program"
+    if "program" not in raw.lower():
+        return f"{raw} Internship Program"
+    return raw
+
+
+def build_appointment_letter_plain(data):
+    """Builds plain text appointment letter matching user specifications"""
+    name = data.get("name") or "Candidate"
+    domain = data.get("project_name") or "Artificial Intelligence and Machine Learning"
+    mode = data.get("internship_mode") or "Offline"
+    duration = data.get("duration") or "15 Days Internship Program"
+    program_title = format_program_selection_title(duration, mode)
+    duration_display = format_duration_display(duration)
+    joining_date = format_joining_date(data.get("start_date"))
+    reporting_time = format_reporting_time(data.get("reporting_time"))
+    venue = get_branch_venue(data.get("branch"))
+    email = data.get("email") or ""
+    password = data.get("password") or "(Your registered password)"
+    register_number = data.get("register_number") or ""
+    portal_url = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173").rstrip("/") + "/internship"
+
+    lines = [
+        f"Dear {name},",
+        "",
+        "Greetings from Wingroo Technologies.",
+        "",
+        "Congratulations!",
+        "",
+        f"We are pleased to confirm your selection for the {program_title} at Wingroo Technologies in the domain of {domain}.",
+        "",
+        "Internship Details:",
+        "",
+        f"- Candidate Name: {name}",
+        f"- Domain: {domain}",
+        f"- Duration: {duration_display}",
+        f"- Mode: {mode}",
+        f"- Joining Date: {joining_date}",
+        f"- Reporting Time: {reporting_time}",
+        f"- Venue: {venue}",
+        "",
+        "During the internship period, you will be assigned tasks and projects related to your area of learning and the company's requirements. Your performance, attendance, punctuality, discipline, and quality of work will be evaluated throughout the internship.",
+        "",
+        "Candidates who demonstrate excellent performance and professional conduct during the internship may be considered for future employment opportunities with Wingroo Technologies, based on organizational requirements.",
+        "",
+        "You are requested to report to our office on the joining date at the specified time." if mode.lower() != "online" else "You are requested to attend your virtual onboarding session on the joining date at the specified time.",
+        "",
+        "Kindly bring your college ID card and any necessary documents for verification.",
+        "",
+        "We look forward to welcoming you to our organization. Wishing you a successful internship!",
+        "",
+        "--------------------------------------------------",
+        "Candidate Portal Login Credentials:",
+        f"- Portal URL: {portal_url}",
+        f"- Login Email: {email}",
+        f"- Password: {password}",
+        f"- Register Number: {register_number}",
+        "--------------------------------------------------",
+        "",
+        "Best Regards,",
+        "HR Department",
+        "Wingroo Technologies",
+        "hr@wingrootechnologies.com",
+        "9626779609",
+    ]
+    return "\n".join(lines)
+
+
+def build_appointment_letter_html(data):
+    """Builds clean, executive corporate HTML appointment letter matching user specifications"""
+    name = data.get("name") or "Candidate"
+    domain = data.get("project_name") or "Artificial Intelligence and Machine Learning"
+    mode = data.get("internship_mode") or "Offline"
+    duration = data.get("duration") or "15 Days Internship Program"
+    program_title = format_program_selection_title(duration, mode)
+    duration_display = format_duration_display(duration)
+    joining_date = format_joining_date(data.get("start_date"))
+    reporting_time = format_reporting_time(data.get("reporting_time"))
+    venue = get_branch_venue(data.get("branch"))
+    email = data.get("email") or ""
+    password = data.get("password") or "(Your registered password)"
+    register_number = data.get("register_number") or ""
+    portal_url = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173").rstrip("/") + "/internship"
+
+    reporting_instruction = (
+        "You are requested to report to our office on the joining date at the specified time."
+        if mode.lower() != "online"
+        else "You are requested to attend your virtual orientation session on the joining date at the specified time."
+    )
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internship Appointment Letter</title>
+</head>
+<body style="margin: 0; padding: 20px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.65; color: #1e293b;">
+  <div style="max-width: 600px; margin: 0 auto;">
+
+    <p style="margin: 0 0 14px 0;">Dear {name},</p>
+
+    <p style="margin: 0 0 14px 0;">Greetings from Wingroo Technologies.</p>
+
+    <p style="margin: 0 0 14px 0; font-weight: 700; color: #0f172a;">Congratulations!</p>
+
+    <p style="margin: 0 0 18px 0;">
+      We are pleased to confirm your selection for the <strong>{program_title}</strong> at Wingroo Technologies in the domain of <strong>{domain}</strong>.
+    </p>
+
+    <p style="margin: 0 0 8px 0; font-weight: 700; color: #0f172a;">Internship Details:</p>
+
+    <ul style="margin: 0 0 18px 0; padding-left: 20px; line-height: 1.8;">
+      <li><strong>Candidate Name:</strong> {name}</li>
+      <li><strong>Domain:</strong> {domain}</li>
+      <li><strong>Duration:</strong> {duration_display}</li>
+      <li><strong>Mode:</strong> {mode}</li>
+      <li><strong>Joining Date:</strong> {joining_date}</li>
+      <li><strong>Reporting Time:</strong> {reporting_time}</li>
+      <li><strong>Venue:</strong> {venue}</li>
+    </ul>
+
+    <p style="margin: 0 0 14px 0;">
+      During the internship period, you will be assigned tasks and projects related to your area of learning and the company's requirements. Your performance, attendance, punctuality, discipline, and quality of work will be evaluated throughout the internship.
+    </p>
+
+    <p style="margin: 0 0 14px 0;">
+      Candidates who demonstrate excellent performance and professional conduct during the internship may be considered for future employment opportunities with Wingroo Technologies, based on organizational requirements.
+    </p>
+
+    <p style="margin: 0 0 14px 0;">
+      {reporting_instruction}
+    </p>
+
+    <p style="margin: 0 0 14px 0;">
+      Kindly bring your college ID card and any necessary documents for verification.
+    </p>
+
+    <p style="margin: 0 0 20px 0;">
+      We look forward to welcoming you to our organization. Wishing you a successful internship!
+    </p>
+
+    <!-- Candidate Portal Login Credentials -->
+    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 6px; padding: 16px 20px; margin: 22px 0;">
+      <p style="margin: 0 0 10px 0; font-weight: 700; color: #1e1b4b; font-size: 14px;">Candidate Portal Login Credentials:</p>
+      <ul style="margin: 0 0 12px 0; padding-left: 18px; line-height: 1.8; font-size: 14px;">
+        <li><strong>Portal URL:</strong> <a href="{portal_url}" style="color: #4f46e5; text-decoration: underline;" target="_blank">{portal_url}</a></li>
+        <li><strong>Login Email:</strong> {email}</li>
+        <li><strong>Password:</strong> <span style="font-family: monospace; font-weight: 700;">{password}</span></li>
+        <li><strong>Register Number:</strong> {register_number}</li>
+      </ul>
+      <div>
+        <a href="{portal_url}" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 4px; text-decoration: none;">
+          Log In to Candidate Portal &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Sign-off -->
+    <p style="margin: 24px 0 0 0; line-height: 1.5;">
+      Best Regards,<br>
+      <strong>HR Department</strong><br>
+      Wingroo Technologies<br>
+      <a href="mailto:hr@wingrootechnologies.com" style="color: #4f46e5; text-decoration: none;">hr@wingrootechnologies.com</a><br>
+      9626779609
+    </p>
+
+  </div>
+</body>
+</html>
+"""
+    return html
+
+
+def send_appointment_letter_email(candidate_data):
+    """
+    Sends the official Appointment Letter email with portal credentials to the registered candidate.
+    Returns (success: bool, message: str)
+    """
+    cfg = get_email_config()
+    sender_email = cfg["smtp_email"]
+    sender_password = cfg["smtp_password"]
+
+    if not sender_email or not sender_password:
+        logger.warning("[Email Service] SMTP credentials not configured. Skipping appointment letter.")
+        return False, "SMTP credentials missing"
+
+    candidate_email = candidate_data.get("email")
+    if not candidate_email or "@" not in candidate_email:
+        return False, "Invalid candidate email address"
+
+    candidate_name = candidate_data.get("name") or "Candidate"
+
+    # User specified exact subject format: Internship Appointment Letter - Candidate name
+    subject = f"Internship Appointment Letter - {candidate_name}"
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"Wingroo Technologies <{sender_email}>"
+    msg["To"] = candidate_email
+    msg["Reply-To"] = "hr@wingrootechnologies.com"
+
+    plain_text = build_appointment_letter_plain(candidate_data)
+    html_content = build_appointment_letter_html(candidate_data)
+
+    msg.attach(MIMEText(plain_text, "plain", "utf-8"))
+    msg.attach(MIMEText(html_content, "html", "utf-8"))
+
+    try:
+        server = create_smtp_connection(cfg["smtp_server"], cfg["smtp_port"], sender_email, sender_password)
+        server.sendmail(sender_email, [candidate_email], msg.as_string())
+        server.quit()
+        logger.info(f"[Email Service Success] Appointment letter delivered to {candidate_email} ({candidate_name})")
+        return True, "Appointment letter delivered successfully."
+    except Exception as e:
+        logger.error(f"[Email Service Error] Failed sending appointment letter to {candidate_email}: {e}")
+        return False, str(e)
+
+
+def async_send_appointment_letter(candidate_data):
+    """
+    Fires the appointment letter email in a background daemon thread.
+    """
+    thread = threading.Thread(
+        target=send_appointment_letter_email,
+        args=(dict(candidate_data),),
+        daemon=True,
+        name=f"ApptLetter-{candidate_data.get('email', 'unknown')}"
+    )
+    thread.start()
+    return thread
+
 

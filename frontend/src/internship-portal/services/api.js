@@ -3,11 +3,16 @@ import { API_BASE_URL } from "../../config/api";
 
 const isLocal =
   typeof window !== "undefined" &&
-  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  (window.location.hostname === "localhost" ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0" ||
+   window.location.hostname.startsWith("192.168.") ||
+   window.location.hostname.startsWith("10.") ||
+   window.location.hostname.endsWith(".local"));
 
 const baseURL = isLocal
   ? "/api"
-  : (import.meta.env.VITE_API_BASE_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : "https://backend.wingrootechnologies.com/api"));
+  : (import.meta.env.VITE_API_BASE_URL || (API_BASE_URL ? `${API_BASE_URL}/api` : "http://localhost:5000/api"));
 export const api = axios.create({ baseURL, timeout: 20000 });
 let refreshRequest = null;
 export function clearSession() {
@@ -187,7 +192,9 @@ export async function errorText(error) {
   if (!data) {
     if (error.response?.status === 404) return "Requested resource was not found (404).";
     if (error.response?.status === 500) return "Internal server error. Please try again later.";
-    return "Unable to connect. Please check your connection and try again.";
+    return isLocal
+      ? "Unable to connect to backend server. Please make sure the Flask backend is running on port 5000 (python app.py)."
+      : "Unable to connect. Please check your connection and try again.";
   }
   if (typeof data === "string" && (data.includes("<!doctype html>") || data.includes("<html"))) {
     if (error.response?.status === 404) return "Requested resource was not found on the server (404).";
@@ -226,26 +233,57 @@ export async function downloadCertificate(cert) {
 }
 export function resolveMediaUrl(path) {
   if (!path) return "";
-  if (path.startsWith("data:") || path.startsWith("blob:")) {
-    return path;
+  const s = String(path).trim();
+  if (!s) return "";
+  if (s.startsWith("data:") || s.startsWith("blob:")) {
+    return s;
   }
-  // Prevent Mixed Content warnings: upgrade insecure http URLs to https
-  if (path.startsWith("http://backend.wingrootechnologies.com")) {
-    return path.replace("http://", "https://");
-  }
-  if (typeof window !== "undefined" && window.location.protocol === "https:" && path.startsWith("http://")) {
-    return path.replace("http://", "https://");
-  }
-  if (path.startsWith("https://")) {
-    return path;
-  }
-  let clean = path.startsWith("/") ? path : `/${path}`;
-  if (!clean.startsWith("/media") && !clean.startsWith("/uploads") && !clean.startsWith("/api")) {
-    clean = `/media${clean}`;
-  }
+
   const backendOrigin = baseURL.startsWith("http")
     ? baseURL.replace(/\/api\/?$/, "")
     : "";
+
+  // If path has a local backend host (e.g. http://127.0.0.1:5000 or http://localhost:5000),
+  // extract the pathname (/media/...) and route via backendOrigin in production or local proxy
+  if (s.includes("127.0.0.1:5000") || s.includes("localhost:5000")) {
+    let p = "";
+    try {
+      const u = new URL(s);
+      p = u.pathname + u.search;
+    } catch {
+      p = s.replace(/^https?:\/\/[^/]+/, "");
+    }
+    if (p.startsWith("/media/media/")) p = p.replace("/media/media/", "/media/");
+    if (!p.startsWith("/")) p = `/${p}`;
+    return `${backendOrigin}${p}`;
+  }
+
+  // Prevent Mixed Content warnings: upgrade insecure http URLs to https
+  if (s.startsWith("http://backend.wingrootechnologies.com")) {
+    return s.replace("http://", "https://");
+  }
+  if (typeof window !== "undefined" && window.location.protocol === "https:" && s.startsWith("http://")) {
+    return s.replace("http://", "https://");
+  }
+
+  // Return full external URLs directly (S3, CloudFront, etc.)
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    return s;
+  }
+
+  let clean = s.startsWith("/") ? s : `/${s}`;
+  if (clean.startsWith("/media/media/")) {
+    clean = clean.replace("/media/media/", "/media/");
+  } else if (
+    !clean.startsWith("/media") &&
+    !clean.startsWith("/uploads") &&
+    !clean.startsWith("/selfies") &&
+    !clean.startsWith("/college_ids") &&
+    !clean.startsWith("/api")
+  ) {
+    clean = `/media${clean}`;
+  }
+
   return `${backendOrigin}${clean}`;
 }
 

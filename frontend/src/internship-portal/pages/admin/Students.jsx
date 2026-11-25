@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { api, errorText } from "../../services/api";
+import { api, errorText, pdfBlob } from "../../services/api";
 import {
   Loading,
   Notice,
@@ -8,14 +8,98 @@ import {
   Pagination,
   dateLabel,
 } from "../../components/Common";
+import { PROJECT_OPTIONS, BRANCH_OPTIONS, DURATION_OPTIONS } from "../../components/StudentFields";
 export default function Students() {
   const [filters, setFilters] = useState({}),
     [query, setQuery] = useState({}),
     [page, setPage] = useState(1),
     [data, setData] = useState(null),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [successMsg, setSuccessMsg] = useState(""),
+    [actionBusy, setActionBusy] = useState({});
   const location = useLocation();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
+
+  async function handleApprove(studentId) {
+    if (!studentId) return;
+    setActionBusy((prev) => ({ ...prev, [studentId]: true }));
+    setError("");
+    setSuccessMsg("");
+    try {
+      const res = await api.post(`/admin/students/${studentId}/approve/`);
+      setSuccessMsg(res.data?.message || "Candidate approved successfully! Official appointment letter sent.");
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          results: prev.results.map((cand) =>
+            cand.id === studentId
+              ? { ...cand, ...(res.data?.student || {}), status: "APPROVED" }
+              : cand
+          ),
+        };
+      });
+    } catch (e) {
+      setError(await errorText(e));
+    } finally {
+      setActionBusy((prev) => ({ ...prev, [studentId]: false }));
+    }
+  }
+
+  async function handleReject(studentId) {
+    if (!studentId) return;
+    if (!window.confirm("Are you sure you want to reject this candidate's registration?")) return;
+    setActionBusy((prev) => ({ ...prev, [studentId]: true }));
+    setError("");
+    setSuccessMsg("");
+    try {
+      const res = await api.post(`/admin/students/${studentId}/reject/`);
+      setSuccessMsg(res.data?.message || "Candidate registration has been rejected. No email sent.");
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          results: prev.results.map((cand) =>
+            cand.id === studentId
+              ? { ...cand, ...(res.data?.student || {}), status: "REJECTED" }
+              : cand
+          ),
+        };
+      });
+    } catch (e) {
+      setError(await errorText(e));
+    } finally {
+      setActionBusy((prev) => ({ ...prev, [studentId]: false }));
+    }
+  }
+
+  async function handleResendLetter(studentId) {
+    if (!studentId) return;
+    setActionBusy((prev) => ({ ...prev, [studentId]: true }));
+    setError("");
+    setSuccessMsg("");
+    try {
+      const res = await api.post(`/admin/students/${studentId}/resend-letter/`);
+      setSuccessMsg(res.data?.message || "Appointment letter has been resent successfully.");
+    } catch (e) {
+      setError(await errorText(e));
+    } finally {
+      setActionBusy((prev) => ({ ...prev, [studentId]: false }));
+    }
+  }
+
+  async function handleViewLetter(studentId) {
+    if (!studentId) return;
+    setError("");
+    try {
+      const blob = await pdfBlob(`/admin/students/${studentId}/appointment-letter/`);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (e) {
+      setError(await errorText(e));
+    }
+  }
+
   useEffect(() => {
     let live = true;
     setData(null);
@@ -51,7 +135,7 @@ export default function Students() {
             setQuery({ ...filters });
           }}
         >
-          <div className="col-lg-4">
+          <div className="col-lg-3">
             <label className="form-label" htmlFor="search">
               Search candidates
             </label>
@@ -65,21 +149,47 @@ export default function Students() {
               }
             />
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-3">
             <label className="form-label" htmlFor="project">
               Project
             </label>
-            <input
+            <select
               id="project"
-              className="form-control"
-              placeholder="Exact project name"
+              className="form-select"
               value={filters.project_name || ""}
               onChange={(e) =>
                 setFilters({ ...filters, project_name: e.target.value })
               }
-            />
+            >
+              <option value="">All projects</option>
+              {PROJECT_OPTIONS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-3">
+            <label className="form-label" htmlFor="branch">
+              Branch / Location
+            </label>
+            <select
+              id="branch"
+              className="form-select"
+              value={filters.branch || ""}
+              onChange={(e) =>
+                setFilters({ ...filters, branch: e.target.value })
+              }
+            >
+              <option value="">All branches</option>
+              {BRANCH_OPTIONS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-lg-3">
             <label className="form-label" htmlFor="status">
               Status
             </label>
@@ -99,6 +209,26 @@ export default function Students() {
                 "CERTIFICATE_ISSUED",
               ].map((s) => (
                 <option key={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-lg-4">
+            <label className="form-label" htmlFor="duration">
+              Program Duration
+            </label>
+            <select
+              id="duration"
+              className="form-select"
+              value={filters.duration || ""}
+              onChange={(e) =>
+                setFilters({ ...filters, duration: e.target.value })
+              }
+            >
+              <option value="">All Durations</option>
+              {DURATION_OPTIONS.map(([val, label]) => (
+                <option key={val} value={val}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>
@@ -152,6 +282,7 @@ export default function Students() {
           </div>
         </form>
         <Notice message={error} />
+        <Notice message={successMsg} type="success" />
         {!data && !error ? (
           <Loading />
         ) : (
@@ -163,10 +294,11 @@ export default function Students() {
                     <tr>
                       {[
                         "Candidate / Category",
+                        "Branch",
                         "Institution / College",
                         "Project",
                         "Dates",
-                        "Internship",
+                        "Status & Approval",
                         "Certificate",
                         "Actions",
                       ].map((h) => (
@@ -200,6 +332,12 @@ export default function Students() {
                             {s.register_number}
                           </small>
                         </td>
+                        <td>
+                          <span className="badge bg-secondary-subtle text-dark border px-2 py-1">
+                            <i className="bi bi-geo-alt me-1 text-primary"></i>
+                            {s.branch || "100ft"}
+                          </span>
+                        </td>
                         <td>{s.college_name}</td>
                         <td>{s.project_name}</td>
                         <td className="text-nowrap">
@@ -209,7 +347,92 @@ export default function Students() {
                           </small>
                         </td>
                         <td>
-                          <Status value={s.status} />
+                          {(!s.status || s.status === "REGISTERED" || s.status === "PENDING_APPROVAL" || s.status === "PENDING") ? (
+                            <div className="d-flex flex-column gap-1">
+                              <span className="badge text-bg-warning text-dark mb-1 d-inline-flex align-items-center gap-1" style={{ width: "fit-content", fontSize: "0.75rem" }}>
+                                <i className="bi bi-clock-history"></i> Pending Approval
+                              </span>
+                              <div className="d-flex gap-1">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success px-2 py-1 d-flex align-items-center gap-1 shadow-sm"
+                                  title="Approve candidate and send official appointment letter"
+                                  onClick={() => handleApprove(s.id)}
+                                  disabled={actionBusy[s.id]}
+                                  style={{ fontSize: "0.78rem" }}
+                                >
+                                  {actionBusy[s.id] ? (
+                                    <span className="spinner-border spinner-border-sm" />
+                                  ) : (
+                                    <>
+                                      <i className="bi bi-check-circle-fill"></i> Approve
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger px-2 py-1 d-flex align-items-center gap-1"
+                                  title="Reject registration"
+                                  onClick={() => handleReject(s.id)}
+                                  disabled={actionBusy[s.id]}
+                                  style={{ fontSize: "0.78rem" }}
+                                >
+                                  <i className="bi bi-x-circle"></i> Reject
+                                </button>
+                              </div>
+                            </div>
+                          ) : s.status === "APPROVED" || s.status === "IN_PROGRESS" ? (
+                            <div className="d-flex flex-column gap-1">
+                              <span className="badge text-bg-success mb-1 d-inline-flex align-items-center gap-1" style={{ width: "fit-content", fontSize: "0.75rem" }}>
+                                <i className="bi bi-check-circle-fill"></i> {s.status === "APPROVED" ? "Approved" : "In Progress"}
+                              </span>
+                              <div className="d-flex gap-1 flex-wrap">
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
+                                  style={{ fontSize: "0.72rem", padding: "2px 6px" }}
+                                  title="Resend Appointment Letter Email"
+                                  onClick={() => handleResendLetter(s.id)}
+                                  disabled={actionBusy[s.id]}
+                                >
+                                  {actionBusy[s.id] ? (
+                                    <span className="spinner-border spinner-border-sm" />
+                                  ) : (
+                                    <>
+                                      <i className="bi bi-envelope-check"></i> Resend Email
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-primary d-inline-flex align-items-center gap-1"
+                                  style={{ fontSize: "0.72rem", padding: "2px 6px" }}
+                                  title="Download / View Appointment Letter PDF"
+                                  onClick={() => handleViewLetter(s.id)}
+                                >
+                                  <i className="bi bi-file-earmark-pdf"></i> PDF
+                                </button>
+                              </div>
+                            </div>
+                          ) : s.status === "REJECTED" ? (
+                            <div className="d-flex flex-column gap-1">
+                              <span className="badge text-bg-danger mb-1 d-inline-flex align-items-center gap-1" style={{ width: "fit-content", fontSize: "0.75rem" }}>
+                                <i className="bi bi-x-circle-fill"></i> Rejected
+                              </span>
+                              <button
+                                type="button"
+                                className="btn btn-outline-success d-inline-flex align-items-center gap-1"
+                                style={{ fontSize: "0.72rem", padding: "2px 6px", width: "fit-content" }}
+                                title="Re-approve candidate and send appointment letter"
+                                onClick={() => handleApprove(s.id)}
+                                disabled={actionBusy[s.id]}
+                              >
+                                Approve Now
+                              </button>
+                            </div>
+                          ) : (
+                            <Status value={s.status} />
+                          )}
                         </td>
                         <td>
                           <Status value={s.certificate?.status} />

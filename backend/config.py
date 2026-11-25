@@ -17,12 +17,32 @@ class Config:
     MYSQL_DB = os.getenv("MYSQL_DB", "wingrootech_db")
     
     # SQLAlchemy database connection
-    # Connect to MySQL wingrootech_db (supporting empty password on XAMPP)
+    # Connect to MySQL wingrootech_db if available, otherwise fallback smoothly to SQLite
     if os.getenv("DATABASE_URL"):
         SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     elif MYSQL_USER and MYSQL_DB:
-        pw_part = f":{MYSQL_PASSWORD}" if MYSQL_PASSWORD else ""
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}{pw_part}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+        mysql_reachable = False
+        try:
+            import pymysql
+            _test_conn = pymysql.connect(
+                host=MYSQL_HOST,
+                port=MYSQL_PORT,
+                user=MYSQL_USER,
+                password=MYSQL_PASSWORD,
+                connect_timeout=2
+            )
+            _test_conn.close()
+            mysql_reachable = True
+        except Exception:
+            mysql_reachable = False
+
+        if mysql_reachable:
+            pw_part = f":{MYSQL_PASSWORD}" if MYSQL_PASSWORD else ""
+            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}{pw_part}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+        else:
+            instance_dir = BASE_DIR / "instance"
+            instance_dir.mkdir(parents=True, exist_ok=True)
+            SQLALCHEMY_DATABASE_URI = f"sqlite:///{instance_dir / 'certificate.db'}"
     else:
         instance_dir = BASE_DIR / "instance"
         instance_dir.mkdir(parents=True, exist_ok=True)
@@ -52,9 +72,9 @@ class Config:
     # Frontend Origin for CORS
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
 
-    # Email Notification Settings
-    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-    SMTP_EMAIL = os.getenv("SMTP_EMAIL", "wingrootechnologies@gmail.com")
-    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-    NOTIFICATION_RECEIVER_EMAIL = os.getenv("NOTIFICATION_RECEIVER_EMAIL", "wingrootechnologies@gmail.com")
+    # Email Notification Settings (Webmail SMTP)
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "mail.wingrootechnologies.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
+    SMTP_EMAIL = os.getenv("SMTP_EMAIL", "hr@wingrootechnologies.com")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "Covai@641006")
+    NOTIFICATION_RECEIVER_EMAIL = os.getenv("NOTIFICATION_RECEIVER_EMAIL", "hr@wingrootechnologies.com")

@@ -32,7 +32,10 @@ def generate_certificate(internship_id):
     today = date.today()
 
     # Get or create sequence for current year
-    sequence = CertificateSequence.query.filter_by(year=today.year).with_for_update().first()
+    try:
+        sequence = CertificateSequence.query.filter_by(year=today.year).with_for_update().first()
+    except Exception:
+        sequence = CertificateSequence.query.filter_by(year=today.year).first()
     if not sequence:
         sequence = CertificateSequence(year=today.year, value=0)
         db.session.add(sequence)

@@ -2,6 +2,52 @@ import { useState, useRef, useEffect } from "react";
 import { Field } from "./Common";
 import { resolveMediaUrl } from "../services/api";
 
+export const PROJECT_OPTIONS = [
+  ["Artificial Intelligence and Machine Learning", "Artificial Intelligence and Machine Learning"],
+  ["Data Analytics", "Data Analytics"],
+  ["Data Science and Machine Learning", "Data Science and Machine Learning"],
+  ["Prompt Engineering", "Prompt Engineering"],
+  ["Vibe Coding", "Vibe Coding"],
+  ["Cyber Security", "Cyber Security"],
+  ["AWS", "AWS"],
+  ["Gen AI", "Gen AI"],
+];
+
+export const BRANCH_OPTIONS = [
+  ["100ft", "100ft"],
+  ["Hopes", "Hopes"],
+  ["Kuniyamuthur", "Kuniyamuthur"],
+];
+
+export const DURATION_OPTIONS = [
+  ["15 Days Internship Program", "15 Days Internship Program"],
+  ["1 Month Internship Program", "1 Month Internship Program"],
+  ["2 Months Internship Program", "2 Months Internship Program"],
+  ["3 Months Internship Program", "3 Months Internship Program"],
+  ["6 Months Internship Program", "6 Months Internship Program"],
+];
+
+function getDurationOptions(currentVal) {
+  if (!currentVal) return DURATION_OPTIONS;
+  const exists = DURATION_OPTIONS.some(([v]) => v.toLowerCase() === currentVal.toLowerCase());
+  if (exists) return DURATION_OPTIONS;
+  return [[currentVal, currentVal], ...DURATION_OPTIONS];
+}
+
+function getProjectOptions(currentVal) {
+  if (!currentVal) return PROJECT_OPTIONS;
+  const exists = PROJECT_OPTIONS.some(([v]) => v.toLowerCase() === currentVal.toLowerCase());
+  if (exists) return PROJECT_OPTIONS;
+  return [[currentVal, currentVal], ...PROJECT_OPTIONS];
+}
+
+function getBranchOptions(currentVal) {
+  if (!currentVal) return BRANCH_OPTIONS;
+  const exists = BRANCH_OPTIONS.some(([v]) => v.toLowerCase() === currentVal.toLowerCase());
+  if (exists) return BRANCH_OPTIONS;
+  return [[currentVal, currentVal], ...BRANCH_OPTIONS];
+}
+
 // Client-side image resize helper to keep payloads lightweight & fast
 function resizeImage(file, maxWidth = 900, maxHeight = 900, quality = 0.85) {
   return new Promise((resolve) => {
@@ -285,16 +331,13 @@ export default function StudentFields({ values, onChange, account = false }) {
     },
     {
       title: currentConfig.projectTitle,
-      fields: account
-        ? [
-            ["project_name", currentConfig.projectLabel, "text", 150, "Enter project name"],
-            ["start_date", "Start date", "date", null, ""],
-          ]
-        : [
-            ["project_name", currentConfig.projectLabel, "text", 150, "Enter project name"],
-            ["start_date", "Start date", "date", null, ""],
-            ["end_date", "End date (Admin set)", "date", null, ""],
-          ],
+      fields: [
+        ["project_name", currentConfig.projectLabel, "select", 150, "Select project"],
+        ["duration", "Internship Program Duration", "select", 60, "Select duration"],
+        ["branch", "Branch / Location", "select", 50, "Select branch"],
+        ["start_date", "Start Date (Joining Date)", "date", null, ""],
+        ["reporting_time", "Reporting Time", "time", null, "Select reporting time"],
+      ],
     },
   ];
 
@@ -365,17 +408,64 @@ export default function StudentFields({ values, onChange, account = false }) {
                         ["FEMALE", "Female"],
                         ["MALE", "Male"],
                       ]
+                    : name === "project_name"
+                    ? getProjectOptions(values[name])
+                    : name === "duration"
+                    ? getDurationOptions(values[name])
+                    : name === "branch"
+                    ? getBranchOptions(values[name])
                     : undefined
                 }
                 pattern={name === "mobile_number" ? "[+]?[0-9]{10,15}" : undefined}
                 min={name === "end_date" ? values.start_date : undefined}
               />
             ))}
+
+            {index === 2 && (
+              <div className="col-12 col-md-6">
+                <label className="form-label d-block fw-semibold mb-2">
+                  Internship Mode <span className="text-danger">*</span>
+                </label>
+                <div className="d-flex align-items-center gap-4 p-2 bg-light rounded border">
+                  <div className="form-check mb-0">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="internship_mode"
+                      id="mode-offline"
+                      value="Offline"
+                      checked={values.internship_mode !== "Online"}
+                      onChange={onChange}
+                    />
+                    <label className="form-check-label fw-semibold text-primary cursor-pointer" htmlFor="mode-offline">
+                      <i className="bi bi-building me-1"></i> Offline
+                    </label>
+                  </div>
+                  <div className="form-check mb-0">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="internship_mode"
+                      id="mode-online"
+                      value="Online"
+                      checked={values.internship_mode === "Online"}
+                      onChange={onChange}
+                    />
+                    <label className="form-check-label fw-semibold text-success cursor-pointer" htmlFor="mode-online">
+                      <i className="bi bi-laptop me-1"></i> Online
+                    </label>
+                  </div>
+                </div>
+                <small className="form-text text-muted">
+                  Select Offline to attend at Wingroo office, or Online for virtual attendance.
+                </small>
+              </div>
+            )}
           </div>
-          {index === 2 && account && (
+          {index === 2 && (
             <p className="form-text mt-3 mb-0 text-muted">
               <i className="bi bi-info-circle me-1"></i>
-              Note: Internship End date will be verified and fixed by the Wingroo Administrator.
+              Note: Internship End date will be verified and assigned by the Wingroo Administrator upon completion.
             </p>
           )}
         </section>

@@ -582,9 +582,9 @@ export default function Contact() {
                   <div className="info-details">
                     <span className="info-label">Office Address</span>
                     <p className="info-val">
-                      9/4, Kurinji Nagar, Near Central Studio,<br />
-                      Singanallur, Ramanathapuram,<br />
-                      Coimbatore - 641005, Tamil Nadu, India.
+                      2nd Floor, SS Complex, 64/1, 7th Street,<br />
+                      Tatabad, Coimbatore,<br />
+                      Tamil Nadu - 641012, India.
                     </p>
                   </div>
                 </div>
@@ -595,8 +595,8 @@ export default function Contact() {
                   </div>
                   <div className="info-details">
                     <span className="info-label">Email Support</span>
-                    <a href="mailto:wingrootechnologies@gmail.com" className="info-link">
-                      wingrootechnologies@gmail.com
+                    <a href="mailto:hr@wingrootechnologies.com" className="info-link">
+                      hr@wingrootechnologies.com
                     </a>
                   </div>
                 </div>
@@ -653,10 +653,10 @@ export default function Contact() {
           <div className="map-card-header">
             <div className="map-pin-pill">
               <MapPin size={14} />
-              <span>Wingroo Technologies HQ • Coimbatore</span>
+              <span>Wingroo Technologies HQ • Tatabad, Coimbatore</span>
             </div>
             <a
-              href="https://maps.google.com/?q=Wingroo+Technologies+Singanallur+Coimbatore"
+              href="https://www.google.com/maps/place/Wingroo+Technologies/@11.0198055,76.9603331,17z/data=!3m2!4b1!5s0x3ba858f8b7c7bfa9:0x6eaeacaf18107afd!4m6!3m5!1s0x3ba85944f9712d0f:0x73213f2e9d3c6e95!8m2!3d11.0198055!4d76.962908"
               target="_blank"
               rel="noopener noreferrer"
               className="map-directions-link"
@@ -669,7 +669,7 @@ export default function Contact() {
           <div className="google-map-iframe-wrap">
             <iframe
               title="Wingroo Technologies Office Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.486241285098!2d76.99532587570417!3d11.002081654992985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859b99911e3b5%3A0xe7f98d7db52ec44e!2sKurinji%20Nagar%2C%20Singanallur%2C%20Tamil%20Nadu%20641005!5e0!3m2!1sen!2sin!4v1711200000000!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.294158913936!2d76.9603331!3d11.0198055!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba85944f9712d0f%3A0x73213f2e9d3c6e95!2sWingroo%20Technologies!5e0!3m2!1sen!2sin!4v1711200000000!5m2!1sen!2sin"
               width="100%"
               height="260"
               style={{ border: 0 }}
@@ -681,7 +681,7 @@ export default function Contact() {
 
           <div className="map-address-footer">
             <p>
-              📍 9/4, Kurinji Nagar, Near Central Studio, Singanallur, Ramanathapuram, Coimbatore - 641005. Landmark: Near Singanallur Central Studio.
+              📍 2nd Floor, SS Complex, 64/1, 7th Street, Tatabad, Coimbatore, Tamil Nadu - 641012. Landmark: 7th Street Tatabad.
             </p>
           </div>
         </div>

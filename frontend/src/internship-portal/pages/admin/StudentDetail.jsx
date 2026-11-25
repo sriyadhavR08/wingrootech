@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { api, errorText, pdfBlob, resolveMediaUrl } from "../../services/api";
 import { Loading, Notice, Status, Confirm } from "../../components/Common";
-import StudentFields from "../../components/StudentFields";
 import CertificateActions from "../../components/CertificateActions";
 
 export default function StudentDetail() {
@@ -10,11 +9,9 @@ export default function StudentDetail() {
   const location = useLocation();
   const prefix = location.pathname.startsWith("/internship") ? "/internship" : "";
   const [data, setData] = useState(null),
-    [values, setValues] = useState({}),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [editing, setEditing] = useState(false),
     [preview, setPreview] = useState(""),
     [confirm, setConfirm] = useState(false),
     [endDateInput, setEndDateInput] = useState(""),
@@ -22,11 +19,9 @@ export default function StudentDetail() {
     [idImgError, setIdImgError] = useState(false),
     [selfieImgError, setSelfieImgError] = useState(false);
 
-
   async function load() {
     const { data } = await api.get(`/admin/students/${id}/`);
     setData(data);
-    setValues(data);
     if (data.end_date) setEndDateInput(data.end_date);
   }
 
@@ -37,7 +32,6 @@ export default function StudentDetail() {
       .then((r) => {
         if (live) {
           setData(r.data);
-          setValues(r.data);
           if (r.data.end_date) setEndDateInput(r.data.end_date);
         }
       })
@@ -62,9 +56,9 @@ export default function StudentDetail() {
     setError("");
     setMessage("");
     try {
-      await action();
+      const res = await action();
       await load();
-      setMessage(success);
+      setMessage(res?.data?.message || success);
     } catch (e) {
       setError(await errorText(e));
     } finally {
@@ -96,6 +90,20 @@ export default function StudentDetail() {
           await pdfBlob(`/admin/certificates/preview/${data.internship_id}/`),
         ),
       );
+    } catch (e) {
+      setError(await errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function showAppointmentLetter() {
+    setBusy(true);
+    setError("");
+    try {
+      const blob = await pdfBlob(`/admin/students/${data.id}/appointment-letter/`);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
     } catch (e) {
       setError(await errorText(e));
     } finally {
@@ -201,40 +209,94 @@ export default function StudentDetail() {
       {/* Action Buttons */}
       <section className="card p-4 mb-4">
         <div className="d-flex flex-wrap gap-2">
-          <button
-            className="btn btn-outline-primary"
-            disabled={busy}
-            onClick={() => {
-              setEditing(!editing);
-              setPreview("");
-            }}
-          >
-            {editing ? "Cancel editing" : "Edit candidate details / documents"}
-          </button>
+          {(!data.status || data.status === "REGISTERED" || data.status === "PENDING_APPROVAL" || data.status === "PENDING") && (
+            <>
+              <button
+                className="btn btn-success d-flex align-items-center gap-2 shadow-sm"
+                disabled={busy}
+                onClick={() =>
+                  perform(
+                    () => api.post(`/admin/students/${data.id}/approve/`),
+                    "Candidate approved successfully! Official appointment letter sent to candidate email.",
+                  )
+                }
+              >
+                <i className="bi bi-check-circle-fill"></i> Approve & Send Appointment Letter
+              </button>
+              <button
+                className="btn btn-outline-danger d-flex align-items-center gap-2"
+                disabled={busy}
+                onClick={() =>
+                  perform(
+                    () => api.post(`/admin/students/${data.id}/reject/`),
+                    "Candidate registration has been rejected. No email sent.",
+                  )
+                }
+              >
+                <i className="bi bi-x-circle"></i> Reject Application
+              </button>
+            </>
+          )}
 
-          {data.status === "REGISTERED" && (
+          {data.status === "APPROVED" && (
+            <>
+              <button
+                className="btn btn-primary d-flex align-items-center gap-2"
+                disabled={busy}
+                onClick={() =>
+                  perform(
+                    () =>
+                      api.patch(
+                        `/admin/internships/${data.internship_id}/status/`,
+                        { status: "IN_PROGRESS" },
+                      ),
+                    "Internship marked in progress.",
+                  )
+                }
+              >
+                <i className="bi bi-play-circle"></i> Mark in progress
+              </button>
+              <button
+                className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                disabled={busy}
+                onClick={() =>
+                  perform(
+                    () => api.post(`/admin/students/${data.id}/resend-letter/`),
+                    "Appointment letter has been resent to candidate email.",
+                  )
+                }
+              >
+                <i className="bi bi-envelope-check"></i> Resend Appointment Letter
+              </button>
+              <button
+                className="btn btn-outline-primary d-flex align-items-center gap-2"
+                disabled={busy}
+                onClick={showAppointmentLetter}
+              >
+                <i className="bi bi-file-earmark-pdf-fill"></i> Appointment Letter (PDF)
+              </button>
+            </>
+          )}
+
+          {data.status === "REJECTED" && (
             <button
-              className="btn btn-primary"
-              disabled={busy || editing}
+              className="btn btn-outline-success d-flex align-items-center gap-2"
+              disabled={busy}
               onClick={() =>
                 perform(
-                  () =>
-                    api.patch(
-                      `/admin/internships/${data.internship_id}/status/`,
-                      { status: "IN_PROGRESS" },
-                    ),
-                  "Internship marked in progress.",
+                  () => api.post(`/admin/students/${data.id}/approve/`),
+                  "Candidate approved successfully! Official appointment letter sent.",
                 )
               }
             >
-              Mark in progress
+              <i className="bi bi-check-circle-fill"></i> Approve Candidate Now
             </button>
           )}
 
           {data.status === "IN_PROGRESS" && (
             <button
               className="btn btn-primary"
-              disabled={busy || editing}
+              disabled={busy}
               onClick={() =>
                 perform(
                   () =>
@@ -254,14 +316,14 @@ export default function StudentDetail() {
             <>
               <button
                 className="btn btn-outline-primary"
-                disabled={busy || editing}
+                disabled={busy}
                 onClick={showPreview}
               >
                 {busy ? "Please wait…" : "Preview certificate"}
               </button>
               <button
                 className="btn btn-success"
-                disabled={busy || editing}
+                disabled={busy}
                 onClick={handleStartGenerate}
               >
                 <i className="bi bi-patch-check me-1"></i> Generate certificate
@@ -270,30 +332,7 @@ export default function StudentDetail() {
           )}
         </div>
 
-        {editing ? (
-          <form
-            className="mt-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              perform(async () => {
-                await api.put(`/admin/students/${id}/`, values);
-                setEditing(false);
-              }, "Candidate updated.");
-            }}
-          >
-            <StudentFields
-              values={values}
-              onChange={(e) =>
-                setValues({ ...values, [e.target.name]: e.target.value })
-              }
-            />
-            <button className="btn btn-primary mt-3" disabled={busy}>
-              Save corrections
-            </button>
-          </form>
-        ) : (
-          <>
-            <dl className="details-grid mt-4">
+        <dl className="details-grid mt-4">
               {[
                 ["Category / Role", data.candidate_type_display || "College Intern"],
                 [
@@ -327,11 +366,14 @@ export default function StudentDetail() {
                   data.register_number,
                 ],
                 ["Gender", data.gender],
+                ["Internship Mode", data.internship_mode || "Offline"],
+                ["Branch / Location", data.branch || "100ft"],
+                ["Reporting Time", data.reporting_time || "11:00 AM"],
                 ["Mobile", data.mobile_number],
                 ["Project", data.project_name],
                 ["Start date", data.start_date],
                 ["End date", data.end_date || "Not fixed yet (Admin must set)"],
-                ["Duration", data.duration_days ? `${data.duration_days} days` : "Pending end date"],
+                ["Program Duration", data.duration || "15 Days Internship Program"],
               ].map(([k, v]) => (
                 <div key={k}>
                   <dt>{k}</dt>
@@ -587,9 +629,6 @@ export default function StudentDetail() {
                 </div>
               );
             })()}
-
-          </>
-        )}
       </section>
 
       {/* Certificate Preview (Watermarked) */}
@@ -608,12 +647,9 @@ export default function StudentDetail() {
           <div className="d-flex gap-2 mt-3">
             <button
               className="btn btn-light"
-              onClick={() => {
-                setEditing(true);
-                setPreview("");
-              }}
+              onClick={() => setPreview("")}
             >
-              Edit student details
+              Close preview
             </button>
             <button
               className="btn btn-success"

@@ -20,16 +20,26 @@ export function Notice({ message, type = "danger" }) {
 export function Status({ value }) {
   const color =
     {
-      REGISTERED: "secondary",
+      REGISTERED: "warning",
+      PENDING: "warning",
+      PENDING_APPROVAL: "warning",
+      APPROVED: "success",
+      REJECTED: "danger",
       IN_PROGRESS: "primary",
       COMPLETED: "success",
       CERTIFICATE_ISSUED: "success",
       VALID: "success",
       REVOKED: "danger",
     }[value] || "secondary";
+
+  const label =
+    value === "REGISTERED" || value === "PENDING_APPROVAL" || value === "PENDING"
+      ? "Pending Approval"
+      : value?.replaceAll("_", " ") || "Not issued";
+
   return (
     <span className={`badge text-bg-${color}`}>
-      {value?.replaceAll("_", " ") || "Not issued"}
+      {label}
     </span>
   );
 }

@@ -6,6 +6,7 @@ on:
       - '**' # Triggers on all branches (dev, main, feature/*)
   pull_request:
     branches:
+      - qa
       - qa-testing
       - dev
       - main

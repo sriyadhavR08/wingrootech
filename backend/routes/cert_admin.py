@@ -70,6 +70,28 @@ def students():
     if cand_type:
         query = query.filter(StudentProfile.candidate_type == cand_type)
 
+    project_filter = request.args.get("project_name", "").strip()
+    if project_filter:
+        query = query.filter(Internship.project_name.ilike(f"%{project_filter}%"))
+
+    branch_filter = request.args.get("branch", "").strip()
+    if branch_filter:
+        query = query.filter(
+            db.or_(
+                StudentProfile.branch == branch_filter,
+                Internship.branch == branch_filter,
+            )
+        )
+
+    duration_filter = request.args.get("duration", "").strip()
+    if duration_filter:
+        query = query.filter(
+            db.or_(
+                StudentProfile.duration.ilike(f"%{duration_filter}%"),
+                Internship.duration.ilike(f"%{duration_filter}%"),
+            )
+        )
+
     total_count = query.count()
 
     try:
@@ -125,7 +147,7 @@ def student_detail(pk):
 
         profile = user.profile
         if profile:
-            for field in ["candidate_type", "gender", "mobile_number", "college_name", "department", "course", "register_number"]:
+            for field in ["candidate_type", "gender", "mobile_number", "college_name", "department", "course", "register_number", "branch", "reporting_time", "internship_mode"]:
                 if field in data and data[field] is not None:
                     setattr(profile, field, str(data[field]).strip())
 
@@ -142,6 +164,15 @@ def student_detail(pk):
         if internship:
             if "project_name" in data and data["project_name"]:
                 internship.project_name = data["project_name"].strip()
+            if "branch" in data and data["branch"]:
+                internship.branch = data["branch"].strip()
+            if "reporting_time" in data and data["reporting_time"]:
+                internship.reporting_time = data["reporting_time"].strip()
+            if "internship_mode" in data and data["internship_mode"]:
+                internship.internship_mode = data["internship_mode"].strip()
+            if "duration" in data and data["duration"]:
+                profile.duration = data["duration"].strip()
+                internship.duration = data["duration"].strip()
             if "status" in data and data["status"]:
                 internship.status = data["status"].strip()
             if "start_date" in data and data["start_date"]:
@@ -192,31 +223,177 @@ def student_detail(pk):
     return jsonify(student_data(user, host_url))
 
 
+def resolve_target_internship(pk):
+    """
+    Safely resolves the target Internship model.
+    If called via a '/students/<pk>' route, pk is the User/Student ID.
+    If called via an '/internships/<pk>' route, pk is the Internship ID.
+    """
+    if "/students/" in request.path:
+        internship = Internship.query.filter_by(student_id=pk).first()
+        if not internship:
+            user = User.query.filter_by(id=pk, role="STUDENT").first()
+            if user:
+                ensure_student_records(user)
+                internship = user.internship
+        if not internship:
+            internship = Internship.query.get(pk)
+        return internship
+    else:
+        internship = Internship.query.get(pk)
+        if not internship:
+            internship = Internship.query.filter_by(student_id=pk).first()
+        return internship
+
+
 @cert_admin_bp.route("/api/admin/internships/<int:pk>/status/", methods=["PATCH"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/status/", methods=["PATCH"])
 @admin_required
 def update_status(pk):
     host_url = request.host_url.rstrip("/")
-    internship = Internship.query.get(pk)
+    internship = resolve_target_internship(pk)
     if not internship:
         return jsonify({"detail": "Internship not found."}), 404
 
     data = request.get_json() or {}
     target = data.get("status")
-    if target not in ["REGISTERED", "IN_PROGRESS", "COMPLETED"]:
+    allowed_statuses = ["REGISTERED", "PENDING_APPROVAL", "APPROVED", "REJECTED", "IN_PROGRESS", "COMPLETED"]
+    if target not in allowed_statuses:
         return jsonify({"detail": "Invalid status target."}), 400
 
+    prev_status = internship.status
     internship.status = target
     if target == "COMPLETED":
         internship.completed_at = datetime.now(timezone.utc)
     db.session.commit()
+
+    # If transitioning to APPROVED or IN_PROGRESS from REGISTERED/REJECTED, send appointment letter
+    if target in ["APPROVED", "IN_PROGRESS"] and prev_status in ["REGISTERED", "PENDING_APPROVAL", "REJECTED"]:
+        try:
+            from services.email_service import async_send_appointment_letter
+            user = internship.student
+            profile = user.profile
+            password = getattr(profile, "initial_password", None) or "(Your registered password)"
+            async_send_appointment_letter({
+                "name": user.full_name,
+                "email": user.email,
+                "password": password,
+                "register_number": getattr(profile, "register_number", "") if profile else "",
+                "project_name": internship.project_name or "Artificial Intelligence and Machine Learning",
+                "branch": getattr(profile, "branch", None) or getattr(internship, "branch", "100ft"),
+                "start_date": internship.start_date,
+                "reporting_time": getattr(internship, "reporting_time", None) or getattr(profile, "reporting_time", "11:00 AM"),
+                "internship_mode": getattr(internship, "internship_mode", None) or getattr(profile, "internship_mode", "Offline"),
+                "duration": getattr(internship, "duration", None) or getattr(profile, "duration", None) or "15 Days Internship Program",
+            })
+        except Exception as mail_err:
+            print(f"[Approval Email Error] {mail_err}")
+
     return jsonify(student_data(internship.student, host_url))
 
 
+@cert_admin_bp.route("/api/admin/internships/<int:pk>/approve/", methods=["POST"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/approve/", methods=["POST"])
+@admin_required
+def approve_candidate(pk):
+    host_url = request.host_url.rstrip("/")
+    internship = resolve_target_internship(pk)
+    if not internship:
+        return jsonify({"detail": "Candidate or Internship not found."}), 404
+
+    user = internship.student
+    profile = user.profile
+    internship.status = "APPROVED"
+    db.session.commit()
+
+    # Trigger official appointment letter email
+    try:
+        from services.email_service import async_send_appointment_letter
+        password = getattr(profile, "initial_password", None) or "(Your registered password)"
+        async_send_appointment_letter({
+            "name": user.full_name,
+            "email": user.email,
+            "password": password,
+            "register_number": getattr(profile, "register_number", "") if profile else "",
+            "project_name": internship.project_name or "Artificial Intelligence and Machine Learning",
+            "branch": getattr(profile, "branch", None) or getattr(internship, "branch", "100ft"),
+            "start_date": internship.start_date,
+            "reporting_time": getattr(internship, "reporting_time", None) or getattr(profile, "reporting_time", "11:00 AM"),
+            "internship_mode": getattr(internship, "internship_mode", None) or getattr(profile, "internship_mode", "Offline"),
+            "duration": getattr(internship, "duration", None) or getattr(profile, "duration", None) or "15 Days Internship Program",
+        })
+    except Exception as mail_err:
+        print(f"[Approve Hook Error] {mail_err}")
+
+    return jsonify({
+        "success": True,
+        "message": f"Candidate {user.full_name} has been approved! Official appointment letter sent to {user.email}.",
+        "student": student_data(user, host_url)
+    })
+
+
+@cert_admin_bp.route("/api/admin/internships/<int:pk>/reject/", methods=["POST"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/reject/", methods=["POST"])
+@admin_required
+def reject_candidate(pk):
+    host_url = request.host_url.rstrip("/")
+    internship = resolve_target_internship(pk)
+    if not internship:
+        return jsonify({"detail": "Candidate or Internship not found."}), 404
+
+    user = internship.student
+    internship.status = "REJECTED"
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": f"Candidate {user.full_name} registration has been rejected. No email sent.",
+        "student": student_data(user, host_url)
+    })
+
+
+@cert_admin_bp.route("/api/admin/internships/<int:pk>/resend-letter/", methods=["POST"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/resend-letter/", methods=["POST"])
+@admin_required
+def resend_letter(pk):
+    host_url = request.host_url.rstrip("/")
+    internship = resolve_target_internship(pk)
+    if not internship:
+        return jsonify({"detail": "Candidate or Internship not found."}), 404
+
+    user = internship.student
+    profile = user.profile
+
+    try:
+        from services.email_service import async_send_appointment_letter
+        password = getattr(profile, "initial_password", None) or "(Your registered password)"
+        async_send_appointment_letter({
+            "name": user.full_name,
+            "email": user.email,
+            "password": password,
+            "register_number": getattr(profile, "register_number", "") if profile else "",
+            "project_name": internship.project_name or "Artificial Intelligence and Machine Learning",
+            "branch": getattr(profile, "branch", None) or getattr(internship, "branch", "100ft"),
+            "start_date": internship.start_date,
+            "reporting_time": getattr(internship, "reporting_time", None) or getattr(profile, "reporting_time", "11:00 AM"),
+            "internship_mode": getattr(internship, "internship_mode", None) or getattr(profile, "internship_mode", "Offline"),
+            "duration": getattr(internship, "duration", None) or getattr(profile, "duration", None) or "15 Days Internship Program",
+        })
+        return jsonify({
+            "success": True,
+            "message": f"Appointment letter has been resent to {user.email}.",
+            "student": student_data(user, host_url)
+        })
+    except Exception as mail_err:
+        return jsonify({"detail": f"Failed to send email: {str(mail_err)}"}), 500
+
+
 @cert_admin_bp.route("/api/admin/internships/<int:pk>/end-date/", methods=["PATCH", "POST"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/end-date/", methods=["PATCH", "POST"])
 @admin_required
 def set_end_date(pk):
     host_url = request.host_url.rstrip("/")
-    internship = Internship.query.get(pk)
+    internship = resolve_target_internship(pk)
     if not internship:
         return jsonify({"detail": "Internship not found."}), 404
 
@@ -364,4 +541,46 @@ def certificate_detail(pk):
         db.session.commit()
 
     return jsonify(certificate_data(cert))
+
+
+@cert_admin_bp.route("/api/admin/students/<int:pk>/appointment-letter/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/students/<int:pk>/appointment-letter", methods=["GET"])
+@cert_admin_bp.route("/api/admin/internships/<int:pk>/appointment-letter/", methods=["GET"])
+@cert_admin_bp.route("/api/admin/internships/<int:pk>/appointment-letter", methods=["GET"])
+@admin_required
+def admin_appointment_letter(pk):
+    internship = resolve_target_internship(pk)
+    if not internship or not internship.student:
+        return jsonify({"detail": "Candidate or internship not found."}), 404
+
+    user = internship.student
+    profile = user.profile
+
+    duration = getattr(internship, "duration", None) or getattr(profile, "duration", None) or "15 Days Internship Program"
+
+    candidate_data = {
+        "name": user.full_name,
+        "email": user.email,
+        "register_number": getattr(profile, "register_number", "") if profile else "",
+        "project_name": internship.project_name or "Artificial Intelligence and Machine Learning",
+        "internship_mode": getattr(internship, "internship_mode", None) or getattr(profile, "internship_mode", "Offline"),
+        "duration": duration,
+        "branch": getattr(internship, "branch", None) or getattr(profile, "branch", "100ft"),
+        "reporting_time": getattr(internship, "reporting_time", None) or getattr(profile, "reporting_time", "11:00 AM"),
+        "start_date": internship.start_date,
+        "issue_date": getattr(internship, "updated_at", None) or internship.start_date or date.today(),
+    }
+
+    try:
+        from services.appointment_letter import render_appointment_letter_pdf
+        pdf_bytes = render_appointment_letter_pdf(candidate_data)
+
+        safe_name = "".join(c for c in user.full_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+        response = make_response(pdf_bytes)
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = f'inline; filename="Wingroo_Appointment_Letter_{safe_name}.pdf"'
+        return response
+    except Exception as e:
+        return jsonify({"detail": f"Failed to generate appointment letter PDF: {str(e)}"}), 500
+
 

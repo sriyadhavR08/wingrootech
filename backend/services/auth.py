@@ -229,6 +229,7 @@ def ensure_student_records(user):
             department=app_data.get("course") or "Computer Science",
             course=app_data.get("course") or "B.E / B.Tech",
             register_number=reg_no,
+            branch=app_data.get("branch") or "100ft",
         )
         db.session.add(profile)
         user.profile = profile
@@ -256,6 +257,7 @@ def ensure_student_records(user):
             project_name=proj,
             start_date=start_d,
             status="REGISTERED",
+            branch=app_data.get("branch") or "100ft",
         )
         db.session.add(internship)
         user.internship = internship
@@ -275,11 +277,16 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
     def format_media_url(file_path):
         if not file_path:
             return None
-        if file_path.startswith("http://backend.wingrootechnologies.com"):
-            return file_path.replace("http://", "https://")
-        if file_path.startswith("http://") or file_path.startswith("https://"):
-            return file_path
-        clean_path = file_path.lstrip("/")
+        file_path_str = str(file_path).strip()
+        if file_path_str.startswith("data:") or file_path_str.startswith("blob:"):
+            return file_path_str
+        if file_path_str.startswith("http://backend.wingrootechnologies.com"):
+            return file_path_str.replace("http://", "https://")
+        if file_path_str.startswith("http://") or file_path_str.startswith("https://"):
+            return file_path_str
+        clean_path = file_path_str.lstrip("/")
+        if clean_path.startswith("media/"):
+            clean_path = clean_path[len("media/"):]
         host = request_host_url
         if "wingrootechnologies.com" in host or (not ("localhost" in host or "127.0.0.1" in host)):
             if host.startswith("http://"):
@@ -311,6 +318,10 @@ def student_data(user, request_host_url="http://127.0.0.1:5000"):
         "college_id_card": format_media_url(getattr(p, "college_id_card", None)) if p else None,
         "selfie_photo": format_media_url(getattr(p, "selfie_photo", None)) if p else None,
         "internship_id": i.id if i else None,
+        "branch": getattr(p, "branch", None) or getattr(i, "branch", None) or "100ft",
+        "reporting_time": getattr(i, "reporting_time", None) or getattr(p, "reporting_time", None) or "11:00 AM",
+        "internship_mode": getattr(i, "internship_mode", None) or getattr(p, "internship_mode", None) or "Offline",
+        "duration": getattr(i, "duration", None) or getattr(p, "duration", None) or "15 Days Internship Program",
         "project_name": getattr(i, "project_name", "") if i else "",
         "start_date": i.start_date.isoformat() if (i and i.start_date) else None,
         "end_date": i.end_date.isoformat() if (i and i.end_date) else None,

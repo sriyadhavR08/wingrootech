@@ -85,6 +85,12 @@ def register():
             db.session.add(user)
             db.session.flush()
 
+        branch = data.get("branch", "100ft")
+        reporting_time = data.get("reporting_time", "11:00 AM")
+        internship_mode = data.get("internship_mode", "Offline")
+        duration = data.get("duration", "15 Days Internship Program")
+        project_name = data.get("project_name", "") or "Artificial Intelligence and Machine Learning"
+
         profile = StudentProfile.query.filter_by(user_id=user.id).first()
         if not profile:
             profile = StudentProfile(
@@ -98,10 +104,20 @@ def register():
                 register_number=reg_no,
                 college_id_card=college_id_path,
                 selfie_photo=selfie_path,
+                branch=branch,
+                reporting_time=reporting_time,
+                internship_mode=internship_mode,
+                duration=duration,
+                initial_password=password,
             )
             db.session.add(profile)
         else:
             profile.candidate_type = cand_type
+            profile.branch = branch
+            profile.reporting_time = reporting_time
+            profile.internship_mode = internship_mode
+            profile.duration = duration
+            profile.initial_password = password
             if data.get("mobile_number"): profile.mobile_number = data.get("mobile_number")
             if data.get("college_name"): profile.college_name = data.get("college_name")
             if data.get("department"): profile.department = data.get("department")
@@ -114,15 +130,23 @@ def register():
         if not internship:
             internship = Internship(
                 student=user,
-                project_name=data.get("project_name", "") or "Full Stack Web Development",
+                project_name=project_name,
                 start_date=start_date,
                 end_date=end_date,
                 status="REGISTERED",
+                branch=branch,
+                reporting_time=reporting_time,
+                internship_mode=internship_mode,
+                duration=duration,
             )
             db.session.add(internship)
         else:
-            internship.project_name = data.get("project_name", "") or internship.project_name
+            internship.project_name = project_name
+            internship.branch = branch
             internship.start_date = start_date
+            internship.reporting_time = reporting_time
+            internship.internship_mode = internship_mode
+            internship.duration = duration
             if end_date:
                 internship.end_date = end_date
             internship.status = "REGISTERED"
@@ -148,6 +172,7 @@ def register():
                 'course': profile.course,
                 'register_number': profile.register_number,
                 'project_name': internship.project_name if internship else '',
+                'branch': branch,
                 'status': 'REGISTERED'
             })
         except Exception as sheet_err:
@@ -165,7 +190,7 @@ def register():
 
         return jsonify({
             "success": True,
-            "message": "Registration successful! Welcome to Wingroo.",
+            "message": "Registration submitted successfully! Your application is pending administrator approval. You will receive your official Appointment Letter and login credentials via email once approved.",
             "access": access_token,
             "refresh": refresh_token,
             "user": {
@@ -178,6 +203,7 @@ def register():
                 "candidate_type": cand_type,
                 "candidate_type_display": cand_display,
                 "register_number": profile.register_number,
+                "status": "REGISTERED",
             }
         }), 201
     except Exception as e:
@@ -238,6 +264,12 @@ def candidate_register():
             default_course = "Internship Program"
             cand_display = "Internship & Event Candidate"
 
+        branch = data.get("branch", "100ft")
+        reporting_time = data.get("reporting_time", "11:00 AM")
+        internship_mode = data.get("internship_mode", "Offline")
+        duration = data.get("duration", "15 Days Internship Program")
+        project_name = data.get("technology") or data.get("project_name") or ("Client Project Deliverables" if candidate_type == "PROJECT_CLIENT" else "Artificial Intelligence and Machine Learning")
+
         profile = StudentProfile(
             user=user,
             candidate_type=candidate_type,
@@ -247,14 +279,23 @@ def candidate_register():
             department=data.get("department") or default_dept,
             course=data.get("course") or default_course,
             register_number=auto_reg_no,
+            branch=branch,
+            reporting_time=reporting_time,
+            internship_mode=internship_mode,
+            duration=duration,
+            initial_password=password,
         )
         db.session.add(profile)
 
         internship = Internship(
             student=user,
-            project_name=data.get("technology") or data.get("project_name") or ("Client Project Deliverables" if candidate_type == "PROJECT_CLIENT" else "Internship Program"),
+            project_name=project_name,
             start_date=date.today(),
             status="REGISTERED",
+            branch=branch,
+            reporting_time=reporting_time,
+            internship_mode=internship_mode,
+            duration=duration,
         )
         db.session.add(internship)
         db.session.commit()
@@ -273,6 +314,7 @@ def candidate_register():
                 'course': profile.course,
                 'register_number': profile.register_number,
                 'project_name': internship.project_name if internship else '',
+                'branch': branch,
                 'status': 'REGISTERED'
             })
         except Exception as sheet_err:
@@ -281,7 +323,7 @@ def candidate_register():
         access_token, refresh_token = generate_tokens(user)
         return jsonify({
             "success": True,
-            "message": "Account created successfully! Welcome to Wingroo.",
+            "message": "Registration submitted successfully! Your application is pending administrator approval. You will receive your official Appointment Letter and login credentials via email once approved.",
             "access": access_token,
             "refresh": refresh_token,
             "user": {
